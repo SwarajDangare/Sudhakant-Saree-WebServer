@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --saffron: #FF9933;
+  --maroon: #800000;
+  --golden: #FFD700;
+  --silk-white: #FFF8DC;
+  --indian-green: #138808;
+  --indian-red: #CD5C5C;
+  --deep-maroon: #5C0A0A;
+}
+
+body {
+  background-color: var(--silk-white);
+  color: #2c2c2c;
+}
+
+/* Traditional Indian Pattern Background */
+.pattern-bg {
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 153, 51, 0.03) 10px,
+      rgba(255, 153, 51, 0.03) 20px
+    );
+}
+
+/* Elegant border with golden accent */
+.golden-border {
+  border: 2px solid var(--golden);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+/* Smooth transitions */
+.transition-elegant {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effect for cards */
+.card-hover {
+  @apply transition-elegant hover:scale-105 hover:shadow-2xl;
+}
+
+/* Text gradient for headings */
+.text-gradient {
+  background: linear-gradient(135deg, var(--maroon) 0%, var(--saffron) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--silk-white);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--maroon);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--saffron);
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-maroon text-white px-6 py-3 rounded-lg font-semibold
+         hover:bg-saffron transition-elegant shadow-lg
+         hover:shadow-xl transform hover:-translate-y-1;
+}
+
+.btn-secondary {
+  @apply border-2 border-maroon text-maroon px-6 py-3 rounded-lg
+         font-semibold hover:bg-maroon hover:text-white
+         transition-elegant;
+}
+
+/* Section padding */
+.section-padding {
+  @apply py-16 px-4 md:px-8 lg:px-16;
+}
+
+/* Ornamental divider */
+.ornament-divider {
+  position: relative;
+  text-align: center;
+  margin: 3rem 0;
+}
+
+.ornament-divider::before,
+.ornament-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 45%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--golden), transparent);
+}
+
+.ornament-divider::before {
+  left: 0;
+}
+
+.ornament-divider::after {
+  right: 0;
+}
