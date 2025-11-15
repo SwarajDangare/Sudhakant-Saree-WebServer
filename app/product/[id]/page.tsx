@@ -5,10 +5,19 @@ import { mockProducts } from '@/data/mockProducts';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
+export const runtime = 'edge';
+
 interface ProductPageProps {
   params: {
     id: string;
   };
+}
+
+// Generate static params for all products at build time
+export function generateStaticParams() {
+  return mockProducts.map((product) => ({
+    id: product.id,
+  }));
 }
 
 export default function ProductPage({ params }: ProductPageProps) {
