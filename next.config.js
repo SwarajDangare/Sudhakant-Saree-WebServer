@@ -1,6 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Clean configuration for Vercel deployment
+  reactStrictMode: true,
+  swcMinify: true,
+  // Explicitly set distDir to ensure proper path resolution
+  distDir: '.next',
+  // Ensure proper image configuration
+  images: {
+    domains: ['res.cloudinary.com'],
+  },
 }
 
 module.exports = nextConfig
