@@ -27,7 +27,7 @@
 **Sudhakant Sarees** is an e-commerce platform for traditional Indian sarees built with Next.js 14, featuring:
 
 - **Frontend:** Fully responsive UI with custom design system
-- **Backend:** PostgreSQL database (Neon) with Prisma ORM
+- **Backend:** PostgreSQL database (Neon) with Drizzle ORM
 - **Authentication:** NextAuth.js (infrastructure ready, not yet implemented)
 - **Media:** Cloudinary integration for image management
 - **Deployment:** Cloudflare Pages with Edge Runtime support
@@ -37,10 +37,11 @@
 ✅ **Completed:**
 - UI/UX design and responsive layout
 - Component architecture
-- Database schema (Prisma models)
+- Database schema (Drizzle ORM)
 - Static routing and navigation
 - Mock data for development
 - Design system and branding
+- Migration from Prisma to Drizzle ORM
 
 🚧 **In Progress:**
 - API endpoints implementation
@@ -63,11 +64,14 @@ npm install
 cp .env.example .env
 # Edit .env with actual credentials
 
-# Generate Prisma client
+# Generate database migration
 npm run db:generate
 
-# Push schema to database
-npm run db:push
+# Apply migration to database (or use Neon SQL Editor - see SETUP_INSTRUCTIONS.md)
+npm run db:migrate
+
+# Seed database with initial data
+npm run db:seed
 
 # Start development server
 npm run dev
@@ -315,15 +319,23 @@ model ColorImage {
 ### Database Operations
 
 ```bash
-# Generate Prisma client after schema changes
+# Generate migration files after schema changes
 npm run db:generate
 
-# Push schema changes to database
-npm run db:push
+# Apply migrations to database
+npm run db:migrate
 
-# Open Prisma Studio (GUI database browser)
+# Seed database with initial data
+npm run db:seed
+
+# Generate password hash for user creation
+npm run db:hash-password <password>
+
+# Open Drizzle Studio (GUI database browser)
 npm run db:studio
 ```
+
+**Note:** Due to network restrictions in some environments, you may need to manually run the migration SQL through Neon's SQL Editor. See `SETUP_INSTRUCTIONS.md` for details.
 
 ---
 
