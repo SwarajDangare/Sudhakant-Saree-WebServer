@@ -3,8 +3,6 @@ import { categories } from '@/data/categories';
 import ProductCard from '@/components/ProductCard';
 import { notFound } from 'next/navigation';
 
-export const runtime = 'edge';
-
 interface ProductsPageProps {
   params: {
     category: string;

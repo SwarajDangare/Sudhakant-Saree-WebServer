@@ -2,8 +2,6 @@ import { mockProducts } from '@/data/mockProducts';
 import { notFound } from 'next/navigation';
 import ProductDetailClient from '@/components/ProductDetailClient';
 
-export const runtime = 'edge';
-
 interface ProductPageProps {
   params: {
     id: string;
