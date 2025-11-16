@@ -1,0 +1,127 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(PRODUCT_MANAGER)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum Role {
+  SUPER_ADMIN
+  PRODUCT_MANAGER
+}
+
+// Hierarchical Category System
+model Section {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  order       Int        @default(0)
+  active      Boolean    @default(true)
+  categories  Category[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("sections")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  sectionId   String
+  section     Section   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String    @unique
+  description String?
+  order       Int       @default(0)
+  active      Boolean   @default(true)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+// Product Management
+model Product {
+  id                String         @id @default(cuid())
+  categoryId        String
+  category          Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name              String
+  description       String         @db.Text
+  price             Decimal        @db.Decimal(10, 2)
+  material          String
+  length            String
+  occasion          String
+  careInstructions  String         @db.Text
+  featured          Boolean        @default(false)
+  active            Boolean        @default(true)
+  images            ProductImage[]
+  colors            ProductColor[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@map("products")
+}
+
+// Multiple images per product
+model ProductImage {
+  id           String   @id @default(cuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url          String
+  publicId     String   // Cloudinary public ID for deletion
+  altText      String?
+  displayOrder Int      @default(0)
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@map("product_images")
+}
+
+// Color variants
+model ProductColor {
+  id        String       @id @default(cuid())
+  productId String
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color     String
+  colorCode String
+  inStock   Boolean      @default(true)
+  images    ColorImage[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("product_colors")
+}
+
+// Multiple images per color variant
+model ColorImage {
+  id             String       @id @default(cuid())
+  productColorId String
+  productColor   ProductColor @relation(fields: [productColorId], references: [id], onDelete: Cascade)
+  url            String
+  publicId       String       // Cloudinary public ID for deletion
+  altText        String?
+  displayOrder   Int          @default(0)
+  createdAt      DateTime     @default(now())
+
+  @@map("color_images")
+}
