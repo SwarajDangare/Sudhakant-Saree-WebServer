@@ -1,14 +1,7 @@
 import type { Metadata } from 'next'
-import { Poppins } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-poppins',
-})
 
 export const metadata: Metadata = {
   title: 'Sudhakant Sarees - Elegant Indian Sarees Collection',
@@ -23,7 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${poppins.variable} font-sans antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      </head>
+      <body className="font-sans antialiased" style={{ fontFamily: "'Poppins', sans-serif" }}>
         <Header />
         <main className="min-h-screen">
           {children}
