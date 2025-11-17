@@ -1,28 +1,31 @@
 export interface ColorVariant {
   color: string;
   colorCode: string;
-  image: string;
   inStock: boolean;
+  images: string[];
 }
 
 export interface Product {
   id: string;
   name: string;
-  category: 'silk' | 'cotton' | 'banarasi' | 'kanjivaram' | 'patola';
-  price: number;
+  category: string;
+  price: number | string;
   description: string;
-  material: string;
-  length: string;
-  occasion: string;
-  careInstructions: string;
+  material: string | null;
+  length: string | null;
+  occasion: string | null;
+  careInstructions: string | null;
   colors: ColorVariant[];
   featured: boolean;
+  active?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Category {
   id: string;
   name: string;
   slug: string;
-  description: string;
-  image: string;
+  description: string | null;
+  image?: string;
 }
