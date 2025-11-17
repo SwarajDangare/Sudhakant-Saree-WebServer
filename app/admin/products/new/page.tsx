@@ -6,6 +6,9 @@ import { eq } from 'drizzle-orm';
 import ProductForm from '@/components/admin/ProductForm';
 import Link from 'next/link';
 
+// Make this page dynamic - don't pre-render at build time
+export const dynamic = 'force-dynamic';
+
 export default async function NewProductPage() {
   const session = await getServerSession(authOptions);
 
