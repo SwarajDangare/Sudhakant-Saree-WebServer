@@ -1,19 +1,30 @@
-import { db, products } from '@/db';
+import { db, products, categories } from '@/db';
 import { eq } from 'drizzle-orm';
 import ProductCard from './ProductCard';
 
 export default async function FeaturedProducts() {
-  // Fetch featured products from database
-  const featuredProducts = await db
-    .select()
+  // Fetch featured products with their categories
+  const featuredProductsData = await db
+    .select({
+      product: products,
+      category: categories,
+    })
     .from(products)
+    .leftJoin(categories, eq(products.categoryId, categories.id))
     .where(eq(products.featured, true))
     .where(eq(products.active, true))
     .limit(6);
 
-  if (featuredProducts.length === 0) {
+  if (featuredProductsData.length === 0) {
     return null; // Don't show section if no featured products
   }
+
+  // Map to Product type with category and colors
+  const featuredProducts = featuredProductsData.map(({ product, category }) => ({
+    ...product,
+    category: category?.name || 'Uncategorized',
+    colors: [], // Empty array for list view
+  }));
 
   return (
     <section className="section-padding bg-white">

@@ -59,6 +59,13 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
       )
     );
 
+  // Map products to include category name and colors array
+  const productsWithCategory = categoryProducts.map(product => ({
+    ...product,
+    category: category.name,
+    colors: [], // Empty array for now - ProductCard doesn't need colors for list view
+  }));
+
   return (
     <div className="min-h-screen bg-silk-white">
       {/* Category Header */}
@@ -85,7 +92,7 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
               <svg className="w-5 h-5 text-golden" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
               </svg>
-              <span className="text-sm font-semibold">{categoryProducts.length} Products Available</span>
+              <span className="text-sm font-semibold">{productsWithCategory.length} Products Available</span>
             </div>
           </div>
         </div>
@@ -94,9 +101,9 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
       {/* Products Grid */}
       <section className="section-padding">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {categoryProducts.length > 0 ? (
+          {productsWithCategory.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {categoryProducts.map((product) => (
+              {productsWithCategory.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
