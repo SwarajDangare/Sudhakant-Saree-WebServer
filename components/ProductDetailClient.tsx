@@ -14,6 +14,34 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [selectedColor, setSelectedColor] = useState<ColorVariant>(product.colors[0] || defaultColor);
   const hasColors = product.colors && product.colors.length > 0;
 
+  // Calculate discount
+  const price = Number(product.price) || 0;
+  const discountType = product.discountType || 'NONE';
+  const discountValue = Number(product.discountValue) || 0;
+
+  const calculateFinalPrice = () => {
+    if (discountType === 'PERCENTAGE') {
+      return price - (price * discountValue / 100);
+    } else if (discountType === 'FIXED') {
+      return Math.max(0, price - discountValue);
+    }
+    return price;
+  };
+
+  const calculateDiscountPercentage = () => {
+    if (price === 0) return 0;
+    if (discountType === 'PERCENTAGE') {
+      return discountValue;
+    } else if (discountType === 'FIXED') {
+      return (discountValue / price) * 100;
+    }
+    return 0;
+  };
+
+  const finalPrice = calculateFinalPrice();
+  const discountPercentage = calculateDiscountPercentage();
+  const hasDiscount = discountType !== 'NONE' && discountValue > 0;
+
   return (
     <div className="min-h-screen bg-silk-white">
       {/* Breadcrumb */}
@@ -99,16 +127,20 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <h1 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
                   {product.name}
                 </h1>
-                <div className="flex items-baseline space-x-4">
+                <div className="flex items-baseline flex-wrap gap-2">
                   <span className="text-4xl font-bold text-gradient">
-                    ₹{Number(product.price).toLocaleString('en-IN')}
+                    ₹{finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
-                  <span className="text-lg text-gray-500 line-through">
-                    ₹{(Number(product.price) * 1.3).toLocaleString('en-IN')}
-                  </span>
-                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    23% OFF
-                  </span>
+                  {hasDiscount && (
+                    <>
+                      <span className="text-lg text-gray-500 line-through">
+                        ₹{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                        {discountPercentage.toFixed(0)}% OFF
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 

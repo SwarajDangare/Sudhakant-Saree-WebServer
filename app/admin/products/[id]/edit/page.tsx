@@ -45,6 +45,8 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     name: product.name,
     description: product.description,
     price: String(product.price),
+    discountType: product.discountType as 'NONE' | 'PERCENTAGE' | 'FIXED',
+    discountValue: String(product.discountValue || 0),
     categoryId: product.categoryId,
     material: product.material || '',
     length: product.length || '',
