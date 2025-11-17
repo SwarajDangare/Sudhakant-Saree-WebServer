@@ -94,10 +94,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 </h1>
                 <div className="flex items-baseline space-x-4">
                   <span className="text-4xl font-bold text-gradient">
-                    ₹{product.price.toLocaleString('en-IN')}
+                    ₹{Number(product.price).toLocaleString('en-IN')}
                   </span>
                   <span className="text-lg text-gray-500 line-through">
-                    ₹{(product.price * 1.3).toLocaleString('en-IN')}
+                    ₹{(Number(product.price) * 1.3).toLocaleString('en-IN')}
                   </span>
                   <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
                     23% OFF

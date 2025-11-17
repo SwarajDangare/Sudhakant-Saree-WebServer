@@ -67,7 +67,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center justify-between mb-4">
           <div>
-            <span className="text-2xl font-bold text-maroon">₹{product.price.toLocaleString('en-IN')}</span>
+            <span className="text-2xl font-bold text-maroon">₹{Number(product.price).toLocaleString('en-IN')}</span>
           </div>
           <div className="text-sm text-gray-500">
             {product.material}
