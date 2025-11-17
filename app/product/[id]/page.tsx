@@ -9,13 +9,11 @@ interface ProductPageProps {
   };
 }
 
-// Generate static params for all products at build time
-export async function generateStaticParams() {
-  const allProducts = await db.select({ id: products.id }).from(products);
-  return allProducts.map((product) => ({
-    id: product.id,
-  }));
-}
+// Enable ISR - revalidate every 60 seconds
+export const revalidate = 60;
+
+// Make page dynamic - don't statically generate at build time
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const [product] = await db

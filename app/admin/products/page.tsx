@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { db, products, categories, productImages } from '@/db';
 import { eq, desc, like, or, and } from 'drizzle-orm';
 import Link from 'next/link';
+import DeleteProductButton from '@/components/admin/DeleteProductButton';
 
 interface SearchParams {
   search?: string;
@@ -269,9 +270,10 @@ export default async function ProductsPage({
                           View
                         </Link>
                         <span className="text-gray-300">|</span>
-                        <button className="text-red-600 hover:text-red-900">
-                          Delete
-                        </button>
+                        <DeleteProductButton
+                          productId={product.id}
+                          productName={product.name}
+                        />
                       </div>
                     </td>
                   </tr>
