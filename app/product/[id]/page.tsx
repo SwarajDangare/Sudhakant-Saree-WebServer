@@ -1,4 +1,4 @@
-import { db, products } from '@/db';
+import { db, products, categories, productColors } from '@/db';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import ProductDetailClient from '@/components/ProductDetailClient';
@@ -37,6 +37,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  // Fetch product
   const [product] = await db
     .select()
     .from(products)
@@ -47,5 +48,30 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  return <ProductDetailClient product={product} />;
+  // Fetch category
+  const [category] = await db
+    .select()
+    .from(categories)
+    .where(eq(categories.id, product.categoryId))
+    .limit(1);
+
+  // Fetch colors
+  const colors = await db
+    .select()
+    .from(productColors)
+    .where(eq(productColors.productId, product.id));
+
+  // Build product object with relations
+  const productWithRelations = {
+    ...product,
+    category: category?.name || 'Uncategorized',
+    colors: colors.map(color => ({
+      color: color.color,
+      colorCode: color.colorCode,
+      inStock: color.inStock,
+      images: [], // Empty array for now - will add image support later
+    })),
+  };
+
+  return <ProductDetailClient product={productWithRelations} />;
 }
