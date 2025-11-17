@@ -1,7 +1,8 @@
-import { mockProducts } from '@/data/mockProducts';
-import { categories } from '@/data/categories';
+import { db, categories as categoriesTable, products } from '@/db';
+import { eq, and } from 'drizzle-orm';
 import ProductCard from '@/components/ProductCard';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 
 interface ProductsPageProps {
   params: {
@@ -10,13 +11,18 @@ interface ProductsPageProps {
 }
 
 export async function generateStaticParams() {
-  return categories.map((category) => ({
+  const allCategories = await db.select().from(categoriesTable);
+  return allCategories.map((category) => ({
     category: category.slug,
   }));
 }
 
 export async function generateMetadata({ params }: ProductsPageProps) {
-  const category = categories.find(cat => cat.slug === params.category);
+  const [category] = await db
+    .select()
+    .from(categoriesTable)
+    .where(eq(categoriesTable.slug, params.category))
+    .limit(1);
 
   if (!category) {
     return {
@@ -30,22 +36,44 @@ export async function generateMetadata({ params }: ProductsPageProps) {
   };
 }
 
-export default function ProductsPage({ params }: ProductsPageProps) {
-  const category = categories.find(cat => cat.slug === params.category);
+export default async function ProductsPage({ params }: ProductsPageProps) {
+  // Fetch category
+  const [category] = await db
+    .select()
+    .from(categoriesTable)
+    .where(eq(categoriesTable.slug, params.category))
+    .limit(1);
 
   if (!category) {
     notFound();
   }
 
-  const categoryProducts = mockProducts.filter(
-    product => product.category === params.category
-  );
+  // Fetch products for this category
+  const categoryProducts = await db
+    .select()
+    .from(products)
+    .where(
+      and(
+        eq(products.categoryId, category.id),
+        eq(products.active, true)
+      )
+    );
 
   return (
     <div className="min-h-screen bg-silk-white">
       {/* Category Header */}
       <section className="bg-gradient-to-br from-maroon via-indian-red to-saffron text-white pattern-bg py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Back Button */}
+          <Link
+            href="/"
+            className="inline-flex items-center text-white/80 hover:text-white mb-6 transition"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Home
+          </Link>
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               {category.name}

@@ -1,4 +1,5 @@
-import { mockProducts } from '@/data/mockProducts';
+import { db, products } from '@/db';
+import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import ProductDetailClient from '@/components/ProductDetailClient';
 
@@ -9,14 +10,19 @@ interface ProductPageProps {
 }
 
 // Generate static params for all products at build time
-export function generateStaticParams() {
-  return mockProducts.map((product) => ({
+export async function generateStaticParams() {
+  const allProducts = await db.select({ id: products.id }).from(products);
+  return allProducts.map((product) => ({
     id: product.id,
   }));
 }
 
-export function generateMetadata({ params }: ProductPageProps) {
-  const product = mockProducts.find(p => p.id === params.id);
+export async function generateMetadata({ params }: ProductPageProps) {
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, params.id))
+    .limit(1);
 
   if (!product) {
     return {
@@ -30,8 +36,12 @@ export function generateMetadata({ params }: ProductPageProps) {
   };
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const product = mockProducts.find(p => p.id === params.id);
+export default async function ProductPage({ params }: ProductPageProps) {
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, params.id))
+    .limit(1);
 
   if (!product) {
     notFound();

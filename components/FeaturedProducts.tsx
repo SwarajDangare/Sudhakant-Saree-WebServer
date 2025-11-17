@@ -1,8 +1,19 @@
-import { mockProducts } from '@/data/mockProducts';
+import { db, products } from '@/db';
+import { eq } from 'drizzle-orm';
 import ProductCard from './ProductCard';
 
-export default function FeaturedProducts() {
-  const featuredProducts = mockProducts.filter(product => product.featured);
+export default async function FeaturedProducts() {
+  // Fetch featured products from database
+  const featuredProducts = await db
+    .select()
+    .from(products)
+    .where(eq(products.featured, true))
+    .where(eq(products.active, true))
+    .limit(6);
+
+  if (featuredProducts.length === 0) {
+    return null; // Don't show section if no featured products
+  }
 
   return (
     <section className="section-padding bg-white">
