@@ -5,6 +5,9 @@ import { db, products, categories, sections, users } from '@/db';
 import { eq, count } from 'drizzle-orm';
 import Link from 'next/link';
 
+// Make this page dynamic - don't pre-render at build time
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 

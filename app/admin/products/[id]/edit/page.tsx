@@ -6,6 +6,9 @@ import { eq } from 'drizzle-orm';
 import Link from 'next/link';
 import ProductForm from '@/components/admin/ProductForm';
 
+// Make this page dynamic - don't pre-render at build time
+export const dynamic = 'force-dynamic';
+
 interface EditProductPageProps {
   params: {
     id: string;

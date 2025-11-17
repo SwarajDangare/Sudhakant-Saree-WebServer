@@ -6,6 +6,9 @@ import { eq, desc, like, or, and } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteProductButton from '@/components/admin/DeleteProductButton';
 
+// Make this page dynamic - don't pre-render at build time
+export const dynamic = 'force-dynamic';
+
 interface SearchParams {
   search?: string;
   category?: string;
