@@ -9,7 +9,10 @@ interface ProductDetailClientProps {
 }
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
-  const [selectedColor, setSelectedColor] = useState<ColorVariant>(product.colors[0]);
+  // Default color if no colors available
+  const defaultColor: ColorVariant = { color: 'Default', colorCode: '#800000', inStock: true, images: [] };
+  const [selectedColor, setSelectedColor] = useState<ColorVariant>(product.colors[0] || defaultColor);
+  const hasColors = product.colors && product.colors.length > 0;
 
   return (
     <div className="min-h-screen bg-silk-white">
@@ -39,20 +42,22 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <div className="absolute inset-0 pattern-bg opacity-20"></div>
                 <div
                   className="absolute inset-0 flex items-center justify-center transition-colors duration-500"
-                  style={{ backgroundColor: selectedColor.colorCode + '30' }}
+                  style={{ backgroundColor: (selectedColor?.colorCode || '#800000') + '30' }}
                 >
                   <div className="text-center text-white">
                     <svg className="w-32 h-32 mx-auto mb-6 drop-shadow-2xl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                     </svg>
-                    <div className="text-2xl font-bold bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full inline-block">
-                      {selectedColor.color}
-                    </div>
+                    {hasColors && (
+                      <div className="text-2xl font-bold bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full inline-block">
+                        {selectedColor?.color}
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Stock Badge */}
-                {!selectedColor.inStock && (
+                {hasColors && selectedColor && !selectedColor.inStock && (
                   <div className="absolute top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
                     Out of Stock
                   </div>
@@ -60,26 +65,28 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
 
               {/* Color Thumbnails */}
-              <div className="grid grid-cols-4 gap-4">
-                {product.colors.map((color) => (
-                  <button
-                    key={color.color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`aspect-square rounded-xl transition-all ${
-                      selectedColor.color === color.color
-                        ? 'ring-4 ring-maroon scale-105 shadow-xl'
-                        : 'ring-2 ring-gray-300 hover:ring-saffron hover:scale-105'
-                    }`}
-                  >
-                    <div
-                      className="w-full h-full rounded-xl flex items-center justify-center text-white font-semibold text-sm"
-                      style={{ backgroundColor: color.colorCode }}
+              {hasColors && (
+                <div className="grid grid-cols-4 gap-4">
+                  {product.colors.map((color) => (
+                    <button
+                      key={color.color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`aspect-square rounded-xl transition-all ${
+                        selectedColor?.color === color.color
+                          ? 'ring-4 ring-maroon scale-105 shadow-xl'
+                          : 'ring-2 ring-gray-300 hover:ring-saffron hover:scale-105'
+                      }`}
                     >
-                      {color.color.split(' ')[0]}
-                    </div>
-                  </button>
-                ))}
-              </div>
+                      <div
+                        className="w-full h-full rounded-xl flex items-center justify-center text-white font-semibold text-sm"
+                        style={{ backgroundColor: color.colorCode }}
+                      >
+                        {color.color.split(' ')[0]}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Product Info */}
@@ -114,47 +121,49 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
 
               {/* Color Selection */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-maroon mb-4">
-                  Select Color ({product.colors.length} options available)
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color.color}
-                      onClick={() => setSelectedColor(color)}
-                      disabled={!color.inStock}
-                      className={`group flex items-center space-x-3 p-3 rounded-lg border-2 transition-all ${
-                        selectedColor.color === color.color
-                          ? 'border-maroon bg-maroon/5'
-                          : 'border-gray-300 hover:border-saffron'
-                      } ${!color.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <div
-                        className="w-12 h-12 rounded-full flex-shrink-0 shadow-md relative"
-                        style={{ backgroundColor: color.colorCode }}
+              {hasColors && (
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold text-maroon mb-4">
+                    Select Color ({product.colors.length} options available)
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {product.colors.map((color) => (
+                      <button
+                        key={color.color}
+                        onClick={() => setSelectedColor(color)}
+                        disabled={!color.inStock}
+                        className={`group flex items-center space-x-3 p-3 rounded-lg border-2 transition-all ${
+                          selectedColor?.color === color.color
+                            ? 'border-maroon bg-maroon/5'
+                            : 'border-gray-300 hover:border-saffron'
+                        } ${!color.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        {!color.inStock && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-full h-0.5 bg-gray-800 rotate-45"></div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="font-semibold text-gray-900">{color.color}</div>
-                        <div className="text-xs text-gray-500">
-                          {color.inStock ? 'In Stock' : 'Out of Stock'}
+                        <div
+                          className="w-12 h-12 rounded-full flex-shrink-0 shadow-md relative"
+                          style={{ backgroundColor: color.colorCode }}
+                        >
+                          {!color.inStock && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-full h-0.5 bg-gray-800 rotate-45"></div>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                      {selectedColor.color === color.color && (
-                        <svg className="w-5 h-5 text-maroon" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
+                        <div className="flex-1 text-left">
+                          <div className="font-semibold text-gray-900">{color.color}</div>
+                          <div className="text-xs text-gray-500">
+                            {color.inStock ? 'In Stock' : 'Out of Stock'}
+                          </div>
+                        </div>
+                        {selectedColor?.color === color.color && (
+                          <svg className="w-5 h-5 text-maroon" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Product Details */}
               <div className="border-t pt-6 space-y-3">
@@ -193,14 +202,14 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               {/* Action Buttons */}
               <div className="border-t pt-6 space-y-3">
                 <button
-                  disabled={!selectedColor.inStock}
+                  disabled={!selectedColor?.inStock}
                   className={`w-full py-4 rounded-lg font-bold text-lg transition-all ${
-                    selectedColor.inStock
+                    selectedColor?.inStock
                       ? 'bg-maroon text-white hover:bg-saffron shadow-lg hover:shadow-xl transform hover:-translate-y-1'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {selectedColor.inStock ? 'Add to Cart (Coming Soon)' : 'Out of Stock'}
+                  {selectedColor?.inStock ? 'Add to Cart (Coming Soon)' : 'Out of Stock'}
                 </button>
                 <Link
                   href={`/products/${product.category}`}
