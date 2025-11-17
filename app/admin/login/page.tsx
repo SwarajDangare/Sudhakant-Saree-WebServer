@@ -17,19 +17,30 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
+      console.log('Attempting sign in...');
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
       });
 
+      console.log('SignIn result:', result);
+
       if (result?.error) {
+        console.error('SignIn error:', result.error);
         setError(result.error);
-      } else {
+      } else if (result?.ok) {
+        console.log('SignIn successful, redirecting...');
+        // Small delay to ensure session is set
+        await new Promise(resolve => setTimeout(resolve, 500));
         router.push('/admin/dashboard');
         router.refresh();
+      } else {
+        console.error('Unknown signIn state:', result);
+        setError('Authentication failed. Please try again.');
       }
     } catch (err) {
+      console.error('Exception during sign in:', err);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
