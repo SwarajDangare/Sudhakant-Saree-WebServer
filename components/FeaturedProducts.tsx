@@ -1,5 +1,5 @@
 import { db, products, categories } from '@/db';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import ProductCard from './ProductCard';
 
 export default async function FeaturedProducts() {
@@ -11,8 +11,12 @@ export default async function FeaturedProducts() {
     })
     .from(products)
     .leftJoin(categories, eq(products.categoryId, categories.id))
-    .where(eq(products.featured, true))
-    .where(eq(products.active, true))
+    .where(
+      and(
+        eq(products.featured, true),
+        eq(products.active, true)
+      )
+    )
     .limit(6);
 
   if (featuredProductsData.length === 0) {
