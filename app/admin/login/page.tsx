@@ -31,10 +31,8 @@ export default function AdminLoginPage() {
         setError(result.error);
       } else if (result?.ok) {
         console.log('SignIn successful, redirecting...');
-        // Small delay to ensure session is set
-        await new Promise(resolve => setTimeout(resolve, 500));
-        router.push('/admin/dashboard');
-        router.refresh();
+        // Use full page redirect to ensure session cookies are sent
+        window.location.href = '/admin/dashboard';
       } else {
         console.error('Unknown signIn state:', result);
         setError('Authentication failed. Please try again.');
