@@ -10,12 +10,11 @@ interface ProductsPageProps {
   };
 }
 
-export async function generateStaticParams() {
-  const allCategories = await db.select().from(categoriesTable);
-  return allCategories.map((category) => ({
-    category: category.slug,
-  }));
-}
+// Enable ISR - revalidate every 60 seconds
+export const revalidate = 60;
+
+// Make page dynamic - don't statically generate at build time
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: ProductsPageProps) {
   const [category] = await db

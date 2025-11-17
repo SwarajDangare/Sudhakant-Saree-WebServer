@@ -3,6 +3,7 @@ import { relations } from 'drizzle-orm';
 
 // Enums
 export const roleEnum = pgEnum('Role', ['SUPER_ADMIN', 'PRODUCT_MANAGER']);
+export const discountTypeEnum = pgEnum('DiscountType', ['NONE', 'PERCENTAGE', 'FIXED']);
 
 // User Management
 export const users = pgTable('users', {
@@ -47,6 +48,8 @@ export const products = pgTable('products', {
   name: text('name').notNull(),
   description: text('description').notNull(),
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
+  discountType: discountTypeEnum('discountType').default('NONE').notNull(),
+  discountValue: decimal('discountValue', { precision: 10, scale: 2 }).default('0').notNull(),
   material: text('material').notNull(),
   length: text('length').notNull(),
   occasion: text('occasion').notNull(),

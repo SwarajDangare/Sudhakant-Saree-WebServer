@@ -10,6 +10,8 @@ export interface Product {
   name: string;
   category: string;
   price: number | string;
+  discountType?: 'NONE' | 'PERCENTAGE' | 'FIXED';
+  discountValue?: number | string;
   description: string;
   material: string | null;
   length: string | null;

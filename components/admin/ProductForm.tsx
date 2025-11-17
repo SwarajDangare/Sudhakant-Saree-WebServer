@@ -13,6 +13,10 @@ const productSchema = z.object({
   price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
     message: 'Price must be a positive number',
   }),
+  discountType: z.enum(['NONE', 'PERCENTAGE', 'FIXED']),
+  discountValue: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
+    message: 'Discount must be a non-negative number',
+  }),
   categoryId: z.string().min(1, 'Please select a category'),
   material: z.string().optional(),
   length: z.string().optional(),
@@ -37,14 +41,52 @@ export default function ProductForm({ categories, initialData }: ProductFormProp
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: initialData || {
       active: true,
       featured: false,
+      discountType: 'NONE',
+      discountValue: '0',
     },
   });
+
+  // Watch price and discount fields for live calculation
+  const price = watch('price');
+  const discountType = watch('discountType');
+  const discountValue = watch('discountValue');
+
+  // Calculate final price
+  const calculateFinalPrice = () => {
+    const priceNum = Number(price) || 0;
+    const discountNum = Number(discountValue) || 0;
+
+    if (discountType === 'PERCENTAGE') {
+      return priceNum - (priceNum * discountNum / 100);
+    } else if (discountType === 'FIXED') {
+      return Math.max(0, priceNum - discountNum);
+    }
+    return priceNum;
+  };
+
+  const calculateDiscountPercentage = () => {
+    const priceNum = Number(price) || 0;
+    const discountNum = Number(discountValue) || 0;
+
+    if (priceNum === 0) return 0;
+
+    if (discountType === 'PERCENTAGE') {
+      return discountNum;
+    } else if (discountType === 'FIXED') {
+      return (discountNum / priceNum) * 100;
+    }
+    return 0;
+  };
+
+  const finalPrice = calculateFinalPrice();
+  const discountPercentage = calculateDiscountPercentage();
 
   const onSubmit = async (data: ProductFormData) => {
     setError('');
@@ -173,6 +215,78 @@ export default function ProductForm({ categories, initialData }: ProductFormProp
                   <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>
                 )}
               </div>
+            </div>
+
+            {/* Discount Section */}
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Discount</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Discount Type */}
+                <div>
+                  <label htmlFor="discountType" className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount Type
+                  </label>
+                  <select
+                    id="discountType"
+                    {...register('discountType')}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
+                    disabled={loading}
+                  >
+                    <option value="NONE">No Discount</option>
+                    <option value="PERCENTAGE">Percentage (%)</option>
+                    <option value="FIXED">Fixed Amount (₹)</option>
+                  </select>
+                </div>
+
+                {/* Discount Value */}
+                {discountType !== 'NONE' && (
+                  <div>
+                    <label htmlFor="discountValue" className="block text-sm font-medium text-gray-700 mb-2">
+                      Discount Value {discountType === 'PERCENTAGE' ? '(%)' : '(₹)'}
+                    </label>
+                    <input
+                      type="number"
+                      id="discountValue"
+                      {...register('discountValue')}
+                      step="0.01"
+                      min="0"
+                      max={discountType === 'PERCENTAGE' ? '100' : undefined}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
+                      placeholder={discountType === 'PERCENTAGE' ? '0' : '0.00'}
+                      disabled={loading}
+                    />
+                    {errors.discountValue && (
+                      <p className="mt-1 text-sm text-red-600">{errors.discountValue.message}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Price Calculation Summary */}
+              {discountType !== 'NONE' && Number(discountValue) > 0 && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                  <h4 className="text-sm font-semibold text-green-900 mb-2">Price Summary</h4>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Original Price:</span>
+                      <span className="font-medium">₹{Number(price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Discount:</span>
+                      <span className="font-medium text-red-600">
+                        {discountType === 'PERCENTAGE' && `${discountValue}%`}
+                        {discountType === 'FIXED' && `₹${Number(discountValue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        {discountPercentage > 0 && ` (${discountPercentage.toFixed(1)}% off)`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t border-green-300">
+                      <span className="font-semibold text-green-900">Final Price:</span>
+                      <span className="font-bold text-green-900 text-lg">₹{finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

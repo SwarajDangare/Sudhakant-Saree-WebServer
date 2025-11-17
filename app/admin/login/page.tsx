@@ -1,15 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function AdminLoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const callbackUrl = searchParams.get('callbackUrl') || '/admin/dashboard';
+
+  // If user is already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      console.log('User already authenticated, redirecting...');
+      window.location.href = callbackUrl;
+    }
+  }, [status, session, callbackUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +35,7 @@ export default function AdminLoginPage() {
         email,
         password,
         redirect: false,
+        callbackUrl,
       });
 
       console.log('SignIn result:', result);
@@ -30,9 +44,9 @@ export default function AdminLoginPage() {
         console.error('SignIn error:', result.error);
         setError(result.error);
       } else if (result?.ok) {
-        console.log('SignIn successful, redirecting...');
-        // Use full page redirect to ensure session cookies are sent
-        window.location.href = '/admin/dashboard';
+        console.log('SignIn successful, redirecting to:', callbackUrl);
+        // Use window.location.href for full page reload to ensure session cookies are properly set
+        window.location.href = callbackUrl;
       } else {
         console.error('Unknown signIn state:', result);
         setError('Authentication failed. Please try again.');
@@ -130,5 +144,13 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
