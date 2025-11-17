@@ -4,6 +4,10 @@ import bcrypt from 'bcryptjs';
 import { db, users } from '@/db';
 import { eq } from 'drizzle-orm';
 
+// NextAuth configuration
+// Required environment variables:
+// - NEXTAUTH_SECRET: Random string for signing tokens
+// - NEXTAUTH_URL: Your site URL (auto-detected if not set, but recommended for production)
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
