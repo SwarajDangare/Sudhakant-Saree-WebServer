@@ -35,9 +35,11 @@ npm start
 
 ## Deployment
 
-This project is configured for deployment on Cloudflare Pages.
+This project is deployed on Vercel with a two-branch workflow:
+- **`main` branch** - Production deployment (LIVE website)
+- **`dev` branch** - Preview deployment (Testing/Development)
 
-### Build Settings for Cloudflare Pages:
+### Build Settings:
 - **Build command:** `npm run build`
 - **Build output directory:** `.next`
 - **Node version:** 18
