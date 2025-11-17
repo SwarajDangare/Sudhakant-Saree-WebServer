@@ -59,6 +59,12 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
       )
     );
 
+  // Fetch all active categories for "Browse Other Categories" section
+  const allCategories = await db
+    .select()
+    .from(categoriesTable)
+    .where(eq(categoriesTable.active, true));
+
   // Map products to include category name and colors array
   const productsWithCategory = categoryProducts.map(product => ({
     ...product,
@@ -126,7 +132,7 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
             Browse Other Categories
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {categories
+            {allCategories
               .filter(cat => cat.slug !== params.category)
               .map((cat) => (
                 <a
