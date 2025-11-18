@@ -62,6 +62,11 @@ export default function ProfilePage() {
 
       setSuccess('Profile updated successfully!');
       setIsEditing(false);
+
+      // Auto-dismiss success message after 3 seconds
+      setTimeout(() => {
+        setSuccess('');
+      }, 3000);
     } catch (err) {
       console.error('Error updating profile:', err);
       setError(err instanceof Error ? err.message : 'Failed to update profile');
@@ -97,8 +102,22 @@ export default function ProfilePage() {
             </div>
           )}
           {success && (
-            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
-              {success}
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md flex items-center justify-between animate-fade-in">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>{success}</span>
+              </div>
+              <button
+                onClick={() => setSuccess('')}
+                className="text-green-700 hover:text-green-900 transition"
+                title="Dismiss"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
           )}
 
