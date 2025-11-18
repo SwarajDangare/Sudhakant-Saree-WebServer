@@ -8,7 +8,8 @@ export interface ColorVariant {
 export interface Product {
   id: string;
   name: string;
-  category: string;
+  category: string; // Category slug for routing
+  categoryName?: string; // Category name for display
   price: number | string;
   discountType?: 'NONE' | 'PERCENTAGE' | 'FIXED';
   discountValue?: number | string;
