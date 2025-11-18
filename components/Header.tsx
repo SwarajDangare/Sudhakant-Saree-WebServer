@@ -3,6 +3,7 @@ import { db, sections, categories } from '@/db';
 import { eq, and } from 'drizzle-orm';
 import MobileMenu from './MobileMenu';
 import CartIcon from './CartIcon';
+import UserMenu from './UserMenu';
 
 export default async function Header() {
   // Fetch sections and their categories from database
@@ -42,7 +43,7 @@ export default async function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6">
             <Link href="/" className="text-gray-700 hover:text-maroon transition-colors font-medium">
               Home
             </Link>
@@ -93,6 +94,9 @@ export default async function Header() {
 
             {/* Cart Icon - Client Component */}
             <CartIcon />
+
+            {/* User Menu - Client Component */}
+            <UserMenu />
           </nav>
 
           {/* Mobile menu - client component */}
