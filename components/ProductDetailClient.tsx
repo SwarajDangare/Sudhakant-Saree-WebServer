@@ -28,8 +28,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const itemInCart = isInCart(product.id, selectedColor?.colorCode || '');
   const cartQuantity = getCartItemQuantity(product.id, selectedColor?.colorCode || '');
 
-  // Show "Visit Basket" only if item is in cart AND quantity matches
-  const showVisitBasket = itemInCart && cartQuantity === quantity;
+  // Show "Visit Cart" only if item is in cart AND quantity matches
+  const showVisitCart = itemInCart && cartQuantity === quantity;
 
   // Sync quantity with cart when product/color changes or cart updates
   useEffect(() => {
@@ -88,8 +88,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     }
   };
 
-  // Add to basket handler
-  const handleAddToBasket = () => {
+  // Add to cart handler
+  const handleAddToCart = () => {
     if (!selectedColor?.inStock) return;
 
     addToCart(
@@ -337,10 +337,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   </div>
                 </div>
 
-                {/* Add to Basket / Visit Basket Button */}
-                {!showVisitBasket ? (
+                {/* Add to Cart / Visit Cart Button */}
+                {!showVisitCart ? (
                   <button
-                    onClick={handleAddToBasket}
+                    onClick={handleAddToCart}
                     disabled={!selectedColor?.inStock}
                     className={`w-full py-4 rounded-lg font-bold text-lg transition-all flex items-center justify-center space-x-2 ${
                       selectedColor?.inStock
@@ -351,17 +351,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
-                    <span>{selectedColor?.inStock ? (itemInCart ? 'Update Basket' : 'Add to Basket') : 'Out of Stock'}</span>
+                    <span>{selectedColor?.inStock ? (itemInCart ? 'Update Cart' : 'Add to Cart') : 'Out of Stock'}</span>
                   </button>
                 ) : (
                   <Link
-                    href="/basket"
+                    href="/cart"
                     className="w-full py-4 rounded-lg font-bold text-lg bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all flex items-center justify-center space-x-2"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Visit Basket / Checkout</span>
+                    <span>Visit Cart / Checkout</span>
                   </Link>
                 )}
 
