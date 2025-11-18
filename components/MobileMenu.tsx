@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useCart } from '@/contexts/CartContext';
 
 interface Category {
@@ -29,7 +30,8 @@ interface MobileMenuProps {
 
 export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { cart } = useCart();
+  const { data: session } = useSession();
+  const { itemCount } = useCart();
 
   return (
     <>
@@ -114,9 +116,9 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
               Contact
             </Link>
 
-            {/* Basket Link for Mobile */}
+            {/* Cart Link for Mobile */}
             <Link
-              href="/basket"
+              href="/cart"
               className="block py-2 text-gray-700 hover:text-maroon transition-colors font-semibold flex items-center justify-between border-t mt-2 pt-2"
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -124,14 +126,63 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
-                My Basket
+                Cart
               </span>
-              {cart.totalItems > 0 && (
+              {itemCount > 0 && (
                 <span className="bg-saffron text-white text-xs font-bold rounded-full px-2 py-1">
-                  {cart.totalItems}
+                  {itemCount}
                 </span>
               )}
             </Link>
+
+            {/* User Menu for Mobile */}
+            <div className="border-t border-gray-200 pt-2 mt-2">
+              {session ? (
+                <>
+                  <div className="text-sm font-semibold text-gray-500 px-2 mt-2">
+                    {session.user.name || session.user.phoneNumber}
+                  </div>
+                  <Link
+                    href="/orders"
+                    className="block py-2 pl-4 text-gray-700 hover:text-maroon transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Orders
+                  </Link>
+                  <Link
+                    href="/addresses"
+                    className="block py-2 pl-4 text-gray-700 hover:text-maroon transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Addresses
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="block py-2 pl-4 text-gray-700 hover:text-maroon transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      signOut({ callbackUrl: '/' });
+                    }}
+                    className="w-full text-left py-2 pl-4 text-gray-700 hover:text-maroon transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="block py-2 text-center bg-maroon text-white rounded-md hover:bg-deep-maroon transition-colors font-medium mt-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login / Create Account
+                </Link>
+              )}
+            </div>
           </div>
         </nav>
       )}
