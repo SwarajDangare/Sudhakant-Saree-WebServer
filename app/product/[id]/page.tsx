@@ -62,7 +62,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // Build product object with relations
   const productWithRelations = {
     ...product,
-    category: category?.name || 'Uncategorized',
+    category: category?.slug || 'uncategorized',
+    categoryName: category?.name || 'Uncategorized',
     colors: colors.map(color => ({
       color: color.color,
       colorCode: color.colorCode,
