@@ -89,23 +89,19 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   };
 
   // Add to cart handler
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!selectedColor?.inStock) return;
 
-    addToCart(
-      {
+    try {
+      await addToCart({
         productId: product.id,
-        productName: product.name,
-        category: product.category,
-        price: finalPrice,
-        selectedColor: {
-          color: selectedColor.color,
-          colorCode: selectedColor.colorCode,
-        },
-        image: selectedColor.images[0] || '/placeholder-saree.jpg', // Use first image of selected color
-      },
-      quantity
-    );
+        productColorId: selectedColor?.id,
+        quantity: quantity,
+      });
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      // Could add error toast notification here
+    }
   };
 
   return (
