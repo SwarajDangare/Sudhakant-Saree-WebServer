@@ -1,18 +1,31 @@
-'use client';
-
 import Link from 'next/link';
-import { useState } from 'react';
+import { db, sections, categories } from '@/db';
+import { eq } from 'drizzle-orm';
+import MobileMenu from './MobileMenu';
 
-export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export default async function Header() {
+  // Fetch sections and their categories from database
+  const allSections = await db
+    .select()
+    .from(sections)
+    .where(eq(sections.active, true))
+    .orderBy(sections.order, sections.name);
 
-  const categories = [
-    { name: 'Silk', href: '/products/silk' },
-    { name: 'Cotton', href: '/products/cotton' },
-    { name: 'Banarasi', href: '/products/banarasi' },
-    { name: 'Kanjivaram', href: '/products/kanjivaram' },
-    { name: 'Patola', href: '/products/patola' },
-  ];
+  const sectionsWithCategories = await Promise.all(
+    allSections.map(async (section) => {
+      const sectionCategories = await db
+        .select()
+        .from(categories)
+        .where(eq(categories.sectionId, section.id))
+        .where(eq(categories.active, true))
+        .orderBy(categories.order, categories.name);
+
+      return {
+        ...section,
+        categories: sectionCategories,
+      };
+    })
+  );
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -30,27 +43,44 @@ export default function Header() {
             <Link href="/" className="text-gray-700 hover:text-maroon transition-colors font-medium">
               Home
             </Link>
+
+            {/* Categories Dropdown */}
             <div className="relative group">
-              <button className="text-gray-700 hover:text-maroon transition-colors font-medium flex items-center">
+              <Link href="/categories" className="text-gray-700 hover:text-maroon transition-colors font-medium flex items-center">
                 Categories
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </button>
+              </Link>
 
-              {/* Dropdown */}
-              <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                {categories.map((category) => (
-                  <Link
-                    key={category.name}
-                    href={category.href}
-                    className="block px-4 py-2 text-gray-700 hover:bg-saffron hover:text-white transition-colors first:rounded-t-lg last:rounded-b-lg"
-                  >
-                    {category.name} Sarees
-                  </Link>
+              {/* Mega Dropdown */}
+              <div className="absolute left-0 mt-2 w-96 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 max-h-96 overflow-y-auto">
+                {sectionsWithCategories.map((section) => (
+                  <div key={section.id} className="border-b border-gray-100 last:border-0">
+                    <Link
+                      href={`/categories/${section.slug}`}
+                      className="block px-4 py-3 font-semibold text-maroon hover:bg-saffron/10 transition-colors"
+                    >
+                      {section.name}
+                    </Link>
+                    {section.categories.length > 0 && (
+                      <div className="pb-2">
+                        {section.categories.map((category) => (
+                          <Link
+                            key={category.id}
+                            href={`/products/${category.slug}`}
+                            className="block px-8 py-2 text-sm text-gray-700 hover:bg-saffron hover:text-white transition-colors"
+                          >
+                            {category.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
+
             <Link href="/about" className="text-gray-700 hover:text-maroon transition-colors font-medium">
               About Us
             </Link>
@@ -59,60 +89,9 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden text-gray-700 hover:text-maroon"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+          {/* Mobile menu - client component */}
+          <MobileMenu sectionsWithCategories={sectionsWithCategories} />
         </div>
-
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <nav className="md:hidden pb-4 space-y-2">
-            <Link
-              href="/"
-              className="block py-2 text-gray-700 hover:text-maroon transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <div className="space-y-1">
-              <div className="text-sm font-semibold text-gray-500 px-2">Categories</div>
-              {categories.map((category) => (
-                <Link
-                  key={category.name}
-                  href={category.href}
-                  className="block py-2 pl-4 text-gray-700 hover:text-maroon transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {category.name} Sarees
-                </Link>
-              ))}
-            </div>
-            <Link
-              href="/about"
-              className="block py-2 text-gray-700 hover:text-maroon transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              About Us
-            </Link>
-            <Link
-              href="/contact"
-              className="block py-2 text-gray-700 hover:text-maroon transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Contact
-            </Link>
-          </nav>
-        )}
       </div>
     </header>
   );

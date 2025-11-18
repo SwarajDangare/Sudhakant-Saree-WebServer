@@ -28,8 +28,8 @@ export default function Hero() {
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <Link href="/products/banarasi" className="btn-primary bg-golden text-maroon hover:bg-silk-white">
-                Explore Collection
+              <Link href="/categories" className="btn-primary bg-golden text-maroon hover:bg-silk-white">
+                Explore Categories
               </Link>
               <Link href="/about" className="btn-secondary border-white text-white hover:bg-white hover:text-maroon">
                 Our Story
