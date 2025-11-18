@@ -1,10 +1,12 @@
-// Force all admin pages to be dynamic - don't pre-render at build time
-export const dynamic = 'force-dynamic';
+'use client';
 
+import { SessionProvider } from 'next-auth/react';
+
+// Admin layout that wraps all admin routes with SessionProvider
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <SessionProvider>{children}</SessionProvider>;
 }
