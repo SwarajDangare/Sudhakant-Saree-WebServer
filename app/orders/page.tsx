@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Order } from '@/types/customer';
 
-export const dynamic = 'force-dynamic';
-
 export default function OrdersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();

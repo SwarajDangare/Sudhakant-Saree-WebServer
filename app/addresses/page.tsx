@@ -5,8 +5,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Address } from '@/types/customer';
 
-export const dynamic = 'force-dynamic';
-
 export default function AddressesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
