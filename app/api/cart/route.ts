@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { customerAuthOptions } from '@/lib/customer-auth';
 import { db, carts, cartItems, products, productImages, productColors } from '@/db';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 
 // GET - Fetch cart
 export async function GET(request: NextRequest) {
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
           eq(cartItems.productId, productId),
           productColorId
             ? eq(cartItems.productColorId, productColorId)
-            : eq(cartItems.productColorId, null)
+            : isNull(cartItems.productColorId)
         )
       )
       .limit(1);
