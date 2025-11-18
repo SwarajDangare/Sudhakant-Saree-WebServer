@@ -14,6 +14,8 @@ interface CartContextType {
   removeFromCart: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
+  isInCart: (productId: string, colorCode: string) => boolean;
+  getCartItemQuantity: (productId: string, colorCode: string) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -153,6 +155,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return sum + (price * item.quantity);
   }, 0);
 
+  // Helper: Check if product with specific color is in cart
+  const isInCart = useCallback((productId: string, colorCode: string): boolean => {
+    return items.some(
+      (item) =>
+        item.productId === productId &&
+        (item.productColor?.colorCode === colorCode || (!item.productColor && !colorCode))
+    );
+  }, [items]);
+
+  // Helper: Get quantity of specific product+color in cart
+  const getCartItemQuantity = useCallback((productId: string, colorCode: string): number => {
+    const item = items.find(
+      (item) =>
+        item.productId === productId &&
+        (item.productColor?.colorCode === colorCode || (!item.productColor && !colorCode))
+    );
+    return item?.quantity || 0;
+  }, [items]);
+
   return (
     <CartContext.Provider
       value={{
@@ -165,6 +186,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         removeFromCart,
         clearCart,
         refreshCart,
+        isInCart,
+        getCartItemQuantity,
       }}
     >
       {children}
