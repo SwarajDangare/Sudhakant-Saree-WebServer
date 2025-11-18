@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { db, products, categories, sections, users } from '@/db';
+import { db, products, categories, sections, users, customers, orders } from '@/db';
 import { eq, count } from 'drizzle-orm';
 import Link from 'next/link';
 
@@ -20,6 +20,8 @@ export default async function DashboardPage() {
   const [categoriesCount] = await db.select({ count: count() }).from(categories);
   const [sectionsCount] = await db.select({ count: count() }).from(sections);
   const [usersCount] = await db.select({ count: count() }).from(users);
+  const [customersCount] = await db.select({ count: count() }).from(customers);
+  const [ordersCount] = await db.select({ count: count() }).from(orders);
 
   const [activeProducts] = await db
     .select({ count: count() })
@@ -33,9 +35,9 @@ export default async function DashboardPage() {
 
   const stats = [
     { label: 'Total Products', value: productsCount.count, icon: '🛍️', color: 'bg-blue-500' },
-    { label: 'Active Products', value: activeProducts.count, icon: '✅', color: 'bg-green-500' },
-    { label: 'Categories', value: categoriesCount.count, icon: '📁', color: 'bg-purple-500' },
-    { label: 'Featured Products', value: featuredProducts.count, icon: '⭐', color: 'bg-yellow-500' },
+    { label: 'Total Customers', value: customersCount.count, icon: '👥', color: 'bg-green-500' },
+    { label: 'Total Orders', value: ordersCount.count, icon: '📦', color: 'bg-purple-500' },
+    { label: 'Categories', value: categoriesCount.count, icon: '📁', color: 'bg-yellow-500' },
   ];
 
   const isSuperAdmin = session.user.role === 'SUPER_ADMIN';
@@ -94,6 +96,15 @@ export default async function DashboardPage() {
             <p className="text-gray-600 text-sm mt-1">View and edit existing products</p>
           </Link>
 
+          <Link
+            href="/admin/customers"
+            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-maroon"
+          >
+            <div className="text-4xl mb-3">👥</div>
+            <h3 className="font-semibold text-gray-900 text-lg">View Customers</h3>
+            <p className="text-gray-600 text-sm mt-1">See customer details and order history</p>
+          </Link>
+
           {isSuperAdmin && (
             <Link
               href="/admin/categories"
@@ -110,8 +121,8 @@ export default async function DashboardPage() {
               href="/admin/users"
               className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-maroon"
             >
-              <div className="text-4xl mb-3">👥</div>
-              <h3 className="font-semibold text-gray-900 text-lg">Manage Users</h3>
+              <div className="text-4xl mb-3">🔐</div>
+              <h3 className="font-semibold text-gray-900 text-lg">Manage Admin Users</h3>
               <p className="text-gray-600 text-sm mt-1">Add or remove admin users</p>
             </Link>
           )}
