@@ -73,9 +73,22 @@ export default function CheckoutPage() {
 
   const handleAddressFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+
+    let processedValue = value;
+
+    // Phone number: only digits, max 10
+    if (name === 'phoneNumber') {
+      processedValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+
+    // Pincode: only digits, max 6
+    if (name === 'pincode') {
+      processedValue = value.replace(/\D/g, '').slice(0, 6);
+    }
+
     setAddressForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : processedValue,
     }));
   };
 
@@ -210,6 +223,8 @@ export default function CheckoutPage() {
                       onChange={handleAddressFormChange}
                       placeholder="Phone Number *"
                       required
+                      maxLength={10}
+                      pattern="[0-9]{10}"
                       className="border border-gray-300 rounded-md px-3 py-2"
                     />
                   </div>
@@ -256,6 +271,8 @@ export default function CheckoutPage() {
                       onChange={handleAddressFormChange}
                       placeholder="Pincode *"
                       required
+                      maxLength={6}
+                      pattern="[0-9]{6}"
                       className="border border-gray-300 rounded-md px-3 py-2"
                     />
                   </div>
