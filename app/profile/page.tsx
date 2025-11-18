@@ -11,6 +11,8 @@ export default function ProfilePage() {
   const [email, setEmail] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -28,22 +30,41 @@ export default function ProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+    setError('');
+    setSuccess('');
 
     try {
-      // Here you would call an API to update the customer profile
-      // For now, we'll just update the session
+      // Call API to update customer profile
+      const response = await fetch('/api/customers/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update profile');
+      }
+
+      const updatedCustomer = await response.json();
+
+      // Update session with new data
       await update({
         ...session,
         user: {
           ...session?.user,
-          name,
-          email,
+          name: updatedCustomer.name,
+          email: updatedCustomer.email,
         },
       });
 
+      setSuccess('Profile updated successfully!');
       setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -70,6 +91,17 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-bold text-maroon mb-8">My Profile</h1>
 
         <div className="bg-white rounded-lg shadow-md p-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-md">
+              {success}
+            </div>
+          )}
+
           <form onSubmit={handleSave} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -88,13 +120,14 @@ export default function ProfilePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name
+                Name *
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 disabled={!isEditing}
+                required
                 className={`w-full border border-gray-300 rounded-md px-3 py-2 ${
                   !isEditing ? 'bg-gray-50' : ''
                 }`}
@@ -125,8 +158,8 @@ export default function ProfilePage() {
                 <>
                   <button
                     type="submit"
-                    disabled={isSaving}
-                    className="btn-primary px-6 py-2 rounded-md disabled:opacity-50"
+                    disabled={isSaving || !name.trim()}
+                    className="btn-primary px-6 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSaving ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -136,8 +169,11 @@ export default function ProfilePage() {
                       setIsEditing(false);
                       setName(session.user.name || '');
                       setEmail(session.user.email || '');
+                      setError('');
+                      setSuccess('');
                     }}
-                    className="border-2 border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-50"
+                    disabled={isSaving}
+                    className="border-2 border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-50 disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -145,7 +181,11 @@ export default function ProfilePage() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    setIsEditing(true);
+                    setError('');
+                    setSuccess('');
+                  }}
                   className="btn-primary px-6 py-2 rounded-md"
                 >
                   Edit Profile
@@ -161,7 +201,7 @@ export default function ProfilePage() {
             <div className="flex justify-between">
               <span className="text-gray-600">Member Since</span>
               <span className="font-medium">
-                {new Date(session.user.id).toLocaleDateString('en-IN', {
+                {new Date(session.user.createdAt || session.user.id).toLocaleDateString('en-IN', {
                   year: 'numeric',
                   month: 'long',
                 })}

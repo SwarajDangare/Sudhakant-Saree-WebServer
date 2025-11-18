@@ -64,8 +64,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user has any existing addresses
+    const existingAddresses = await db
+      .select()
+      .from(addresses)
+      .where(eq(addresses.customerId, session.user.id));
+
+    // If this is the first address, make it default automatically
+    const shouldBeDefault = existingAddresses.length === 0 ? true : isDefault;
+
     // If setting as default, unset other default addresses
-    if (isDefault) {
+    if (shouldBeDefault) {
       await db
         .update(addresses)
         .set({ isDefault: false })
@@ -83,7 +92,7 @@ export async function POST(request: NextRequest) {
         city,
         state,
         pincode,
-        isDefault: isDefault || false,
+        isDefault: shouldBeDefault,
       })
       .returning();
 
