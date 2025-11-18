@@ -19,7 +19,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const hasColors = product.colors && product.colors.length > 0;
 
   // Quantity state
-  const [quantity, setQuantity] = useState<number>(1);
+  const [quantity, s in etQuantity] = useState<number>(1);
 
   // Check if current product+color is in cart and get its quantity
   const itemInCart = isInCart(product.id, selectedColor?.colorCode || '');
@@ -36,6 +36,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       setQuantity(1); // Reset to 1 if not in cart
     }
   }, [selectedColor?.colorCode, itemInCart, cartQuantity]);
+  // Use categoryName for display, fallback to category if not available
+  const displayCategoryName = product.categoryName || product.category;
 
   // Calculate discount
   const price = Number(product.price) || 0;
@@ -113,8 +115,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           <div className="flex items-center space-x-2 text-sm">
             <Link href="/" className="text-gray-500 hover:text-maroon">Home</Link>
             <span className="text-gray-400">/</span>
-            <Link href={`/products/${product.category}`} className="text-gray-500 hover:text-maroon capitalize">
-              {product.category} Sarees
+            <Link href={`/products/${product.category}`} className="text-gray-500 hover:text-maroon">
+              {displayCategoryName}
             </Link>
             <span className="text-gray-400">/</span>
             <span className="text-maroon font-semibold">{product.name}</span>
@@ -184,8 +186,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <div className="space-y-6">
               {/* Title and Price */}
               <div>
-                <div className="inline-block bg-saffron text-white px-4 py-1 rounded-full text-sm font-semibold mb-4 capitalize">
-                  {product.category} Saree
+                <div className="inline-block bg-saffron text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
+                  {displayCategoryName}
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
                   {product.name}
@@ -278,7 +280,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   </div>
                   <div className="bg-white p-4 rounded-lg shadow">
                     <div className="text-sm text-gray-500">Category</div>
-                    <div className="font-semibold text-maroon capitalize">{product.category}</div>
+                    <div className="font-semibold text-maroon">{displayCategoryName}</div>
                   </div>
                 </div>
               </div>
@@ -367,7 +369,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   href={`/products/${product.category}`}
                   className="block w-full py-4 rounded-lg font-bold text-lg border-2 border-maroon text-maroon hover:bg-maroon hover:text-white transition-all text-center"
                 >
-                  View More {product.category.charAt(0).toUpperCase() + product.category.slice(1)} Sarees
+                  View More {displayCategoryName}
                 </Link>
               </div>
 
