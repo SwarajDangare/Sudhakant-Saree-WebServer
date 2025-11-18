@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { db, sections } from '@/db';
 import { eq } from 'drizzle-orm';
 
+// Force dynamic rendering due to SessionProvider
+export const dynamic = 'force-dynamic';
+
 // Enable ISR - revalidate every 60 seconds
 export const revalidate = 60;
 
