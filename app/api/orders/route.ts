@@ -123,23 +123,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate totals
+    // Filter out items with missing products and calculate totals
     let subtotal = 0;
-    const orderItemsData = items.map((item) => {
-      const price = parseFloat(item.product.price);
-      const itemSubtotal = price * item.cartItem.quantity;
-      subtotal += itemSubtotal;
+    const orderItemsData = items
+      .filter((item) => item.product !== null)
+      .map((item) => {
+        // TypeScript now knows item.product is not null
+        const price = parseFloat(item.product!.price);
+        const itemSubtotal = price * item.cartItem.quantity;
+        subtotal += itemSubtotal;
 
-      return {
-        productId: item.product.id,
-        productColorId: item.color?.id || null,
-        productName: item.product.name,
-        productColor: item.color?.color || null,
-        price: item.product.price,
-        quantity: item.cartItem.quantity,
-        subtotal: itemSubtotal.toFixed(2),
-      };
-    });
+        return {
+          productId: item.product!.id,
+          productColorId: item.color?.id || null,
+          productName: item.product!.name,
+          productColor: item.color?.color || null,
+          price: item.product!.price,
+          quantity: item.cartItem.quantity,
+          subtotal: itemSubtotal.toFixed(2),
+        };
+      });
+
+    // Check if any valid items remain
+    if (orderItemsData.length === 0) {
+      return NextResponse.json(
+        { error: 'No valid products in cart' },
+        { status: 400 }
+      );
+    }
 
     const total = subtotal; // Can add discount logic here
 
