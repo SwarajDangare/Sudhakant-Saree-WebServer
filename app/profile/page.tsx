@@ -199,14 +199,15 @@ export default function ProfilePage() {
           <h2 className="text-xl font-bold text-gray-800 mb-4">Account Information</h2>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Member Since</span>
-              <span className="font-medium">
-                {new Date(session.user.createdAt || session.user.id).toLocaleDateString('en-IN', {
-                  year: 'numeric',
-                  month: 'long',
-                })}
-              </span>
+              <span className="text-gray-600">Phone Number</span>
+              <span className="font-medium">{session.user.phoneNumber}</span>
             </div>
+            {session.user.email && (
+              <div className="flex justify-between">
+                <span className="text-gray-600">Email</span>
+                <span className="font-medium">{session.user.email}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
