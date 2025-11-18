@@ -3,16 +3,42 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/product';
+import { useCart } from '@/contexts/CartContext';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { addToCart } = useCart();
   // Default color if no colors available
   const defaultColor = { color: 'Default', colorCode: '#800000', inStock: true };
   const [selectedColor, setSelectedColor] = useState(product.colors[0] || defaultColor);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const hasColors = product.colors && product.colors.length > 0;
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!selectedColor?.inStock) return;
+
+    setIsAdding(true);
+    try {
+      await addToCart({
+        productId: product.id,
+        productColorId: hasColors && selectedColor ? selectedColor.color : undefined,
+        quantity: 1,
+      });
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
@@ -123,13 +149,26 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        {/* Action Button */}
-        <Link
-          href={`/product/${product.id}`}
-          className="mt-4 block w-full text-center btn-primary"
-        >
-          View Details
-        </Link>
+        {/* Action Buttons */}
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            onClick={handleAddToCart}
+            disabled={isAdding || !selectedColor?.inStock}
+            className={`py-2 px-4 rounded-md font-medium transition-colors ${
+              selectedColor?.inStock
+                ? 'bg-maroon text-white hover:bg-deep-maroon'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            } disabled:opacity-50`}
+          >
+            {isAdding ? 'Adding...' : showSuccess ? 'Added!' : 'Add to Cart'}
+          </button>
+          <Link
+            href={`/product/${product.id}`}
+            className="py-2 px-4 rounded-md font-medium text-center border-2 border-maroon text-maroon hover:bg-maroon hover:text-white transition-colors"
+          >
+            View Details
+          </Link>
+        </div>
       </div>
     </div>
   );
