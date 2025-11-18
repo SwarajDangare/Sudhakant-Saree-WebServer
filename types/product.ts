@@ -1,4 +1,5 @@
 export interface ColorVariant {
+  id?: string; // Optional for backward compatibility
   color: string;
   colorCode: string;
   inStock: boolean;
