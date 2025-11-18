@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useCart } from '@/contexts/CartContext';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { cart } = useCart();
 
   const categories = [
     { name: 'Silk', href: '/products/silk' },
@@ -26,7 +28,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-gray-700 hover:text-maroon transition-colors font-medium">
               Home
             </Link>
@@ -56,6 +58,18 @@ export default function Header() {
             </Link>
             <Link href="/contact" className="text-gray-700 hover:text-maroon transition-colors font-medium">
               Contact
+            </Link>
+
+            {/* Basket Icon with Counter */}
+            <Link href="/basket" className="relative text-gray-700 hover:text-maroon transition-colors">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              {cart.totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-saffron text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                  {cart.totalItems > 99 ? '99+' : cart.totalItems}
+                </span>
+              )}
             </Link>
           </nav>
 
@@ -110,6 +124,25 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Contact
+            </Link>
+
+            {/* Basket Link for Mobile */}
+            <Link
+              href="/basket"
+              className="block py-2 text-gray-700 hover:text-maroon transition-colors font-semibold flex items-center justify-between border-t mt-2 pt-2"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span className="flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                My Basket
+              </span>
+              {cart.totalItems > 0 && (
+                <span className="bg-saffron text-white text-xs font-bold rounded-full px-2 py-1">
+                  {cart.totalItems}
+                </span>
+              )}
             </Link>
           </nav>
         )}
