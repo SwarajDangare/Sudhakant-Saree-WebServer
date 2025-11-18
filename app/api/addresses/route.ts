@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { customerAuthOptions } from '@/lib/customer-auth';
 import { db, addresses } from '@/db';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 // GET - Fetch all addresses for customer
 export async function GET(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       .select()
       .from(addresses)
       .where(eq(addresses.customerId, session.user.id))
-      .orderBy(addresses.isDefault, 'desc');
+      .orderBy(desc(addresses.isDefault));
 
     return NextResponse.json(customerAddresses);
   } catch (error) {
