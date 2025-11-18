@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { db, sections, categories } from '@/db';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 export default async function CategorySection() {
   // Fetch all active sections from database
@@ -16,8 +16,10 @@ export default async function CategorySection() {
       const sectionCategories = await db
         .select()
         .from(categories)
-        .where(eq(categories.sectionId, section.id))
-        .where(eq(categories.active, true))
+        .where(and(
+          eq(categories.sectionId, section.id),
+          eq(categories.active, true)
+        ))
         .orderBy(categories.order, categories.name)
         .limit(3);
 
