@@ -4,8 +4,6 @@ import { customerAuthOptions } from '@/lib/customer-auth';
 import { db, carts, cartItems, products, productImages, productColors } from '@/db';
 import { eq, and } from 'drizzle-orm';
 
-export const runtime = 'edge';
-
 // GET - Fetch cart
 export async function GET(request: NextRequest) {
   try {

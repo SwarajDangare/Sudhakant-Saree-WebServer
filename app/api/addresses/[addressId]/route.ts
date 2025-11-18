@@ -4,8 +4,6 @@ import { customerAuthOptions } from '@/lib/customer-auth';
 import { db, addresses } from '@/db';
 import { eq, and } from 'drizzle-orm';
 
-export const runtime = 'edge';
-
 // PATCH - Update address
 export async function PATCH(
   request: NextRequest,

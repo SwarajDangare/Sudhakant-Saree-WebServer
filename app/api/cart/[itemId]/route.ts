@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db, cartItems } from '@/db';
 import { eq } from 'drizzle-orm';
 
-export const runtime = 'edge';
-
 // PATCH - Update cart item quantity
 export async function PATCH(
   request: NextRequest,
