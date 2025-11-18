@@ -47,24 +47,20 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // Create customer account
-      const response = await fetch('/api/customers/signup', {
+      // Check if phone number is already registered
+      const checkResponse = await fetch('/api/customers/check-phone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phoneNumber,
-          name,
-          address: showAddressForm ? addressData : null,
-        }),
+        body: JSON.stringify({ phoneNumber }),
       });
 
-      const data = await response.json();
+      const checkData = await checkResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create account');
+      if (checkData.exists) {
+        throw new Error('Phone number already registered. Please login instead.');
       }
 
-      // Move to OTP step
+      // Validation passed, move to OTP step (account will be created after OTP verification)
       setStep('otp');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -79,7 +75,26 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // All OTPs are correct for testing
+      // All OTPs are correct for testing - so proceed to create account
+
+      // Step 1: Create customer account in database
+      const signupResponse = await fetch('/api/customers/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber,
+          name,
+          address: showAddressForm ? addressData : null,
+        }),
+      });
+
+      const signupData = await signupResponse.json();
+
+      if (!signupResponse.ok) {
+        throw new Error(signupData.error || 'Failed to create account');
+      }
+
+      // Step 2: Sign in the newly created user
       const result = await signIn('phone-login', {
         phoneNumber,
         redirect: false,
@@ -93,7 +108,7 @@ export default function SignupPage() {
         router.refresh();
       }
     } catch (err) {
-      setError('An error occurred during signup');
+      setError(err instanceof Error ? err.message : 'An error occurred during signup');
     } finally {
       setIsLoading(false);
     }
@@ -252,10 +267,10 @@ export default function SignupPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Creating Account...
+                  Checking...
                 </span>
               ) : (
-                'Sign Up'
+                'Continue'
               )}
             </button>
 
@@ -311,10 +326,10 @@ export default function SignupPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Verifying...
+                  Creating Account...
                 </span>
               ) : (
-                'Verify & Complete Signup'
+                'Verify & Create Account'
               )}
             </button>
 
