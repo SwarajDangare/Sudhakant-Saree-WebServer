@@ -87,11 +87,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       let newItems: CartItem[]
 
       if (existingItemIndex > -1) {
-        // Item already exists, update quantity
+        // Item already exists, REPLACE quantity (not add to it)
         newItems = [...prevCart.items]
         newItems[existingItemIndex] = {
           ...newItems[existingItemIndex],
-          quantity: newItems[existingItemIndex].quantity + quantity,
+          quantity: quantity, // Replace with new quantity
         }
       } else {
         // New item, add to cart

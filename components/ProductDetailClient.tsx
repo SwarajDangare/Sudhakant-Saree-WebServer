@@ -11,7 +11,7 @@ interface ProductDetailClientProps {
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
   // Cart context
-  const { addToCart, isInCart } = useCart();
+  const { addToCart, isInCart, getCartItemQuantity } = useCart();
 
   // Default color if no colors available
   const defaultColor: ColorVariant = { color: 'Default', colorCode: '#800000', inStock: true, images: [] };
@@ -21,8 +21,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   // Quantity state
   const [quantity, setQuantity] = useState<number>(1);
 
-  // Check if current product+color is in cart
+  // Check if current product+color is in cart and get its quantity
   const itemInCart = isInCart(product.id, selectedColor?.colorCode || '');
+  const cartQuantity = getCartItemQuantity(product.id, selectedColor?.colorCode || '');
+
+  // Show "Visit Basket" only if item is in cart AND quantity matches
+  const showVisitBasket = itemInCart && cartQuantity === quantity;
 
   // Calculate discount
   const price = Number(product.price) || 0;
@@ -322,7 +326,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 </div>
 
                 {/* Add to Basket / Visit Basket Button */}
-                {!itemInCart ? (
+                {!showVisitBasket ? (
                   <button
                     onClick={handleAddToBasket}
                     disabled={!selectedColor?.inStock}
@@ -335,7 +339,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
-                    <span>{selectedColor?.inStock ? 'Add to Basket' : 'Out of Stock'}</span>
+                    <span>{selectedColor?.inStock ? (itemInCart ? 'Update Basket' : 'Add to Basket') : 'Out of Stock'}</span>
                   </button>
                 ) : (
                   <Link
