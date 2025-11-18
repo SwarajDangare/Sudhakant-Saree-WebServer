@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Product, ColorVariant } from '@/types/product';
 import { useCart } from '@/contexts/CartContext';
@@ -27,6 +27,15 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   // Show "Visit Basket" only if item is in cart AND quantity matches
   const showVisitBasket = itemInCart && cartQuantity === quantity;
+
+  // Sync quantity with cart when product/color changes or cart updates
+  useEffect(() => {
+    if (itemInCart && cartQuantity > 0) {
+      setQuantity(cartQuantity);
+    } else {
+      setQuantity(1); // Reset to 1 if not in cart
+    }
+  }, [selectedColor?.colorCode, itemInCart, cartQuantity]);
 
   // Calculate discount
   const price = Number(product.price) || 0;
