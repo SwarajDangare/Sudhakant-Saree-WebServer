@@ -94,7 +94,6 @@ export const customerAuthOptions: NextAuthOptions = {
       },
     },
   },
-  basePath: '/api/customer-auth',
   secret: process.env.NEXTAUTH_SECRET,
 };
 
