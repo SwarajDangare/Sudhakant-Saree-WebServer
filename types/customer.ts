@@ -116,30 +116,39 @@ export interface CreateOrderInput {
   notes?: string;
 }
 
-// Session Types (extending NextAuth)
+// Session Types (extending NextAuth to support both admin and customer sessions)
 declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
-      phoneNumber: string;
       name: string | null;
       email: string | null;
+      // Admin-specific properties
+      role?: 'SUPER_ADMIN' | 'PRODUCT_MANAGER';
+      // Customer-specific properties
+      phoneNumber?: string;
     };
   }
 
   interface User {
     id: string;
-    phoneNumber: string;
     name: string | null;
     email: string | null;
+    // Admin-specific properties
+    role?: 'SUPER_ADMIN' | 'PRODUCT_MANAGER';
+    // Customer-specific properties
+    phoneNumber?: string;
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
-    phoneNumber: string;
     name: string | null;
     email: string | null;
+    // Admin-specific properties
+    role?: 'SUPER_ADMIN' | 'PRODUCT_MANAGER';
+    // Customer-specific properties
+    phoneNumber?: string;
   }
 }
