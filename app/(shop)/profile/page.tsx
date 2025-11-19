@@ -56,6 +56,10 @@ export default function ProfilePage() {
 
       const updatedCustomer = await response.json();
 
+      // Update local state immediately with new data
+      setName(updatedCustomer.name || '');
+      setEmail(updatedCustomer.email || '');
+
       // Update session with new data
       await update({
         ...session,

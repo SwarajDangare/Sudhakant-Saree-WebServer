@@ -136,12 +136,30 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+        {/* Back Buttons */}
         <div className="mb-6">
-          <Link href="/admin/customers" className="text-maroon hover:underline mb-2 inline-block">
-            ← Back to Customers
-          </Link>
-          <h1 className="text-3xl font-bold text-maroon mb-2">Customer Details</h1>
+          <div className="flex items-center gap-4 mb-4">
+            <Link
+              href="/admin/dashboard"
+              className="inline-flex items-center text-gray-600 hover:text-maroon transition"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Dashboard
+            </Link>
+            <span className="text-gray-300">|</span>
+            <Link
+              href="/admin/customers"
+              className="inline-flex items-center text-gray-600 hover:text-maroon transition"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Customers
+            </Link>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Customer Details</h1>
         </div>
 
         {/* Customer Info Card */}
