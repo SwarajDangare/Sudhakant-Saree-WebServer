@@ -7,36 +7,27 @@ interface Section {
   id: string;
   name: string;
   slug: string;
-}
-
-interface Category {
-  id: string;
-  sectionId: string;
-  name: string;
-  slug: string;
   description: string | null;
   order: number;
   active: boolean;
 }
 
-interface CategoryFormProps {
-  sections: Section[];
-  category?: Category | null;
+interface SectionFormProps {
+  section?: Section | null;
 }
 
-export default function CategoryForm({ sections, category }: CategoryFormProps) {
+export default function SectionForm({ section }: SectionFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
-    sectionId: category?.sectionId || '',
-    name: category?.name || '',
-    slug: category?.slug || '',
-    description: category?.description || '',
-    order: category?.order || 0,
-    active: category?.active ?? true,
+    name: section?.name || '',
+    slug: section?.slug || '',
+    description: section?.description || '',
+    order: section?.order || 0,
+    active: section?.active ?? true,
   });
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,8 +35,8 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
     setFormData({
       ...formData,
       name,
-      // Auto-generate slug from name if it's a new category
-      slug: category ? formData.slug : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      // Auto-generate slug from name if it's a new section
+      slug: section ? formData.slug : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     });
   };
 
@@ -55,35 +46,28 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
     setError('');
     setSuccess('');
 
-    // Validate that a section is selected
-    if (!formData.sectionId || formData.sectionId.trim() === '') {
-      setError('Please select a section for this category');
-      setLoading(false);
-      return;
-    }
-
     // Validate that name is provided
     if (!formData.name || formData.name.trim() === '') {
-      setError('Please provide a category name');
+      setError('Please provide a section name');
       setLoading(false);
       return;
     }
 
     // Validate that slug is provided
     if (!formData.slug || formData.slug.trim() === '') {
-      setError('Please provide a slug for this category');
+      setError('Please provide a slug for this section');
       setLoading(false);
       return;
     }
 
     try {
-      const url = category
-        ? `/api/admin/categories/${category.id}`
-        : '/api/admin/categories';
+      const url = section
+        ? `/api/admin/sections/${section.id}`
+        : '/api/admin/sections';
 
-      const method = category ? 'PUT' : 'POST';
+      const method = section ? 'PUT' : 'POST';
 
-      console.log('Submitting category:', { url, method, formData });
+      console.log('Submitting section:', { url, method, formData });
 
       const response = await fetch(url, {
         method,
@@ -96,20 +80,20 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
       const data = await response.json();
 
       if (!response.ok) {
-        console.error('Category save failed:', data);
-        throw new Error(data.error || 'Failed to save category');
+        console.error('Section save failed:', data);
+        throw new Error(data.error || 'Failed to save section');
       }
 
-      console.log('Category saved successfully:', data);
-      setSuccess(category ? 'Category updated successfully!' : 'Category created successfully!');
+      console.log('Section saved successfully:', data);
+      setSuccess(section ? 'Section updated successfully!' : 'Section created successfully!');
 
       // Redirect after a brief delay to show success message
       setTimeout(() => {
-        router.push('/admin/categories');
+        router.push('/admin/sections');
         router.refresh();
       }, 1000);
     } catch (err) {
-      console.error('Error saving category:', err);
+      console.error('Error saving section:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
     }
@@ -117,16 +101,6 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      {sections.length === 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md mb-6">
-          <p className="font-semibold">No sections available</p>
-          <p className="text-sm mt-1">
-            You need to create at least one section before you can add categories.
-            Please go to the sections page and create a section first.
-          </p>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
@@ -144,31 +118,10 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Section */}
-          <div>
-            <label htmlFor="sectionId" className="block text-sm font-medium text-gray-700 mb-2">
-              Section <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="sectionId"
-              required
-              value={formData.sectionId}
-              onChange={(e) => setFormData({ ...formData, sectionId: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-            >
-              <option value="">Select a section</option>
-              {sections.map((section) => (
-                <option key={section.id} value={section.id}>
-                  {section.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Name */}
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Category Name <span className="text-red-500">*</span>
+              Section Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -176,7 +129,7 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
               required
               value={formData.name}
               onChange={handleNameChange}
-              placeholder="e.g., Banarasi Silk"
+              placeholder="e.g., Traditional Sarees"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
             />
           </div>
@@ -192,7 +145,7 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
               required
               value={formData.slug}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              placeholder="e.g., banarasi-silk"
+              placeholder="e.g., traditional-sarees"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none font-mono text-sm"
             />
             <p className="text-xs text-gray-500 mt-1">
@@ -229,7 +182,7 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
             rows={4}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Brief description of this category..."
+            placeholder="Brief description of this section..."
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none resize-none"
           />
         </div>
@@ -252,11 +205,10 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
         <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
           <button
             type="submit"
-            disabled={loading || sections.length === 0}
+            disabled={loading}
             className="bg-maroon text-white px-8 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition disabled:opacity-50 disabled:cursor-not-allowed"
-            title={sections.length === 0 ? 'Please create a section first' : ''}
           >
-            {loading ? 'Saving...' : category ? 'Update Category' : 'Create Category'}
+            {loading ? 'Saving...' : section ? 'Update Section' : 'Create Section'}
           </button>
           <button
             type="button"

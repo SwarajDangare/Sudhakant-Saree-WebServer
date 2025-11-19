@@ -29,6 +29,12 @@ export default function ProfilePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Only save if in editing mode
+    if (!isEditing) {
+      return;
+    }
+
     setIsSaving(true);
     setError('');
     setSuccess('');
@@ -49,6 +55,10 @@ export default function ProfilePage() {
       }
 
       const updatedCustomer = await response.json();
+
+      // Update local state immediately with new data
+      setName(updatedCustomer.name || '');
+      setEmail(updatedCustomer.email || '');
 
       // Update session with new data
       await update({
@@ -200,7 +210,9 @@ export default function ProfilePage() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setIsEditing(true);
                     setError('');
                     setSuccess('');
@@ -218,13 +230,17 @@ export default function ProfilePage() {
           <h2 className="text-xl font-bold text-gray-800 mb-4">Account Information</h2>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
+              <span className="text-gray-600">Name</span>
+              <span className="font-medium">{name || 'Not provided'}</span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-gray-600">Phone Number</span>
               <span className="font-medium">{session.user.phoneNumber}</span>
             </div>
-            {session.user.email && (
+            {email && (
               <div className="flex justify-between">
                 <span className="text-gray-600">Email</span>
-                <span className="font-medium">{session.user.email}</span>
+                <span className="font-medium">{email}</span>
               </div>
             )}
           </div>
