@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export default async function OrdersPage() {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session || !session.user.role) {
     redirect('/admin/login');
   }
 
@@ -55,8 +55,8 @@ export default async function OrdersPage() {
       .from(orderItems)
       .where(inArray(orderItems.orderId, orderIds));
 
-    const customerIds = [...new Set(allOrders.map(order => order.customerId))];
-    const addressIds = [...new Set(allOrders.map(order => order.addressId))];
+    const customerIds = Array.from(new Set(allOrders.map(order => order.customerId)));
+    const addressIds = Array.from(new Set(allOrders.map(order => order.addressId)));
 
     customersList = await db
       .select()
