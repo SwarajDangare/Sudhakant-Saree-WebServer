@@ -34,6 +34,13 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
     active: true,
   });
 
+  // OTP verification state
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+
   const resetForm = () => {
     setFormData({
       email: '',
@@ -43,9 +50,84 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
       active: true,
     });
     setError(null);
+    setOtpSent(false);
+    setOtpValue('');
+    setEmailVerified(false);
+    setOtpError(null);
+  };
+
+  const handleSendOtp = async () => {
+    if (!formData.email || !formData.email.includes('@')) {
+      setOtpError('Please enter a valid email address');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpError(null);
+
+    try {
+      const response = await fetch('/api/admin/email/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      const data = await response.json();
+      setOtpSent(true);
+      setOtpError(null);
+
+      // In development, show the OTP for testing
+      if (data._dev_otp) {
+        console.log('Development OTP:', data._dev_otp);
+      }
+    } catch (err: any) {
+      setOtpError(err.message);
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpValue || otpValue.length !== 6) {
+      setOtpError('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    setOtpLoading(true);
+    setOtpError(null);
+
+    try {
+      const response = await fetch('/api/admin/email/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, otp: otpValue }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to verify OTP');
+      }
+
+      setEmailVerified(true);
+      setOtpError(null);
+    } catch (err: any) {
+      setOtpError(err.message);
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
   const handleAddUser = async () => {
+    if (!emailVerified) {
+      setError('Please verify your email address before creating the user');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -282,13 +364,85 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Email
                 </label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon"
-                  placeholder="john@example.com"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      // Reset verification state if email changes
+                      if (otpSent || emailVerified) {
+                        setOtpSent(false);
+                        setEmailVerified(false);
+                        setOtpValue('');
+                        setOtpError(null);
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon"
+                    placeholder="john@example.com"
+                    disabled={emailVerified}
+                  />
+                  {!emailVerified && (
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={otpLoading || !formData.email}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      {otpLoading ? 'Sending...' : otpSent ? 'Resend OTP' : 'Send OTP'}
+                    </button>
+                  )}
+                  {emailVerified && (
+                    <div className="flex items-center px-3 py-2 bg-green-100 text-green-800 rounded-md">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="ml-2 text-sm font-medium">Verified</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* OTP Input Field */}
+                {otpSent && !emailVerified && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Enter OTP Code
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={otpValue}
+                        onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon text-center text-lg tracking-widest"
+                        placeholder="000000"
+                        maxLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleVerifyOtp}
+                        disabled={otpLoading || otpValue.length !== 6}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {otpLoading ? 'Verifying...' : 'Verify'}
+                      </button>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      Enter the 6-digit code sent to your email
+                    </p>
+                  </div>
+                )}
+
+                {/* OTP Error/Success Messages */}
+                {otpError && (
+                  <div className="mt-2 text-sm text-red-600">
+                    {otpError}
+                  </div>
+                )}
+                {otpSent && !emailVerified && !otpError && (
+                  <div className="mt-2 text-sm text-green-600">
+                    OTP sent successfully! Check your email.
+                  </div>
+                )}
               </div>
 
               <div>
@@ -339,8 +493,9 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
             <div className="mt-6 flex space-x-3">
               <button
                 onClick={handleAddUser}
-                disabled={loading}
-                className="flex-1 bg-maroon text-white px-4 py-2 rounded-md hover:bg-deep-maroon transition font-medium disabled:opacity-50"
+                disabled={loading || !emailVerified}
+                className="flex-1 bg-maroon text-white px-4 py-2 rounded-md hover:bg-deep-maroon transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                title={!emailVerified ? 'Please verify email address first' : ''}
               >
                 {loading ? 'Creating...' : 'Create User'}
               </button>
@@ -355,6 +510,11 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
                 Cancel
               </button>
             </div>
+            {!emailVerified && (
+              <p className="mt-2 text-xs text-gray-500 text-center">
+                You must verify the email address before creating the user
+              </p>
+            )}
           </div>
         </div>
       )}

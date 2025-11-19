@@ -11,12 +11,23 @@ export const paymentMethodEnum = pgEnum('PaymentMethod', ['COD', 'UPI', 'CARD', 
 export const users = pgTable('users', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   email: text('email').notNull().unique(),
+  emailVerified: boolean('emailVerified').default(false).notNull(),
   passwordHash: text('passwordHash').notNull(),
   name: text('name').notNull(),
   role: roleEnum('role').default('SALESMAN').notNull(),
   active: boolean('active').default(true).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Email OTP Verification
+export const emailOtps = pgTable('email_otps', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text('email').notNull(),
+  otp: text('otp').notNull(),
+  expiresAt: timestamp('expiresAt').notNull(),
+  verified: boolean('verified').default(false).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
 // Customer Management (Phone-based authentication)

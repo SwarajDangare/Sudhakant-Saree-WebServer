@@ -23,6 +23,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'Dashboard', href: '/admin/dashboard', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
     { name: 'Products', href: '/admin/products', icon: '🛍️', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
     { name: 'Orders', href: '/admin/orders', icon: '📦', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
+    { name: 'Sections', href: '/admin/sections', icon: '📂', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
     { name: 'Categories', href: '/admin/categories', icon: '📁', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
     { name: 'Customers', href: '/admin/customers', icon: '👥', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
     { name: 'Admin Users', href: '/admin/users', icon: '🔐', allowedRoles: ['SUPER_ADMIN'] },
@@ -119,6 +120,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               {pathname === '/admin/dashboard' && 'Dashboard'}
               {pathname?.startsWith('/admin/products') && 'Product Management'}
               {pathname?.startsWith('/admin/orders') && 'Order Management'}
+              {pathname?.startsWith('/admin/sections') && 'Section Management'}
               {pathname?.startsWith('/admin/categories') && 'Category Management'}
               {pathname?.startsWith('/admin/customers') && 'Customer Management'}
               {pathname?.startsWith('/admin/users') && 'User Management'}

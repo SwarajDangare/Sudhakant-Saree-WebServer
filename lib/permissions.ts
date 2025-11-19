@@ -3,7 +3,7 @@
  *
  * User Roles:
  * - SUPER_ADMIN: Complete access to everything, can manage admin users
- * - SHOP_MANAGER: Can add/edit products, add categories (not sections), view/manage all orders
+ * - SHOP_MANAGER: Can add/edit products, categories, and sections, view/manage all orders
  * - SALESMAN: Can add/edit products, view active orders only (no order status update)
  */
 
@@ -86,13 +86,13 @@ export function getPermissions(role: UserRole): Permission {
         canDeleteProducts: true,
 
         // Category Management
-        canAddCategories: true,  // Can add categories within existing sections
+        canAddCategories: true,  // Can add categories
         canEditCategories: true,
         canDeleteCategories: false,
 
         // Section Management
-        canAddSections: false,   // Cannot create new sections
-        canEditSections: false,
+        canAddSections: true,    // Can create and manage sections
+        canEditSections: true,
         canDeleteSections: false,
 
         // Order Management
@@ -200,7 +200,7 @@ export function getRoleDisplayName(role: UserRole): string {
 export function getRoleDescription(role: UserRole): string {
   const descriptions: Record<UserRole, string> = {
     SUPER_ADMIN: 'Complete access to all features and settings. Can manage admin users.',
-    SHOP_MANAGER: 'Can manage products, categories, and orders. Can view all customer information.',
+    SHOP_MANAGER: 'Can manage products, categories, sections, and orders. Can view all customer information.',
     SALESMAN: 'Can add/edit products and view active orders. Limited access to customer information.',
   };
   return descriptions[role] || '';

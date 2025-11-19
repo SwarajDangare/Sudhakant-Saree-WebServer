@@ -125,17 +125,6 @@ export default async function DashboardPage() {
 
           {(isSuperAdmin || isShopManager) && (
             <Link
-              href="/admin/sections"
-              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-maroon"
-            >
-              <div className="text-4xl mb-3">📂</div>
-              <h3 className="font-semibold text-gray-900 text-lg">Manage Sections</h3>
-              <p className="text-gray-600 text-sm mt-1">Organize your top-level sections</p>
-            </Link>
-          )}
-
-          {isSuperAdmin && (
-            <Link
               href="/admin/categories"
               className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-maroon"
             >
@@ -144,6 +133,17 @@ export default async function DashboardPage() {
               <p className="text-gray-600 text-sm mt-1">
                 {isSuperAdmin ? 'Organize your product categories and sections' : 'Add categories to existing sections'}
               </p>
+            </Link>
+          )}
+
+          {(isSuperAdmin || isShopManager) && (
+            <Link
+              href="/admin/sections"
+              className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition border-2 border-transparent hover:border-maroon"
+            >
+              <div className="text-4xl mb-3">📂</div>
+              <h3 className="font-semibold text-gray-900 text-lg">Manage Sections</h3>
+              <p className="text-gray-600 text-sm mt-1">Organize your top-level sections</p>
             </Link>
           )}
 
