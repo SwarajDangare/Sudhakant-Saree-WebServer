@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { db, categories } from '@/db';
+import { db, categories, sections } from '@/db';
 import { eq } from 'drizzle-orm';
 import ProductForm from '@/components/admin/ProductForm';
 import Link from 'next/link';
@@ -16,9 +16,20 @@ export default async function NewProductPage() {
     redirect('/admin/login');
   }
 
+  // Fetch sections for the form
+  const allSections = await db
+    .select()
+    .from(sections)
+    .where(eq(sections.active, true))
+    .orderBy(sections.order, sections.name);
+
   // Fetch categories for the form
   const allCategories = await db
-    .select()
+    .select({
+      id: categories.id,
+      name: categories.name,
+      sectionId: categories.sectionId,
+    })
     .from(categories)
     .where(eq(categories.active, true))
     .orderBy(categories.name);
@@ -45,7 +56,7 @@ export default async function NewProductPage() {
       </div>
 
       {/* Form */}
-      <ProductForm categories={allCategories} />
+      <ProductForm sections={allSections} categories={allCategories} />
     </div>
   );
 }
