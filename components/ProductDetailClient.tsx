@@ -26,8 +26,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Check if current product+color is in cart and get its quantity
-  const itemInCart = isInCart(product.id, selectedColor?.colorCode || '');
-  const cartQuantity = getCartItemQuantity(product.id, selectedColor?.colorCode || '');
+  const itemInCart = isInCart(product.id, selectedColor?.id);
+  const cartQuantity = getCartItemQuantity(product.id, selectedColor?.id);
 
   // Show "Visit Cart" only if item is in cart AND quantity matches
   const showVisitCart = itemInCart && cartQuantity === quantity;
@@ -39,7 +39,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     } else {
       setQuantity(1); // Reset to 1 if not in cart
     }
-  }, [selectedColor?.colorCode, itemInCart, cartQuantity]);
+  }, [selectedColor?.id, itemInCart, cartQuantity]);
 
   // Calculate discount
   const price = Number(product.price) || 0;
