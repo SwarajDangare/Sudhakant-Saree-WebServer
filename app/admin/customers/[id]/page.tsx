@@ -44,7 +44,6 @@ interface CustomerDetails {
       quantity: number;
       subtotal: string;
       product: any;
-      productColor: any;
     }>;
   }>;
   totalOrders: number;
