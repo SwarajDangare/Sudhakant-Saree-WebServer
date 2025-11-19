@@ -29,6 +29,12 @@ export default function ProfilePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Only save if in editing mode
+    if (!isEditing) {
+      return;
+    }
+
     setIsSaving(true);
     setError('');
     setSuccess('');
@@ -200,7 +206,9 @@ export default function ProfilePage() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setIsEditing(true);
                     setError('');
                     setSuccess('');

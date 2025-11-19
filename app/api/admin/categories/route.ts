@@ -31,15 +31,21 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
+    console.log('POST /api/admin/categories - Session:', session?.user);
+
     if (!session || session.user.role !== 'SUPER_ADMIN') {
+      console.error('Unauthorized access attempt:', session?.user);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
     const { sectionId, name, slug, description, order, active } = body;
 
+    console.log('Creating category with data:', { sectionId, name, slug, description, order, active });
+
     // Validate required fields
     if (!sectionId || !name || !slug) {
+      console.error('Missing required fields:', { sectionId, name, slug });
       return NextResponse.json(
         { error: 'Section, name, and slug are required' },
         { status: 400 }
@@ -59,6 +65,8 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
+    console.log('Category created successfully:', newCategory);
+
     return NextResponse.json(newCategory, { status: 201 });
   } catch (error) {
     console.error('Error creating category:', error);
@@ -71,8 +79,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check for foreign key constraint (invalid sectionId)
+    if (error instanceof Error && error.message.includes('foreign key')) {
+      return NextResponse.json(
+        { error: 'Invalid section ID. Please select a valid section.' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Failed to create category' },
+      { error: 'Failed to create category. Please try again.' },
       { status: 500 }
     );
   }

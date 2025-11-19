@@ -28,6 +28,7 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
     sectionId: category?.sectionId || '',
@@ -52,6 +53,28 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
+
+    // Validate that a section is selected
+    if (!formData.sectionId || formData.sectionId.trim() === '') {
+      setError('Please select a section for this category');
+      setLoading(false);
+      return;
+    }
+
+    // Validate that name is provided
+    if (!formData.name || formData.name.trim() === '') {
+      setError('Please provide a category name');
+      setLoading(false);
+      return;
+    }
+
+    // Validate that slug is provided
+    if (!formData.slug || formData.slug.trim() === '') {
+      setError('Please provide a slug for this category');
+      setLoading(false);
+      return;
+    }
 
     try {
       const url = category
@@ -59,6 +82,8 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
         : '/api/admin/categories';
 
       const method = category ? 'PUT' : 'POST';
+
+      console.log('Submitting category:', { url, method, formData });
 
       const response = await fetch(url, {
         method,
@@ -68,14 +93,23 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
+        console.error('Category save failed:', data);
         throw new Error(data.error || 'Failed to save category');
       }
 
-      router.push('/admin/categories');
-      router.refresh();
+      console.log('Category saved successfully:', data);
+      setSuccess(category ? 'Category updated successfully!' : 'Category created successfully!');
+
+      // Redirect after a brief delay to show success message
+      setTimeout(() => {
+        router.push('/admin/categories');
+        router.refresh();
+      }, 1000);
     } catch (err) {
+      console.error('Error saving category:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
     }
@@ -83,10 +117,29 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
+      {sections.length === 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md mb-6">
+          <p className="font-semibold">No sections available</p>
+          <p className="text-sm mt-1">
+            You need to create at least one section before you can add categories.
+            Please go to the sections page and create a section first.
+          </p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md flex items-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            {success}
           </div>
         )}
 
@@ -199,8 +252,9 @@ export default function CategoryForm({ sections, category }: CategoryFormProps) 
         <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || sections.length === 0}
             className="bg-maroon text-white px-8 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition disabled:opacity-50 disabled:cursor-not-allowed"
+            title={sections.length === 0 ? 'Please create a section first' : ''}
           >
             {loading ? 'Saving...' : category ? 'Update Category' : 'Create Category'}
           </button>
