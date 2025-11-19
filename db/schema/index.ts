@@ -2,7 +2,7 @@ import { pgTable, text, boolean, timestamp, integer, decimal, pgEnum } from 'dri
 import { relations } from 'drizzle-orm';
 
 // Enums
-export const roleEnum = pgEnum('Role', ['SUPER_ADMIN', 'PRODUCT_MANAGER']);
+export const roleEnum = pgEnum('Role', ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN']);
 export const discountTypeEnum = pgEnum('DiscountType', ['NONE', 'PERCENTAGE', 'FIXED']);
 export const orderStatusEnum = pgEnum('OrderStatus', ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']);
 export const paymentMethodEnum = pgEnum('PaymentMethod', ['COD', 'UPI', 'CARD', 'NET_BANKING']);
@@ -13,7 +13,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   passwordHash: text('passwordHash').notNull(),
   name: text('name').notNull(),
-  role: roleEnum('role').default('PRODUCT_MANAGER').notNull(),
+  role: roleEnum('role').default('SALESMAN').notNull(),
   active: boolean('active').default(true).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),

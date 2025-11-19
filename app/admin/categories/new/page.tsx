@@ -16,10 +16,14 @@ export default async function NewCategoryPage() {
     redirect('/admin/login');
   }
 
-  // Check if user is super admin
-  if (session.user.role !== 'SUPER_ADMIN') {
+  const userRole = session.user.role;
+
+  // Check if user has permission to add categories (SUPER_ADMIN or SHOP_MANAGER)
+  if (userRole !== 'SUPER_ADMIN' && userRole !== 'SHOP_MANAGER') {
     redirect('/admin/dashboard');
   }
+
+  const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
   // Fetch sections for the form
   const allSections = await db
@@ -45,12 +49,23 @@ export default async function NewCategoryPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Add New Category</h1>
         <p className="text-gray-600 mt-1">
-          Create a new product category
+          {isSuperAdmin
+            ? 'Create a new product category'
+            : 'Add a new category to an existing section'}
         </p>
       </div>
 
+      {!isSuperAdmin && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> As a shop manager, you can add categories to existing sections
+            but cannot create new sections. Please select a section from the dropdown below.
+          </p>
+        </div>
+      )}
+
       {/* Form */}
-      <CategoryForm sections={allSections} />
+      <CategoryForm sections={allSections} isSuperAdmin={isSuperAdmin} />
     </div>
   );
 }

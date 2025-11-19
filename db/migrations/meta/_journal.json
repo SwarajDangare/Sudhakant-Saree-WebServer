@@ -22,6 +22,13 @@
       "when": 1763460110224,
       "tag": "0002_clean_marvel_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1763558531398,
+      "tag": "0003_powerful_spectrum",
+      "breakpoints": true
     }
   ]
 }

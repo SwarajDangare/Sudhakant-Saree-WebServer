@@ -26,10 +26,14 @@ export default async function CategoriesPage({
     redirect('/admin/login');
   }
 
-  // Check if user is super admin
-  if (session.user.role !== 'SUPER_ADMIN') {
+  const userRole = session.user.role;
+
+  // Check if user has permission to manage categories (SUPER_ADMIN or SHOP_MANAGER)
+  if (userRole !== 'SUPER_ADMIN' && userRole !== 'SHOP_MANAGER') {
     redirect('/admin/dashboard');
   }
+
+  const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
   // Build query conditions
   const conditions = [];
@@ -94,7 +98,9 @@ export default async function CategoriesPage({
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
           <p className="text-gray-600 mt-1">
-            Manage your product categories and sections
+            {isSuperAdmin
+              ? 'Manage your product categories and sections'
+              : 'Manage product categories (add categories to existing sections)'}
           </p>
         </div>
         <Link
@@ -278,11 +284,15 @@ export default async function CategoriesPage({
                         >
                           View
                         </Link>
-                        <span className="text-gray-300">|</span>
-                        <DeleteCategoryButton
-                          categoryId={category.id}
-                          categoryName={category.name}
-                        />
+                        {isSuperAdmin && (
+                          <>
+                            <span className="text-gray-300">|</span>
+                            <DeleteCategoryButton
+                              categoryId={category.id}
+                              categoryName={category.name}
+                            />
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

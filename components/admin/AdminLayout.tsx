@@ -14,17 +14,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN';
+  const userRole = session?.user?.role;
+  const isSuperAdmin = userRole === 'SUPER_ADMIN';
+  const isShopManager = userRole === 'SHOP_MANAGER';
+  const isSalesman = userRole === 'SALESMAN';
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: '📊' },
-    { name: 'Products', href: '/admin/products', icon: '🛍️' },
-    { name: 'Categories', href: '/admin/categories', icon: '📁', superAdminOnly: true },
-    { name: 'Users', href: '/admin/users', icon: '👥', superAdminOnly: true },
+    { name: 'Dashboard', href: '/admin/dashboard', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
+    { name: 'Products', href: '/admin/products', icon: '🛍️', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
+    { name: 'Orders', href: '/admin/orders', icon: '📦', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
+    { name: 'Categories', href: '/admin/categories', icon: '📁', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+    { name: 'Customers', href: '/admin/customers', icon: '👥', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+    { name: 'Admin Users', href: '/admin/users', icon: '🔐', allowedRoles: ['SUPER_ADMIN'] },
   ];
 
   const filteredNavigation = navigation.filter(
-    (item) => !item.superAdminOnly || isSuperAdmin
+    (item) => userRole && item.allowedRoles.includes(userRole)
   );
 
   return (
@@ -113,7 +118,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <h2 className="text-xl font-semibold text-gray-800 hidden sm:block">
               {pathname === '/admin/dashboard' && 'Dashboard'}
               {pathname?.startsWith('/admin/products') && 'Product Management'}
+              {pathname?.startsWith('/admin/orders') && 'Order Management'}
               {pathname?.startsWith('/admin/categories') && 'Category Management'}
+              {pathname?.startsWith('/admin/customers') && 'Customer Management'}
               {pathname?.startsWith('/admin/users') && 'User Management'}
             </h2>
 
