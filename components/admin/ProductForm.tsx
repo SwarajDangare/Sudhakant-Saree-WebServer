@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,14 +29,16 @@ const productSchema = z.object({
 type ProductFormData = z.infer<typeof productSchema>;
 
 interface ProductFormProps {
-  categories: Array<{ id: string; name: string }>;
+  sections: Array<{ id: string; name: string }>;
+  categories: Array<{ id: string; name: string; sectionId: string }>;
   initialData?: ProductFormData & { id: string };
 }
 
-export default function ProductForm({ categories, initialData }: ProductFormProps) {
+export default function ProductForm({ sections, categories, initialData }: ProductFormProps) {
   const router = useRouter();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedSectionId, setSelectedSectionId] = useState<string>('');
 
   const {
     register,
@@ -87,6 +89,21 @@ export default function ProductForm({ categories, initialData }: ProductFormProp
 
   const finalPrice = calculateFinalPrice();
   const discountPercentage = calculateDiscountPercentage();
+
+  // When editing a product, pre-select the section based on the category
+  useEffect(() => {
+    if (initialData?.categoryId) {
+      const category = categories.find(cat => cat.id === initialData.categoryId);
+      if (category) {
+        setSelectedSectionId(category.sectionId);
+      }
+    }
+  }, [initialData, categories]);
+
+  // Filter categories by selected section
+  const filteredCategories = selectedSectionId
+    ? categories.filter(cat => cat.sectionId === selectedSectionId)
+    : categories;
 
   const onSubmit = async (data: ProductFormData) => {
     setError('');
@@ -174,8 +191,8 @@ export default function ProductForm({ categories, initialData }: ProductFormProp
               )}
             </div>
 
-            {/* Price and Category */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Price, Section, and Category */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
                   Price (₹) *
@@ -195,6 +212,29 @@ export default function ProductForm({ categories, initialData }: ProductFormProp
               </div>
 
               <div>
+                <label htmlFor="sectionId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Section *
+                </label>
+                <select
+                  id="sectionId"
+                  value={selectedSectionId}
+                  onChange={(e) => setSelectedSectionId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
+                  disabled={loading}
+                >
+                  <option value="">Select a section</option>
+                  {sections.map((section) => (
+                    <option key={section.id} value={section.id}>
+                      {section.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  Select section first to filter categories
+                </p>
+              </div>
+
+              <div>
                 <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
                   Category *
                 </label>
@@ -202,10 +242,12 @@ export default function ProductForm({ categories, initialData }: ProductFormProp
                   id="categoryId"
                   {...register('categoryId')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-                  disabled={loading}
+                  disabled={loading || !selectedSectionId}
                 >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
+                  <option value="">
+                    {selectedSectionId ? 'Select a category' : 'Select section first'}
+                  </option>
+                  {filteredCategories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
