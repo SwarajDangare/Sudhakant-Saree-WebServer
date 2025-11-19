@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-export const dynamic = 'force-dynamic';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
@@ -20,6 +18,7 @@ export default function CheckoutPage() {
   const [notes, setNotes] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   // Address form state
   const [addressForm, setAddressForm] = useState({
@@ -40,12 +39,12 @@ export default function CheckoutPage() {
     }
   }, [status, router]);
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not during order placement)
   useEffect(() => {
-    if (itemCount === 0 && status === 'authenticated') {
+    if (itemCount === 0 && status === 'authenticated' && !isPlacingOrder) {
       router.push('/cart');
     }
-  }, [itemCount, status, router]);
+  }, [itemCount, status, router, isPlacingOrder]);
 
   // Fetch addresses
   useEffect(() => {
@@ -75,9 +74,22 @@ export default function CheckoutPage() {
 
   const handleAddressFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+
+    let processedValue = value;
+
+    // Phone number: only digits, max 10
+    if (name === 'phoneNumber') {
+      processedValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+
+    // Pincode: only digits, max 6
+    if (name === 'pincode') {
+      processedValue = value.replace(/\D/g, '').slice(0, 6);
+    }
+
     setAddressForm((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : processedValue,
     }));
   };
 
@@ -124,6 +136,7 @@ export default function CheckoutPage() {
     }
 
     setIsLoading(true);
+    setIsPlacingOrder(true);
     setError('');
 
     try {
@@ -139,14 +152,18 @@ export default function CheckoutPage() {
 
       if (response.ok) {
         const order = await response.json();
-        await clearCart();
+        // Navigate to confirmation page first, then clear cart
         router.push(`/order-confirmation?orderId=${order.id}`);
+        // Clear cart after navigation (cart is already cleared on server)
+        await clearCart();
       } else {
         const error = await response.json();
         setError(error.message || 'Failed to place order');
+        setIsPlacingOrder(false);
       }
     } catch (error) {
       setError('Failed to place order. Please try again.');
+      setIsPlacingOrder(false);
     } finally {
       setIsLoading(false);
     }
@@ -212,6 +229,8 @@ export default function CheckoutPage() {
                       onChange={handleAddressFormChange}
                       placeholder="Phone Number *"
                       required
+                      maxLength={10}
+                      pattern="[0-9]{10}"
                       className="border border-gray-300 rounded-md px-3 py-2"
                     />
                   </div>
@@ -258,6 +277,8 @@ export default function CheckoutPage() {
                       onChange={handleAddressFormChange}
                       placeholder="Pincode *"
                       required
+                      maxLength={6}
+                      pattern="[0-9]{6}"
                       className="border border-gray-300 rounded-md px-3 py-2"
                     />
                   </div>

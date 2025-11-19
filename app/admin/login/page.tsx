@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -14,15 +14,20 @@ function LoginForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const callbackUrl = searchParams.get('callbackUrl') || '/admin/dashboard';
+  // Memoize callbackUrl to prevent unnecessary re-renders
+  const callbackUrl = useMemo(
+    () => searchParams.get('callbackUrl') || '/admin/dashboard',
+    [searchParams]
+  );
 
   // If user is already authenticated, redirect to dashboard
   useEffect(() => {
+    // Only redirect if status is definitely 'authenticated' (not 'loading')
     if (status === 'authenticated' && session) {
       console.log('User already authenticated, redirecting...');
-      window.location.href = callbackUrl;
+      router.push(callbackUrl);
     }
-  }, [status, session, callbackUrl]);
+  }, [status, session, callbackUrl, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,8 +50,8 @@ function LoginForm() {
         setError(result.error);
       } else if (result?.ok) {
         console.log('SignIn successful, redirecting to:', callbackUrl);
-        // Use window.location.href for full page reload to ensure session cookies are properly set
-        window.location.href = callbackUrl;
+        // Use router.push for client-side navigation
+        router.push(callbackUrl);
       } else {
         console.error('Unknown signIn state:', result);
         setError('Authentication failed. Please try again.');
@@ -58,6 +63,18 @@ function LoginForm() {
       setLoading(false);
     }
   };
+
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-maroon via-indian-red to-saffron flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-silk-white mx-auto"></div>
+          <p className="mt-4 text-silk-white">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-maroon via-indian-red to-saffron flex items-center justify-center p-4">

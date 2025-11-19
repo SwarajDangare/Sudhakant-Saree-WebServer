@@ -176,11 +176,11 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (existingItem) {
-      // Update quantity
+      // Update quantity to the specified value (not increment)
       const [updatedItem] = await db
         .update(cartItems)
         .set({
-          quantity: existingItem.quantity + quantity,
+          quantity: quantity,
           updatedAt: new Date(),
         })
         .where(eq(cartItems.id, existingItem.id))

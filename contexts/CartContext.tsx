@@ -14,8 +14,8 @@ interface CartContextType {
   removeFromCart: (itemId: string) => Promise<void>;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
-  isInCart: (productId: string, colorCode: string) => boolean;
-  getCartItemQuantity: (productId: string, colorCode: string) => number;
+  isInCart: (productId: string, productColorId: string | undefined) => boolean;
+  getCartItemQuantity: (productId: string, productColorId: string | undefined) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -156,20 +156,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, 0);
 
   // Helper: Check if product with specific color is in cart
-  const isInCart = useCallback((productId: string, colorCode: string): boolean => {
+  const isInCart = useCallback((productId: string, productColorId: string | undefined): boolean => {
     return items.some(
       (item) =>
         item.productId === productId &&
-        (item.productColor?.colorCode === colorCode || (!item.productColor && !colorCode))
+        (item.productColorId === productColorId || (!item.productColorId && !productColorId))
     );
   }, [items]);
 
   // Helper: Get quantity of specific product+color in cart
-  const getCartItemQuantity = useCallback((productId: string, colorCode: string): number => {
+  const getCartItemQuantity = useCallback((productId: string, productColorId: string | undefined): number => {
     const item = items.find(
       (item) =>
         item.productId === productId &&
-        (item.productColor?.colorCode === colorCode || (!item.productColor && !colorCode))
+        (item.productColorId === productColorId || (!item.productColorId && !productColorId))
     );
     return item?.quantity || 0;
   }, [items]);
