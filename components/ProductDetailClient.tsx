@@ -1,18 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Product, ColorVariant } from '@/types/product';
+import { useCart } from '@/contexts/CartContext';
 
 interface ProductDetailClientProps {
   product: Product;
 }
 
 export default function ProductDetailClient({ product }: ProductDetailClientProps) {
+  // Cart context
+  const { addToCart, isInCart, getCartItemQuantity } = useCart();
+
   // Default color if no colors available
   const defaultColor: ColorVariant = { color: 'Default', colorCode: '#800000', inStock: true, images: [] };
   const [selectedColor, setSelectedColor] = useState<ColorVariant>(product.colors[0] || defaultColor);
   const hasColors = product.colors && product.colors.length > 0;
+
+  // Use categoryName for display, fallback to category if not available
+  const displayCategoryName = product.categoryName || product.category;
+
+  // Quantity state
+  const [quantity, setQuantity] = useState<number>(1);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  // Check if current product+color is in cart and get its quantity
+  const itemInCart = isInCart(product.id, selectedColor?.id);
+  const cartQuantity = getCartItemQuantity(product.id, selectedColor?.id);
+
+  // Show "Visit Cart" only if item is in cart AND quantity matches
+  const showVisitCart = itemInCart && cartQuantity === quantity;
+
+  // Sync quantity with cart when product/color changes or cart updates
+  useEffect(() => {
+    if (itemInCart && cartQuantity > 0) {
+      setQuantity(cartQuantity);
+    } else {
+      setQuantity(1); // Reset to 1 if not in cart
+    }
+  }, [selectedColor?.id, itemInCart, cartQuantity]);
 
   // Calculate discount
   const price = Number(product.price) || 0;
@@ -42,6 +69,46 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const discountPercentage = calculateDiscountPercentage();
   const hasDiscount = discountType !== 'NONE' && discountValue > 0;
 
+  // Quantity handlers
+  const handleIncreaseQuantity = () => {
+    if (quantity < 99) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const handleDecreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value >= 1 && value <= 99) {
+      setQuantity(value);
+    }
+  };
+
+  // Add to cart handler
+  const handleAddToCart = async () => {
+    if (!selectedColor?.inStock || isAddingToCart) return;
+
+    setIsAddingToCart(true);
+
+    try {
+      await addToCart({
+        productId: product.id,
+        productColorId: selectedColor?.id,
+        quantity: quantity,
+      });
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+      // Could add error toast notification here
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-silk-white">
       {/* Breadcrumb */}
@@ -50,8 +117,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           <div className="flex items-center space-x-2 text-sm">
             <Link href="/" className="text-gray-500 hover:text-maroon">Home</Link>
             <span className="text-gray-400">/</span>
-            <Link href={`/products/${product.category}`} className="text-gray-500 hover:text-maroon capitalize">
-              {product.category} Sarees
+            <Link href={`/products/${product.category}`} className="text-gray-500 hover:text-maroon">
+              {displayCategoryName}
             </Link>
             <span className="text-gray-400">/</span>
             <span className="text-maroon font-semibold">{product.name}</span>
@@ -121,8 +188,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <div className="space-y-6">
               {/* Title and Price */}
               <div>
-                <div className="inline-block bg-saffron text-white px-4 py-1 rounded-full text-sm font-semibold mb-4 capitalize">
-                  {product.category} Saree
+                <div className="inline-block bg-saffron text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
+                  {displayCategoryName}
                 </div>
                 <h1 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
                   {product.name}
@@ -215,7 +282,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   </div>
                   <div className="bg-white p-4 rounded-lg shadow">
                     <div className="text-sm text-gray-500">Category</div>
-                    <div className="font-semibold text-maroon capitalize">{product.category}</div>
+                    <div className="font-semibold text-maroon">{displayCategoryName}</div>
                   </div>
                 </div>
               </div>
@@ -231,23 +298,92 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <p className="text-gray-700 text-sm">{product.careInstructions}</p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="border-t pt-6 space-y-3">
-                <button
-                  disabled={!selectedColor?.inStock}
-                  className={`w-full py-4 rounded-lg font-bold text-lg transition-all ${
-                    selectedColor?.inStock
-                      ? 'bg-maroon text-white hover:bg-saffron shadow-lg hover:shadow-xl transform hover:-translate-y-1'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  {selectedColor?.inStock ? 'Add to Cart (Coming Soon)' : 'Out of Stock'}
-                </button>
+              {/* Quantity Selector and Action Buttons */}
+              <div className="border-t pt-6 space-y-4">
+                {/* Quantity Selector */}
+                <div>
+                  <label className="block text-sm font-semibold text-maroon mb-2">
+                    Quantity
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center border-2 border-maroon rounded-lg overflow-hidden">
+                      <button
+                        onClick={handleDecreaseQuantity}
+                        disabled={quantity <= 1 || !selectedColor?.inStock}
+                        className="px-4 py-3 bg-maroon text-white hover:bg-saffron disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                        </svg>
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        max="99"
+                        value={quantity}
+                        onChange={handleQuantityChange}
+                        disabled={!selectedColor?.inStock}
+                        className="w-20 text-center text-lg font-bold text-maroon focus:outline-none disabled:bg-gray-100"
+                      />
+                      <button
+                        onClick={handleIncreaseQuantity}
+                        disabled={quantity >= 99 || !selectedColor?.inStock}
+                        className="px-4 py-3 bg-maroon text-white hover:bg-saffron disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Add to Cart / Visit Cart Button */}
+                {!showVisitCart ? (
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={!selectedColor?.inStock || isAddingToCart}
+                    className={`w-full py-4 rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
+                      selectedColor?.inStock && !isAddingToCart
+                        ? 'bg-maroon text-white hover:bg-saffron shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:scale-95'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {isAddingToCart ? (
+                      <>
+                        <svg className="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Updating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        <span>{selectedColor?.inStock ? (itemInCart ? 'Update Cart' : 'Add to Cart') : 'Out of Stock'}</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    href="/cart"
+                    className="w-full py-4 rounded-lg font-bold text-lg bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center space-x-2 active:scale-95"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Visit Cart</span>
+                  </Link>
+                )}
+
+                {/* View More Button */}
                 <Link
                   href={`/products/${product.category}`}
                   className="block w-full py-4 rounded-lg font-bold text-lg border-2 border-maroon text-maroon hover:bg-maroon hover:text-white transition-all text-center"
                 >
-                  View More {product.category.charAt(0).toUpperCase() + product.category.slice(1)} Sarees
+                  View More {displayCategoryName}
                 </Link>
               </div>
 
