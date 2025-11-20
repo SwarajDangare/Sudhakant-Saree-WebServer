@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { getRoleDisplayName, getRoleDescription, type UserRole } from '@/lib/permissions';
+import PasswordInput from '@/components/PasswordInput';
 
 interface User {
   id: string;
@@ -292,14 +293,10 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  label="Password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon"
                   placeholder="••••••••"
                 />
               </div>
@@ -397,14 +394,10 @@ export default function UserManagementClient({ initialUsers }: UserManagementCli
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  New Password (leave blank to keep current)
-                </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  label="New Password (leave blank to keep current)"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon"
                   placeholder="••••••••"
                 />
               </div>

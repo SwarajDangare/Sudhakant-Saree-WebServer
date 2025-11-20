@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import PasswordInput from '@/components/PasswordInput';
 
 function LoginForm() {
   const router = useRouter();
@@ -119,16 +120,12 @@ function LoginForm() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input
+              <PasswordInput
                 id="password"
-                type="password"
+                label="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition"
                 placeholder="••••••••"
                 disabled={loading}
               />
