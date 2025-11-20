@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
+import ColorManagement, { ColorVariantData } from './ColorManagement';
 
 const productSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -31,7 +32,7 @@ type ProductFormData = z.infer<typeof productSchema>;
 interface ProductFormProps {
   sections: Array<{ id: string; name: string }>;
   categories: Array<{ id: string; name: string; sectionId: string }>;
-  initialData?: ProductFormData & { id: string };
+  initialData?: ProductFormData & { id: string; colors?: ColorVariantData[] };
 }
 
 export default function ProductForm({ sections, categories, initialData }: ProductFormProps) {
@@ -39,6 +40,7 @@ export default function ProductForm({ sections, categories, initialData }: Produ
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string>('');
+  const [colors, setColors] = useState<ColorVariantData[]>(initialData?.colors || []);
 
   const {
     register,
@@ -110,6 +112,32 @@ export default function ProductForm({ sections, categories, initialData }: Produ
     setLoading(true);
 
     try {
+      // Validate colors
+      if (colors.length === 0) {
+        setError('Please add at least one color variant');
+        setLoading(false);
+        return;
+      }
+
+      // Validate each color has required fields
+      for (const color of colors) {
+        if (!color.color.trim()) {
+          setError('All colors must have a name');
+          setLoading(false);
+          return;
+        }
+        if (!color.colorCode.trim()) {
+          setError('All colors must have a color code');
+          setLoading(false);
+          return;
+        }
+        if (color.images.length === 0) {
+          setError(`Color "${color.color}" must have at least one image`);
+          setLoading(false);
+          return;
+        }
+      }
+
       const endpoint = initialData
         ? `/api/products/${initialData.id}`
         : '/api/products';
@@ -122,6 +150,7 @@ export default function ProductForm({ sections, categories, initialData }: Produ
         body: JSON.stringify({
           ...data,
           price: Number(data.price),
+          colors: colors,
         }),
       });
 
@@ -438,6 +467,15 @@ export default function ProductForm({ sections, categories, initialData }: Produ
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Color Variants & Images */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <ColorManagement
+          colors={colors}
+          onChange={setColors}
+          disabled={loading}
+        />
       </div>
 
       {/* Actions */}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Product, ColorVariant } from '@/types/product';
 import { useCart } from '@/contexts/CartContext';
 
@@ -16,7 +17,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   // Default color if no colors available
   const defaultColor: ColorVariant = { color: 'Default', colorCode: '#800000', inStock: true, images: [] };
   const [selectedColor, setSelectedColor] = useState<ColorVariant>(product.colors[0] || defaultColor);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const hasColors = product.colors && product.colors.length > 0;
+
+  // Reset image index when color changes
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [selectedColor?.id]);
 
   // Use categoryName for display, fallback to category if not available
   const displayCategoryName = product.categoryName || product.category;
@@ -40,6 +47,28 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       setQuantity(1); // Reset to 1 if not in cart
     }
   }, [selectedColor?.id, itemInCart, cartQuantity]);
+
+  // Image navigation handlers
+  const handlePreviousImage = () => {
+    if (selectedColor?.images && selectedColor.images.length > 0) {
+      setSelectedImageIndex((prev) =>
+        prev === 0 ? selectedColor.images.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const handleNextImage = () => {
+    if (selectedColor?.images && selectedColor.images.length > 0) {
+      setSelectedImageIndex((prev) =>
+        prev === selectedColor.images.length - 1 ? 0 : prev + 1
+      );
+    }
+  };
+
+  // Get current images for selected color
+  const currentImages = selectedColor?.images || [];
+  const hasImages = currentImages.length > 0;
+  const currentImage = hasImages ? currentImages[selectedImageIndex] : null;
 
   // Calculate discount
   const price = Number(product.price) || 0;
@@ -133,53 +162,129 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Product Image */}
             <div className="space-y-4">
               {/* Main Image */}
-              <div className="aspect-[3/4] bg-gradient-to-br from-maroon via-indian-red to-saffron rounded-2xl shadow-2xl golden-border relative overflow-hidden">
-                <div className="absolute inset-0 pattern-bg opacity-20"></div>
-                <div
-                  className="absolute inset-0 flex items-center justify-center transition-colors duration-500"
-                  style={{ backgroundColor: (selectedColor?.colorCode || '#800000') + '30' }}
-                >
-                  <div className="text-center text-white">
-                    <svg className="w-32 h-32 mx-auto mb-6 drop-shadow-2xl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                    </svg>
-                    {hasColors && (
-                      <div className="text-2xl font-bold bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full inline-block">
-                        {selectedColor?.color}
+              <div className="aspect-[3/4] bg-gradient-to-br from-maroon via-indian-red to-saffron rounded-2xl shadow-2xl golden-border relative overflow-hidden group">
+                {hasImages && currentImage ? (
+                  <>
+                    {/* Actual Product Image */}
+                    <Image
+                      src={currentImage.url}
+                      alt={currentImage.altText || product.name}
+                      fill
+                      className="object-cover"
+                      priority
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+
+                    {/* Navigation Arrows */}
+                    {currentImages.length > 1 && (
+                      <>
+                        <button
+                          onClick={handlePreviousImage}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                          aria-label="Previous image"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={handleNextImage}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                          aria-label="Next image"
+                        >
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
+
+                    {/* Image Counter */}
+                    {currentImages.length > 1 && (
+                      <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        {selectedImageIndex + 1} / {currentImages.length}
                       </div>
                     )}
-                  </div>
-                </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Placeholder when no images */}
+                    <div className="absolute inset-0 pattern-bg opacity-20"></div>
+                    <div
+                      className="absolute inset-0 flex items-center justify-center transition-colors duration-500"
+                      style={{ backgroundColor: (selectedColor?.colorCode || '#800000') + '30' }}
+                    >
+                      <div className="text-center text-white">
+                        <svg className="w-32 h-32 mx-auto mb-6 drop-shadow-2xl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                        </svg>
+                        {hasColors && (
+                          <div className="text-2xl font-bold bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full inline-block">
+                            {selectedColor?.color}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {/* Stock Badge */}
                 {hasColors && selectedColor && !selectedColor.inStock && (
-                  <div className="absolute top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                  <div className="absolute top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg z-10">
                     Out of Stock
                   </div>
                 )}
               </div>
 
-              {/* Color Thumbnails */}
-              {hasColors && (
-                <div className="grid grid-cols-4 gap-4">
-                  {product.colors.map((color) => (
+              {/* Image Thumbnails */}
+              {hasImages && currentImages.length > 1 && (
+                <div className="grid grid-cols-5 gap-3">
+                  {currentImages.map((image, index) => (
                     <button
-                      key={color.color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`aspect-square rounded-xl transition-all ${
-                        selectedColor?.color === color.color
+                      key={image.id}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`aspect-square rounded-lg overflow-hidden transition-all ${
+                        selectedImageIndex === index
                           ? 'ring-4 ring-maroon scale-105 shadow-xl'
                           : 'ring-2 ring-gray-300 hover:ring-saffron hover:scale-105'
                       }`}
                     >
-                      <div
-                        className="w-full h-full rounded-xl flex items-center justify-center text-white font-semibold text-sm"
-                        style={{ backgroundColor: color.colorCode }}
-                      >
-                        {color.color.split(' ')[0]}
-                      </div>
+                      <Image
+                        src={image.url}
+                        alt={image.altText || `${product.name} - Image ${index + 1}`}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
+                </div>
+              )}
+
+              {/* Color Variant Selector */}
+              {hasColors && product.colors.length > 1 && (
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-semibold text-maroon mb-3">Available Colors:</h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    {product.colors.map((color) => (
+                      <button
+                        key={color.color}
+                        onClick={() => setSelectedColor(color)}
+                        className={`aspect-square rounded-xl transition-all ${
+                          selectedColor?.color === color.color
+                            ? 'ring-4 ring-maroon scale-105 shadow-xl'
+                            : 'ring-2 ring-gray-300 hover:ring-saffron hover:scale-105'
+                        }`}
+                      >
+                        <div
+                          className="w-full h-full rounded-xl flex items-center justify-center text-white font-semibold text-xs p-2"
+                          style={{ backgroundColor: color.colorCode }}
+                        >
+                          <span className="text-center leading-tight">{color.color.split(' ')[0]}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

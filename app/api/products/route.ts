@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { db, products } from '@/db';
+import { db, products, productColors, colorImages } from '@/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,12 +27,21 @@ export async function POST(request: NextRequest) {
       careInstructions,
       active,
       featured,
+      colors,
     } = body;
 
     // Validate required fields
     if (!name || !description || !price || !categoryId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate colors
+    if (!colors || !Array.isArray(colors) || colors.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one color variant is required' },
         { status: 400 }
       );
     }
@@ -47,14 +56,41 @@ export async function POST(request: NextRequest) {
         discountType: discountType || 'NONE',
         discountValue: String(discountValue || 0),
         categoryId,
-        material: material || null,
-        length: length || null,
-        occasion: occasion || null,
-        careInstructions: careInstructions || null,
+        material: material || '',
+        length: length || '',
+        occasion: occasion || '',
+        careInstructions: careInstructions || '',
         active: active ?? true,
         featured: featured ?? false,
       })
       .returning();
+
+    // Create colors and images
+    for (const color of colors) {
+      // Create color
+      const [newColor] = await db
+        .insert(productColors)
+        .values({
+          productId: newProduct.id,
+          color: color.color,
+          colorCode: color.colorCode,
+          inStock: color.inStock ?? true,
+        })
+        .returning();
+
+      // Create images for this color
+      if (color.images && color.images.length > 0) {
+        await db.insert(colorImages).values(
+          color.images.map((img: any, index: number) => ({
+            productColorId: newColor.id,
+            url: img.url,
+            publicId: img.publicId,
+            altText: img.altText || color.color,
+            displayOrder: img.displayOrder ?? index,
+          }))
+        );
+      }
+    }
 
     return NextResponse.json(
       { message: 'Product created successfully', product: newProduct },

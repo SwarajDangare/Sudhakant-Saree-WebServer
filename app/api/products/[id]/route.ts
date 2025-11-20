@@ -31,10 +31,32 @@ export async function GET(
       .from(productColors)
       .where(eq(productColors.productId, params.id));
 
+    // Fetch images for each color
+    const colorsWithImages = await Promise.all(
+      colors.map(async (color) => {
+        const images = await db
+          .select()
+          .from(colorImages)
+          .where(eq(colorImages.productColorId, color.id))
+          .orderBy(colorImages.displayOrder);
+
+        return {
+          ...color,
+          images: images.map(img => ({
+            id: img.id,
+            url: img.url,
+            publicId: img.publicId,
+            altText: img.altText,
+            displayOrder: img.displayOrder,
+          })),
+        };
+      })
+    );
+
     return NextResponse.json({
       product: {
         ...product,
-        colors,
+        colors: colorsWithImages,
       },
     });
   } catch (error) {
@@ -71,12 +93,21 @@ export async function PUT(
       careInstructions,
       active,
       featured,
+      colors,
     } = body;
 
     // Validate required fields
     if (!name || !description || !price || !categoryId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Validate colors
+    if (!colors || !Array.isArray(colors) || colors.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one color variant is required' },
         { status: 400 }
       );
     }
@@ -91,10 +122,10 @@ export async function PUT(
         discountType: discountType || 'NONE',
         discountValue: String(discountValue || 0),
         categoryId,
-        material: material || null,
-        length: length || null,
-        occasion: occasion || null,
-        careInstructions: careInstructions || null,
+        material: material || '',
+        length: length || '',
+        occasion: occasion || '',
+        careInstructions: careInstructions || '',
         active: active ?? true,
         featured: featured ?? false,
         updatedAt: new Date(),
@@ -104,6 +135,44 @@ export async function PUT(
 
     if (!updatedProduct) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+
+    // Delete existing colors and their images
+    const existingColors = await db
+      .select()
+      .from(productColors)
+      .where(eq(productColors.productId, params.id));
+
+    for (const color of existingColors) {
+      await db.delete(colorImages).where(eq(colorImages.productColorId, color.id));
+    }
+    await db.delete(productColors).where(eq(productColors.productId, params.id));
+
+    // Create new colors and images
+    for (const color of colors) {
+      // Create color
+      const [newColor] = await db
+        .insert(productColors)
+        .values({
+          productId: params.id,
+          color: color.color,
+          colorCode: color.colorCode,
+          inStock: color.inStock ?? true,
+        })
+        .returning();
+
+      // Create images for this color
+      if (color.images && color.images.length > 0) {
+        await db.insert(colorImages).values(
+          color.images.map((img: any, index: number) => ({
+            productColorId: newColor.id,
+            url: img.url,
+            publicId: img.publicId,
+            altText: img.altText || color.color,
+            displayOrder: img.displayOrder ?? index,
+          }))
+        );
+      }
     }
 
     return NextResponse.json({

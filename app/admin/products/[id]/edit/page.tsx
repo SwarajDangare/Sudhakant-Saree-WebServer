@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
-import { db, products, categories, sections } from '@/db';
+import { db, products, categories, sections, productColors, colorImages } from '@/db';
 import { eq } from 'drizzle-orm';
 import Link from 'next/link';
 import ProductForm from '@/components/admin/ProductForm';
@@ -53,6 +53,36 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     .from(categories)
     .orderBy(categories.name);
 
+  // Fetch colors and their images
+  const colors = await db
+    .select()
+    .from(productColors)
+    .where(eq(productColors.productId, params.id));
+
+  const colorsWithImages = await Promise.all(
+    colors.map(async (color) => {
+      const images = await db
+        .select()
+        .from(colorImages)
+        .where(eq(colorImages.productColorId, color.id))
+        .orderBy(colorImages.displayOrder);
+
+      return {
+        id: color.id,
+        color: color.color,
+        colorCode: color.colorCode,
+        inStock: color.inStock,
+        images: images.map(img => ({
+          id: img.id,
+          url: img.url,
+          publicId: img.publicId,
+          altText: img.altText || color.color,
+          displayOrder: img.displayOrder,
+        })),
+      };
+    })
+  );
+
   // Format product data for the form
   const initialData = {
     id: product.id,
@@ -68,6 +98,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     careInstructions: product.careInstructions || '',
     active: product.active,
     featured: product.featured,
+    colors: colorsWithImages,
   };
 
   return (
