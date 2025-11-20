@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db, customers, orders } from '@/db';
 import { eq, sql, desc } from 'drizzle-orm';
+import { getPermissions } from '@/lib/permissions';
 
 // GET - Get all customers with order statistics
 export async function GET(request: NextRequest) {
@@ -10,10 +11,19 @@ export async function GET(request: NextRequest) {
     // Check admin authentication
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.role || !['SUPER_ADMIN', 'PRODUCT_MANAGER'].includes(session.user.role)) {
+    if (!session || !session.user.role) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Check permissions
+    const permissions = getPermissions(session.user.role);
+    if (!permissions.canViewCustomers) {
+      return NextResponse.json(
+        { error: 'You do not have permission to view customers' },
+        { status: 403 }
       );
     }
 

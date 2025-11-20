@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { db, products, categories, productImages } from '@/db';
+import { db, products, categories, sections, productImages } from '@/db';
 import { eq, desc, like, or, and } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteProductButton from '@/components/admin/DeleteProductButton';
@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic';
 
 interface SearchParams {
   search?: string;
+  section?: string;
   category?: string;
   status?: string;
 }
@@ -48,7 +49,7 @@ export default async function ProductsPage({
     conditions.push(eq(products.active, false));
   }
 
-  // Fetch products with relations
+  // Fetch products with relations including section
   const allProducts = await db
     .select({
       id: products.id,
@@ -62,6 +63,7 @@ export default async function ProductsPage({
       category: {
         id: categories.id,
         name: categories.name,
+        sectionId: categories.sectionId,
       },
     })
     .from(products)
@@ -69,7 +71,14 @@ export default async function ProductsPage({
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(desc(products.createdAt));
 
-  // Fetch all categories for filter
+  // Filter by section if specified (client-side filter since we need section from category)
+  let filteredProducts = allProducts;
+  if (searchParams.section) {
+    filteredProducts = allProducts.filter(p => p.category?.sectionId === searchParams.section);
+  }
+
+  // Fetch all sections and categories for filters
+  const allSections = await db.select().from(sections).orderBy(sections.name);
   const allCategories = await db.select().from(categories).orderBy(categories.name);
 
   return (
@@ -104,7 +113,7 @@ export default async function ProductsPage({
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <form className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div>
             <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
@@ -118,6 +127,26 @@ export default async function ProductsPage({
               placeholder="Search products..."
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
             />
+          </div>
+
+          {/* Section Filter */}
+          <div>
+            <label htmlFor="section" className="block text-sm font-medium text-gray-700 mb-2">
+              Section
+            </label>
+            <select
+              id="section"
+              name="section"
+              defaultValue={searchParams.section}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
+            >
+              <option value="">All Sections</option>
+              {allSections.map((sec) => (
+                <option key={sec.id} value={sec.id}>
+                  {sec.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Category Filter */}
@@ -158,7 +187,7 @@ export default async function ProductsPage({
           </div>
 
           {/* Submit Button */}
-          <div className="md:col-span-3 flex gap-2">
+          <div className="md:col-span-4 flex gap-2">
             <button
               type="submit"
               className="bg-maroon text-white px-6 py-2 rounded-md font-semibold hover:bg-deep-maroon transition"
@@ -177,12 +206,12 @@ export default async function ProductsPage({
 
       {/* Products Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        {allProducts.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="p-12 text-center">
             <div className="text-6xl mb-4">📦</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
             <p className="text-gray-600 mb-6">
-              {searchParams.search || searchParams.category || searchParams.status
+              {searchParams.search || searchParams.section || searchParams.category || searchParams.status
                 ? 'Try adjusting your filters'
                 : 'Get started by adding your first product'}
             </p>
@@ -216,7 +245,7 @@ export default async function ProductsPage({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {allProducts.map((product) => (
+                {filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
@@ -288,10 +317,10 @@ export default async function ProductsPage({
       </div>
 
       {/* Summary */}
-      {allProducts.length > 0 && (
+      {filteredProducts.length > 0 && (
         <div className="bg-white rounded-lg shadow-md p-4">
           <p className="text-sm text-gray-600">
-            Showing <span className="font-semibold">{allProducts.length}</span> product(s)
+            Showing <span className="font-semibold">{filteredProducts.length}</span> product(s)
           </p>
         </div>
       )}
