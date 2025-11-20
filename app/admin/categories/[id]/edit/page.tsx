@@ -21,8 +21,10 @@ export default async function EditCategoryPage({
     redirect('/admin/login');
   }
 
-  // Check if user is super admin
-  if (session.user.role !== 'SUPER_ADMIN') {
+  const userRole = session.user.role;
+
+  // Check if user has permission to edit categories (SUPER_ADMIN or SHOP_MANAGER)
+  if (userRole !== 'SUPER_ADMIN' && userRole !== 'SHOP_MANAGER') {
     redirect('/admin/dashboard');
   }
 

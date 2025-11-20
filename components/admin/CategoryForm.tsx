@@ -22,9 +22,10 @@ interface Category {
 interface CategoryFormProps {
   sections: Section[];
   category?: Category | null;
+  isSuperAdmin?: boolean;
 }
 
-export default function CategoryForm({ sections, category }: CategoryFormProps) {
+export default function CategoryForm({ sections, category, isSuperAdmin }: CategoryFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

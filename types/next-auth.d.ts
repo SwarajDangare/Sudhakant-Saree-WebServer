@@ -8,7 +8,7 @@ declare module 'next-auth' {
     name: string | null;
     email: string | null;
     // Admin-specific properties
-    role?: 'SUPER_ADMIN' | 'PRODUCT_MANAGER';
+    role?: 'SUPER_ADMIN' | 'SHOP_MANAGER' | 'SALESMAN';
     // Customer-specific properties
     phoneNumber?: string;
   }
@@ -19,7 +19,7 @@ declare module 'next-auth' {
       name: string | null;
       email: string | null;
       // Admin-specific properties
-      role?: 'SUPER_ADMIN' | 'PRODUCT_MANAGER';
+      role?: 'SUPER_ADMIN' | 'SHOP_MANAGER' | 'SALESMAN';
       // Customer-specific properties
       phoneNumber?: string;
     };
@@ -32,7 +32,7 @@ declare module 'next-auth/jwt' {
     name: string | null;
     email: string | null;
     // Admin-specific properties
-    role?: 'SUPER_ADMIN' | 'PRODUCT_MANAGER';
+    role?: 'SUPER_ADMIN' | 'SHOP_MANAGER' | 'SALESMAN';
     // Customer-specific properties
     phoneNumber?: string;
   }

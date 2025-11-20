@@ -2,7 +2,7 @@ import { pgTable, text, boolean, timestamp, integer, decimal, pgEnum } from 'dri
 import { relations } from 'drizzle-orm';
 
 // Enums
-export const roleEnum = pgEnum('Role', ['SUPER_ADMIN', 'PRODUCT_MANAGER']);
+export const roleEnum = pgEnum('Role', ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN']);
 export const discountTypeEnum = pgEnum('DiscountType', ['NONE', 'PERCENTAGE', 'FIXED']);
 export const orderStatusEnum = pgEnum('OrderStatus', ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']);
 export const paymentMethodEnum = pgEnum('PaymentMethod', ['COD', 'UPI', 'CARD', 'NET_BANKING']);
@@ -11,12 +11,23 @@ export const paymentMethodEnum = pgEnum('PaymentMethod', ['COD', 'UPI', 'CARD', 
 export const users = pgTable('users', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   email: text('email').notNull().unique(),
+  emailVerified: boolean('emailVerified').default(false).notNull(),
   passwordHash: text('passwordHash').notNull(),
   name: text('name').notNull(),
-  role: roleEnum('role').default('PRODUCT_MANAGER').notNull(),
+  role: roleEnum('role').default('SALESMAN').notNull(),
   active: boolean('active').default(true).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Email OTP Verification
+export const emailOtps = pgTable('email_otps', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  email: text('email').notNull(),
+  otp: text('otp').notNull(),
+  expiresAt: timestamp('expiresAt').notNull(),
+  verified: boolean('verified').default(false).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
 // Customer Management (Phone-based authentication)

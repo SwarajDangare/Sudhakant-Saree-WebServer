@@ -48,42 +48,39 @@ export default async function Header() {
               Home
             </Link>
 
-            {/* Categories Dropdown */}
-            <div className="relative group">
-              <Link href="/categories" className="text-gray-700 hover:text-maroon transition-colors font-medium flex items-center">
-                Categories
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </Link>
+            {/* Section Dropdowns */}
+            {sectionsWithCategories.map((section) => (
+              <div key={section.id} className="relative group">
+                <Link
+                  href={`/categories/${section.slug}`}
+                  className="text-gray-700 hover:text-maroon transition-colors font-medium flex items-center"
+                >
+                  {section.name}
+                  {section.categories.length > 0 && (
+                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  )}
+                </Link>
 
-              {/* Mega Dropdown */}
-              <div className="absolute left-0 mt-2 w-96 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 max-h-96 overflow-y-auto">
-                {sectionsWithCategories.map((section) => (
-                  <div key={section.id} className="border-b border-gray-100 last:border-0">
-                    <Link
-                      href={`/categories/${section.slug}`}
-                      className="block px-4 py-3 font-semibold text-maroon hover:bg-saffron/10 transition-colors"
-                    >
-                      {section.name}
-                    </Link>
-                    {section.categories.length > 0 && (
-                      <div className="pb-2">
-                        {section.categories.map((category) => (
-                          <Link
-                            key={category.id}
-                            href={`/products/${category.slug}`}
-                            className="block px-8 py-2 text-sm text-gray-700 hover:bg-saffron hover:text-white transition-colors"
-                          >
-                            {category.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                {/* Dropdown for categories in this section */}
+                {section.categories.length > 0 && (
+                  <div className="absolute left-0 mt-2 w-56 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 max-h-96 overflow-y-auto">
+                    <div className="py-2">
+                      {section.categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          href={`/products/${category.slug}`}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-saffron hover:text-white transition-colors"
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
-            </div>
+            ))}
 
             <Link href="/about" className="text-gray-700 hover:text-maroon transition-colors font-medium">
               About Us

@@ -16,8 +16,8 @@ export default async function EditSectionPage({ params }: { params: { id: string
     redirect('/admin/login');
   }
 
-  // Check if user is super admin
-  if (session.user.role !== 'SUPER_ADMIN') {
+  // Check if user is super admin or shop manager
+  if (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'SHOP_MANAGER') {
     redirect('/admin/dashboard');
   }
 
