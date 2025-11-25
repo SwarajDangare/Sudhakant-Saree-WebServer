@@ -1,5 +1,5 @@
-import { db, products, categories, productColors } from '@/db';
-import { eq } from 'drizzle-orm';
+import { db, products, categories, productColors, colorImages } from '@/db';
+import { eq, asc } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import ProductDetailClient from '@/components/ProductDetailClient';
 
@@ -59,17 +59,42 @@ export default async function ProductPage({ params }: ProductPageProps) {
     .from(productColors)
     .where(eq(productColors.productId, product.id));
 
+  // Fetch images for each color
+  const colorsWithImages = await Promise.all(
+    colors.map(async (color) => {
+      const images = await db
+        .select()
+        .from(colorImages)
+        .where(eq(colorImages.productColorId, color.id))
+        .orderBy(asc(colorImages.displayOrder));
+
+      console.log(`Color ${color.color} has ${images.length} images`);
+
+      return {
+        id: color.id,
+        color: color.color,
+        colorCode: color.colorCode,
+        inStock: color.inStock,
+        images: images.map(img => ({
+          id: img.id,
+          url: img.url,
+          publicId: img.publicId,
+          altText: img.altText || color.color,
+          displayOrder: img.displayOrder,
+        })),
+      };
+    })
+  );
+
+  console.log(`Total colors: ${colorsWithImages.length}`);
+  console.log(`Total images: ${colorsWithImages.reduce((sum, c) => sum + c.images.length, 0)}`);
+
   // Build product object with relations
   const productWithRelations = {
     ...product,
     category: category?.slug || 'uncategorized',
     categoryName: category?.name || 'Uncategorized',
-    colors: colors.map(color => ({
-      color: color.color,
-      colorCode: color.colorCode,
-      inStock: color.inStock,
-      images: [], // Empty array for now - will add image support later
-    })),
+    colors: colorsWithImages,
   };
 
   return <ProductDetailClient product={productWithRelations} />;

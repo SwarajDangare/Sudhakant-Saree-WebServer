@@ -1,9 +1,17 @@
+export interface ColorImage {
+  id: string;
+  url: string;
+  publicId: string;
+  altText: string;
+  displayOrder: number;
+}
+
 export interface ColorVariant {
   id?: string; // Optional for backward compatibility
   color: string;
   colorCode: string;
   inStock: boolean;
-  images: string[];
+  images: ColorImage[];
 }
 
 export interface Product {
