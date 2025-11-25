@@ -242,28 +242,44 @@ export default function ColorManagement({ colors, onChange, disabled }: ColorMan
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">Images</h3>
-                    <CldUploadWidget
-                      uploadPreset="product_images"
-                      onSuccess={(result: any) => {
-                        if (result.event === 'success') {
-                          handleAddImage(colorIndex, {
-                            url: result.info.secure_url,
-                            publicId: result.info.public_id,
-                          });
-                        }
-                      }}
-                    >
-                      {({ open }) => (
+                    {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ? (
+                      <CldUploadWidget
+                        uploadPreset="product_images"
+                        onSuccess={(result: any) => {
+                          if (result.event === 'success') {
+                            handleAddImage(colorIndex, {
+                              url: result.info.secure_url,
+                              publicId: result.info.public_id,
+                            });
+                          }
+                        }}
+                      >
+                        {({ open }) => (
+                          <button
+                            type="button"
+                            onClick={() => open()}
+                            disabled={disabled}
+                            className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron/90 transition text-sm disabled:opacity-50"
+                          >
+                            + Upload Image
+                          </button>
+                        )}
+                      </CldUploadWidget>
+                    ) : (
+                      <div className="text-sm">
                         <button
                           type="button"
-                          onClick={() => open()}
-                          disabled={disabled}
-                          className="px-4 py-2 bg-saffron text-white rounded-md hover:bg-saffron/90 transition text-sm disabled:opacity-50"
+                          disabled
+                          className="px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed text-sm"
+                          title="Cloudinary not configured"
                         >
                           + Upload Image
                         </button>
-                      )}
-                    </CldUploadWidget>
+                        <p className="text-red-600 text-xs mt-1">
+                          ⚠️ Cloudinary not configured. See CLOUDINARY_SETUP.md
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {color.images.length === 0 ? (
