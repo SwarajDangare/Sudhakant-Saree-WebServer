@@ -1,5 +1,5 @@
 import { db, products, categories, productColors, colorImages } from '@/db';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import ProductDetailClient from '@/components/ProductDetailClient';
 
@@ -66,7 +66,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         .select()
         .from(colorImages)
         .where(eq(colorImages.productColorId, color.id))
-        .orderBy(colorImages.displayOrder);
+        .orderBy(asc(colorImages.displayOrder));
+
+      console.log(`Color ${color.color} has ${images.length} images`);
 
       return {
         id: color.id,
@@ -83,6 +85,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
       };
     })
   );
+
+  console.log(`Total colors: ${colorsWithImages.length}`);
+  console.log(`Total images: ${colorsWithImages.reduce((sum, c) => sum + c.images.length, 0)}`);
 
   // Build product object with relations
   const productWithRelations = {

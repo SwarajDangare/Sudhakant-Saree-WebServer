@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
 
     // Create colors and images
     for (const color of colors) {
+      console.log(`Creating color: ${color.color} with ${color.images?.length || 0} images`);
+
       // Create color
       const [newColor] = await db
         .insert(productColors)
@@ -78,17 +80,25 @@ export async function POST(request: NextRequest) {
         })
         .returning();
 
+      console.log(`Color created with ID: ${newColor.id}`);
+
       // Create images for this color
       if (color.images && color.images.length > 0) {
-        await db.insert(colorImages).values(
-          color.images.map((img: any, index: number) => ({
-            productColorId: newColor.id,
-            url: img.url,
-            publicId: img.publicId,
-            altText: img.altText || color.color,
-            displayOrder: img.displayOrder ?? index,
-          }))
-        );
+        const imageValues = color.images.map((img: any, index: number) => ({
+          productColorId: newColor.id,
+          url: img.url,
+          publicId: img.publicId,
+          altText: img.altText || color.color,
+          displayOrder: img.displayOrder ?? index,
+        }));
+
+        console.log(`Inserting ${imageValues.length} images for color ${color.color}`);
+
+        await db.insert(colorImages).values(imageValues);
+
+        console.log(`Images inserted successfully`);
+      } else {
+        console.log(`No images to insert for color ${color.color}`);
       }
     }
 

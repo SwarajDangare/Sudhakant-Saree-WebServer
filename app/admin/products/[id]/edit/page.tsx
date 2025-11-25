@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
 import { db, products, categories, sections, productColors, colorImages } from '@/db';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import Link from 'next/link';
 import ProductForm from '@/components/admin/ProductForm';
 
@@ -65,7 +65,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
         .select()
         .from(colorImages)
         .where(eq(colorImages.productColorId, color.id))
-        .orderBy(colorImages.displayOrder);
+        .orderBy(asc(colorImages.displayOrder));
 
       return {
         id: color.id,

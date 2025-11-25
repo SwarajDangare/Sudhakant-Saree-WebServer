@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db, products, productColors, productImages, colorImages } from '@/db';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 
 // GET a single product
 export async function GET(
@@ -38,7 +38,7 @@ export async function GET(
           .select()
           .from(colorImages)
           .where(eq(colorImages.productColorId, color.id))
-          .orderBy(colorImages.displayOrder);
+          .orderBy(asc(colorImages.displayOrder));
 
         return {
           ...color,
