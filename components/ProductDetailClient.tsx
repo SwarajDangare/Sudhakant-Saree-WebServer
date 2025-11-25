@@ -15,10 +15,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const { addToCart, isInCart, getCartItemQuantity } = useCart();
 
   // Default color if no colors available
-  const defaultColor: ColorVariant = { color: 'Default', colorCode: '#800000', inStock: true, images: [] };
+  const defaultColor: ColorVariant = { color: 'Default', colorCode: '#E5E7EB', inStock: true, images: [] };
   const [selectedColor, setSelectedColor] = useState<ColorVariant>(product.colors[0] || defaultColor);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const hasColors = product.colors && product.colors.length > 0;
+
+  // Pincode check state
+  const [pincode, setPincode] = useState('');
+  const [pincodeStatus, setPincodeStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
+
+  // Accordion states
+  const [openAccordion, setOpenAccordion] = useState<string | null>('details');
 
   // Reset image index when color changes
   useEffect(() => {
@@ -132,53 +139,70 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       });
     } catch (error) {
       console.error('Failed to add to cart:', error);
-      // Could add error toast notification here
     } finally {
       setIsAddingToCart(false);
     }
   };
 
+  // Pincode check handler
+  const handlePincodeCheck = () => {
+    if (pincode.length !== 6) {
+      setPincodeStatus('error');
+      return;
+    }
+    setPincodeStatus('checking');
+    // Simulate API call
+    setTimeout(() => {
+      setPincodeStatus('success');
+    }, 1000);
+  };
+
+  // Toggle accordion
+  const toggleAccordion = (section: string) => {
+    setOpenAccordion(openAccordion === section ? null : section);
+  };
+
   return (
-    <div className="min-h-screen bg-silk-white">
+    <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-2 text-sm">
-            <Link href="/" className="text-gray-500 hover:text-maroon">Home</Link>
+      <div className="border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
             <span className="text-gray-400">/</span>
-            <Link href={`/products/${product.category}`} className="text-gray-500 hover:text-maroon">
+            <Link href={`/products/${product.category}`} className="hover:text-gray-900 transition-colors">
               {displayCategoryName}
             </Link>
             <span className="text-gray-400">/</span>
-            <span className="text-maroon font-semibold">{product.name}</span>
+            <span className="text-gray-900">{product.name}</span>
           </div>
         </div>
       </div>
 
       {/* Product Details */}
-      <section className="section-padding">
+      <section className="py-8 lg:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Product Images - Left Side with Thumbnails */}
-            <div className="flex gap-4">
-              {/* Thumbnail Gallery - Left Side */}
-              {hasImages && currentImages.length > 0 && (
-                <div className="flex flex-col gap-3" style={{width: '80px'}}>
+          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
+            {/* Product Images - Left Side (60% width on large screens) */}
+            <div className="lg:col-span-3 flex gap-3">
+              {/* Thumbnail Gallery - Vertical Strip */}
+              {hasImages && currentImages.length > 1 && (
+                <div className="flex flex-col gap-2" style={{width: '70px'}}>
                   {currentImages.map((image, index) => (
                     <button
                       key={image.id}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`aspect-square rounded-lg overflow-hidden transition-all flex-shrink-0 ${
+                      className={`aspect-square rounded overflow-hidden transition-all flex-shrink-0 border-2 ${
                         selectedImageIndex === index
-                          ? 'ring-4 ring-maroon shadow-xl'
-                          : 'ring-2 ring-gray-300 hover:ring-saffron'
+                          ? 'border-gray-800'
+                          : 'border-gray-200 hover:border-gray-400'
                       }`}
                     >
                       <Image
                         src={image.url}
                         alt={image.altText || `${product.name} - Image ${index + 1}`}
-                        width={80}
-                        height={80}
+                        width={70}
+                        height={70}
                         className="w-full h-full object-cover"
                       />
                     </button>
@@ -186,9 +210,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 </div>
               )}
 
-              {/* Main Image - Right Side */}
+              {/* Main Image */}
               <div className="flex-1">
-                <div className="aspect-square bg-gradient-to-br from-maroon via-indian-red to-saffron rounded-2xl shadow-2xl golden-border relative overflow-hidden group">
+                <div className="aspect-square bg-gray-100 relative overflow-hidden group">
                   {hasImages && currentImage ? (
                     <>
                       {/* Actual Product Image */}
@@ -198,272 +222,377 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         fill
                         className="object-cover"
                         priority
-                        sizes="(max-width: 768px) 100vw, 50vw"
+                        sizes="(max-width: 768px) 100vw, 60vw"
                       />
 
-                      {/* Navigation Arrows */}
+                      {/* Navigation Arrows - Only show on hover */}
                       {currentImages.length > 1 && (
                         <>
                           <button
                             onClick={handlePreviousImage}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-md"
                             aria-label="Previous image"
                           >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                           </button>
                           <button
                             onClick={handleNextImage}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 shadow-md"
                             aria-label="Next image"
                           >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </button>
                         </>
                       )}
-
-                      {/* Image Counter */}
-                      {currentImages.length > 1 && (
-                        <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium z-10">
-                          {selectedImageIndex + 1} / {currentImages.length}
-                        </div>
-                      )}
                     </>
                   ) : (
-                    <>
-                      {/* Placeholder when no images */}
-                      <div className="absolute inset-0 pattern-bg opacity-20"></div>
-                      <div
-                        className="absolute inset-0 flex items-center justify-center transition-colors duration-500"
-                        style={{ backgroundColor: (selectedColor?.colorCode || '#800000') + '30' }}
-                      >
-                        <div className="text-center text-white">
-                          <svg className="w-32 h-32 mx-auto mb-6 drop-shadow-2xl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                          </svg>
-                          {hasColors && (
-                            <div className="text-2xl font-bold bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full inline-block">
-                              {selectedColor?.color}
-                            </div>
-                          )}
-                        </div>
+                    /* Placeholder when no images */
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                      <div className="text-center text-gray-400">
+                        <svg className="w-24 h-24 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-sm">No image available</p>
                       </div>
-                    </>
+                    </div>
                   )}
 
                   {/* Stock Badge */}
                   {hasColors && selectedColor && !selectedColor.inStock && (
-                    <div className="absolute top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg z-10">
-                      Out of Stock
+                    <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold">
+                      OUT OF STOCK
                     </div>
                   )}
                 </div>
-
-                {/* Color Variant Selector - Below Main Image */}
-                {hasColors && product.colors.length > 1 && (
-                  <div className="pt-4">
-                    <div className="grid grid-cols-5 gap-3">
-                      {product.colors.map((color) => (
-                        <button
-                          key={color.color}
-                          onClick={() => setSelectedColor(color)}
-                          className={`aspect-square rounded-xl transition-all ${
-                            selectedColor?.color === color.color
-                              ? 'ring-4 ring-maroon scale-105 shadow-xl'
-                              : 'ring-2 ring-gray-300 hover:ring-saffron hover:scale-105'
-                          }`}
-                        >
-                          <div
-                            className="w-full h-full rounded-xl flex items-center justify-center text-white font-semibold text-xs p-2"
-                            style={{ backgroundColor: color.colorCode }}
-                          >
-                            <span className="text-center leading-tight">{color.color.split(' ')[0]}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 
-            {/* Product Info */}
-            <div className="space-y-6">
-              {/* Title and Price */}
+            {/* Product Info - Right Side (40% width on large screens) */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Title */}
               <div>
-                <div className="inline-block bg-saffron text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
-                  {displayCategoryName}
-                </div>
-                <h1 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
+                <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900 mb-2">
                   {product.name}
                 </h1>
-                <div className="flex items-baseline flex-wrap gap-2">
-                  <span className="text-4xl font-bold text-gradient">
-                    ₹{finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+
+              {/* Pricing */}
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <span className="text-sm text-gray-500">MRP</span>
+                {hasDiscount ? (
+                  <>
+                    <span className="text-lg text-gray-400 line-through">
+                      ₹{price.toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-2xl font-semibold text-gray-900">
+                      ₹{Math.round(finalPrice).toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-sm font-semibold text-orange-600">
+                      {discountPercentage.toFixed(0)}% off
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-2xl font-semibold text-gray-900">
+                    ₹{Math.round(price).toLocaleString('en-IN')}
                   </span>
-                  {hasDiscount && (
-                    <>
-                      <span className="text-lg text-gray-500 line-through">
-                        ₹{price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
-                        {discountPercentage.toFixed(0)}% OFF
-                      </span>
-                    </>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">Inclusive of all taxes</p>
+
+              {/* Star Rating (Static for now) */}
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">
+                  {[...Array(4)].map((_, i) => (
+                    <svg key={i} className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                  <svg className="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </div>
+                <span className="text-sm text-gray-600">4.0 (2 reviews)</span>
+              </div>
+
+              {/* Available Offers */}
+              {hasDiscount && (
+                <div className="bg-pink-50 border border-pink-100 rounded-lg p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-pink-700 font-semibold text-sm mb-3">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                      <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+                    </svg>
+                    AVAILABLE OFFERS
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <div className="flex gap-2">
+                      <span className="text-pink-600">•</span>
+                      <span>ADD 2 PRODUCTS GET 25% OFF</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="text-pink-600">•</span>
+                      <span>ADD 3 OR MORE PRODUCTS GET 30% OFF</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Size Selector */}
+              <div>
+                <div className="text-sm font-semibold text-gray-900 mb-3">SIZE</div>
+                <div className="flex gap-2">
+                  <button className="px-6 py-2 border-2 border-gray-900 text-gray-900 text-sm font-medium hover:bg-gray-50 transition-colors">
+                    OneSize
+                  </button>
+                </div>
+              </div>
+
+              {/* Color Selector with Image Thumbnails */}
+              {hasColors && product.colors.length > 1 && (
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 mb-3">COLOR</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {product.colors.map((color) => {
+                      const colorImage = color.images && color.images.length > 0 ? color.images[0] : null;
+                      return (
+                        <button
+                          key={color.color}
+                          onClick={() => setSelectedColor(color)}
+                          disabled={!color.inStock}
+                          className={`relative w-16 h-20 rounded border-2 overflow-hidden transition-all ${
+                            selectedColor?.color === color.color
+                              ? 'border-gray-900'
+                              : 'border-gray-200 hover:border-gray-400'
+                          } ${!color.inStock ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        >
+                          {colorImage ? (
+                            <Image
+                              src={colorImage.url}
+                              alt={color.color}
+                              fill
+                              className="object-cover"
+                              sizes="64px"
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full"
+                              style={{ backgroundColor: color.colorCode }}
+                            />
+                          )}
+                          {!color.inStock && (
+                            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+                              <span className="text-xs font-semibold text-gray-700">OUT</span>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Quantity and Add to Cart */}
+              <div className="space-y-3 pt-4">
+                {/* Quantity Selector */}
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-semibold text-gray-900">Quantity:</span>
+                  <div className="flex items-center border border-gray-300 rounded">
+                    <button
+                      onClick={handleDecreaseQuantity}
+                      disabled={quantity <= 1 || !selectedColor?.inStock}
+                      className="px-3 py-2 text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      value={quantity}
+                      onChange={handleQuantityChange}
+                      disabled={!selectedColor?.inStock}
+                      className="w-12 text-center text-sm font-semibold text-gray-900 focus:outline-none disabled:bg-gray-50"
+                    />
+                    <button
+                      onClick={handleIncreaseQuantity}
+                      disabled={quantity >= 99 || !selectedColor?.inStock}
+                      className="px-3 py-2 text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  {!showVisitCart ? (
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={!selectedColor?.inStock || isAddingToCart}
+                      className={`flex-1 py-3 px-6 rounded font-semibold text-sm uppercase tracking-wide transition-all ${
+                        selectedColor?.inStock && !isAddingToCart
+                          ? 'bg-[#FF7961] hover:bg-[#FF6347] text-white shadow-sm hover:shadow-md'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {isAddingToCart ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Updating...
+                        </span>
+                      ) : (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                          {selectedColor?.inStock ? (itemInCart ? 'Update Cart' : 'Add to Cart') : 'Out of Stock'}
+                        </span>
+                      )}
+                    </button>
+                  ) : (
+                    <Link
+                      href="/cart"
+                      className="flex-1 py-3 px-6 rounded font-semibold text-sm uppercase tracking-wide bg-green-600 hover:bg-green-700 text-white shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Visit Cart
+                    </Link>
+                  )}
+
+                  <button className="px-4 py-3 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Delivery Check */}
+              <div className="border-t pt-6">
+                <div className="text-sm font-semibold text-gray-900 mb-3">DELIVERY DATE CHECK:</div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter Pincode"
+                    value={pincode}
+                    onChange={(e) => setPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength={6}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  />
+                  <button
+                    onClick={handlePincodeCheck}
+                    className="px-6 py-2 bg-gray-900 text-white text-sm font-semibold rounded hover:bg-gray-800 transition-colors"
+                  >
+                    Check
+                  </button>
+                </div>
+                {pincodeStatus === 'success' && (
+                  <p className="text-xs text-green-600 mt-2">✓ Delivery available in 3-5 business days</p>
+                )}
+                {pincodeStatus === 'error' && (
+                  <p className="text-xs text-red-600 mt-2">Please enter a valid 6-digit pincode</p>
+                )}
+              </div>
+
+              {/* Product Details Accordion */}
+              <div className="border-t pt-6 space-y-3">
+                {/* Product Details */}
+                <div className="border-b">
+                  <button
+                    onClick={() => toggleAccordion('details')}
+                    className="w-full flex items-center justify-between py-3 text-left"
+                  >
+                    <span className="font-semibold text-gray-900">Product Details</span>
+                    <svg
+                      className={`w-5 h-5 text-gray-600 transition-transform ${openAccordion === 'details' ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {openAccordion === 'details' && (
+                    <div className="pb-4 text-sm text-gray-700 space-y-2">
+                      <p>{product.description}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Size & Fit */}
+                <div className="border-b">
+                  <button
+                    onClick={() => toggleAccordion('size')}
+                    className="w-full flex items-center justify-between py-3 text-left"
+                  >
+                    <span className="font-semibold text-gray-900">Size & Fit</span>
+                    <svg
+                      className={`w-5 h-5 text-gray-600 transition-transform ${openAccordion === 'size' ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {openAccordion === 'size' && (
+                    <div className="pb-4 text-sm text-gray-700 space-y-1">
+                      <p><strong>Length:</strong> {product.length || 'Standard'}</p>
+                      <p><strong>Occasion:</strong> {product.occasion || 'All occasions'}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Material & Care */}
+                <div className="border-b">
+                  <button
+                    onClick={() => toggleAccordion('material')}
+                    className="w-full flex items-center justify-between py-3 text-left"
+                  >
+                    <span className="font-semibold text-gray-900">Material & Care</span>
+                    <svg
+                      className={`w-5 h-5 text-gray-600 transition-transform ${openAccordion === 'material' ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {openAccordion === 'material' && (
+                    <div className="pb-4 text-sm text-gray-700 space-y-1">
+                      <p><strong>Material:</strong> {product.material || 'Premium fabric'}</p>
+                      <p><strong>Care:</strong> {product.careInstructions || 'Dry clean only'}</p>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-maroon mb-2">Description</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
-
-              {/* Product Details */}
-              <div className="border-t pt-6 space-y-3">
-                <h3 className="text-lg font-semibold text-maroon mb-4">Product Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white p-4 rounded-lg shadow">
-                    <div className="text-sm text-gray-500">Material</div>
-                    <div className="font-semibold text-maroon">{product.material}</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow">
-                    <div className="text-sm text-gray-500">Length</div>
-                    <div className="font-semibold text-maroon">{product.length}</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow">
-                    <div className="text-sm text-gray-500">Occasion</div>
-                    <div className="font-semibold text-maroon">{product.occasion}</div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow">
-                    <div className="text-sm text-gray-500">Category</div>
-                    <div className="font-semibold text-maroon">{displayCategoryName}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Care Instructions */}
-              <div className="bg-golden/10 border-2 border-golden/30 rounded-lg p-4">
-                <h4 className="font-semibold text-maroon mb-2 flex items-center">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Care Instructions
-                </h4>
-                <p className="text-gray-700 text-sm">{product.careInstructions}</p>
-              </div>
-
-              {/* Quantity Selector and Action Buttons */}
-              <div className="border-t pt-6 space-y-4">
-                {/* Quantity Selector */}
-                <div>
-                  <label className="block text-sm font-semibold text-maroon mb-2">
-                    Quantity
-                  </label>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center border-2 border-maroon rounded-lg overflow-hidden">
-                      <button
-                        onClick={handleDecreaseQuantity}
-                        disabled={quantity <= 1 || !selectedColor?.inStock}
-                        className="px-4 py-3 bg-maroon text-white hover:bg-saffron disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                        </svg>
-                      </button>
-                      <input
-                        type="number"
-                        min="1"
-                        max="99"
-                        value={quantity}
-                        onChange={handleQuantityChange}
-                        disabled={!selectedColor?.inStock}
-                        className="w-20 text-center text-lg font-bold text-maroon focus:outline-none disabled:bg-gray-100"
-                      />
-                      <button
-                        onClick={handleIncreaseQuantity}
-                        disabled={quantity >= 99 || !selectedColor?.inStock}
-                        className="px-4 py-3 bg-maroon text-white hover:bg-saffron disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Add to Cart / Visit Cart Button */}
-                {!showVisitCart ? (
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={!selectedColor?.inStock || isAddingToCart}
-                    className={`w-full py-4 rounded-lg font-bold text-lg transition-all duration-200 flex items-center justify-center space-x-2 ${
-                      selectedColor?.inStock && !isAddingToCart
-                        ? 'bg-maroon text-white hover:bg-saffron shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:scale-95'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    {isAddingToCart ? (
-                      <>
-                        <svg className="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>Updating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                        <span>{selectedColor?.inStock ? (itemInCart ? 'Update Cart' : 'Add to Cart') : 'Out of Stock'}</span>
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <Link
-                    href="/cart"
-                    className="w-full py-4 rounded-lg font-bold text-lg bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center space-x-2 active:scale-95"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Visit Cart</span>
-                  </Link>
-                )}
-
-                {/* View More Button */}
-                <Link
-                  href={`/products/${product.category}`}
-                  className="block w-full py-4 rounded-lg font-bold text-lg border-2 border-maroon text-maroon hover:bg-maroon hover:text-white transition-all text-center"
-                >
-                  View More {displayCategoryName}
-                </Link>
-              </div>
-
-              {/* Features */}
-              <div className="flex flex-wrap gap-4 pt-4">
-                <div className="flex items-center space-x-2 text-sm">
-                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              {/* Trust Badges */}
+              <div className="flex flex-wrap gap-4 pt-4 text-xs text-gray-600">
+                <div className="flex items-center gap-1">
+                  <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span>Authentic Product</span>
+                  <span>Authentic</span>
                 </div>
-                <div className="flex items-center space-x-2 text-sm">
-                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="flex items-center gap-1">
+                  <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <span>Free Shipping</span>
                 </div>
-                <div className="flex items-center space-x-2 text-sm">
-                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="flex items-center gap-1">
+                  <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <span>7 Days Return</span>
