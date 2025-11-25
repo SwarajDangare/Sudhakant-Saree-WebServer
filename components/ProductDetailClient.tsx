@@ -159,101 +159,26 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       <section className="section-padding">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12">
-            {/* Product Image */}
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="aspect-[3/4] bg-gradient-to-br from-maroon via-indian-red to-saffron rounded-2xl shadow-2xl golden-border relative overflow-hidden group">
-                {hasImages && currentImage ? (
-                  <>
-                    {/* Actual Product Image */}
-                    <Image
-                      src={currentImage.url}
-                      alt={currentImage.altText || product.name}
-                      fill
-                      className="object-cover"
-                      priority
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-
-                    {/* Navigation Arrows */}
-                    {currentImages.length > 1 && (
-                      <>
-                        <button
-                          onClick={handlePreviousImage}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100"
-                          aria-label="Previous image"
-                        >
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={handleNextImage}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100"
-                          aria-label="Next image"
-                        >
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
-                      </>
-                    )}
-
-                    {/* Image Counter */}
-                    {currentImages.length > 1 && (
-                      <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        {selectedImageIndex + 1} / {currentImages.length}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {/* Placeholder when no images */}
-                    <div className="absolute inset-0 pattern-bg opacity-20"></div>
-                    <div
-                      className="absolute inset-0 flex items-center justify-center transition-colors duration-500"
-                      style={{ backgroundColor: (selectedColor?.colorCode || '#800000') + '30' }}
-                    >
-                      <div className="text-center text-white">
-                        <svg className="w-32 h-32 mx-auto mb-6 drop-shadow-2xl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                        </svg>
-                        {hasColors && (
-                          <div className="text-2xl font-bold bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full inline-block">
-                            {selectedColor?.color}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Stock Badge */}
-                {hasColors && selectedColor && !selectedColor.inStock && (
-                  <div className="absolute top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg z-10">
-                    Out of Stock
-                  </div>
-                )}
-              </div>
-
-              {/* Image Thumbnails */}
-              {hasImages && currentImages.length > 1 && (
-                <div className="grid grid-cols-5 gap-3">
+            {/* Product Images - Left Side with Thumbnails */}
+            <div className="flex gap-4">
+              {/* Thumbnail Gallery - Left Side */}
+              {hasImages && currentImages.length > 0 && (
+                <div className="flex flex-col gap-3" style={{width: '80px'}}>
                   {currentImages.map((image, index) => (
                     <button
                       key={image.id}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`aspect-square rounded-lg overflow-hidden transition-all ${
+                      className={`aspect-square rounded-lg overflow-hidden transition-all flex-shrink-0 ${
                         selectedImageIndex === index
-                          ? 'ring-4 ring-maroon scale-105 shadow-xl'
-                          : 'ring-2 ring-gray-300 hover:ring-saffron hover:scale-105'
+                          ? 'ring-4 ring-maroon shadow-xl'
+                          : 'ring-2 ring-gray-300 hover:ring-saffron'
                       }`}
                     >
                       <Image
                         src={image.url}
                         alt={image.altText || `${product.name} - Image ${index + 1}`}
-                        width={100}
-                        height={100}
+                        width={80}
+                        height={80}
                         className="w-full h-full object-cover"
                       />
                     </button>
@@ -261,32 +186,108 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 </div>
               )}
 
-              {/* Color Variant Selector */}
-              {hasColors && product.colors.length > 1 && (
-                <div className="pt-4 border-t">
-                  <h4 className="text-sm font-semibold text-maroon mb-3">Available Colors:</h4>
-                  <div className="grid grid-cols-4 gap-3">
-                    {product.colors.map((color) => (
-                      <button
-                        key={color.color}
-                        onClick={() => setSelectedColor(color)}
-                        className={`aspect-square rounded-xl transition-all ${
-                          selectedColor?.color === color.color
-                            ? 'ring-4 ring-maroon scale-105 shadow-xl'
-                            : 'ring-2 ring-gray-300 hover:ring-saffron hover:scale-105'
-                        }`}
-                      >
-                        <div
-                          className="w-full h-full rounded-xl flex items-center justify-center text-white font-semibold text-xs p-2"
-                          style={{ backgroundColor: color.colorCode }}
-                        >
-                          <span className="text-center leading-tight">{color.color.split(' ')[0]}</span>
+              {/* Main Image - Right Side */}
+              <div className="flex-1">
+                <div className="aspect-square bg-gradient-to-br from-maroon via-indian-red to-saffron rounded-2xl shadow-2xl golden-border relative overflow-hidden group">
+                  {hasImages && currentImage ? (
+                    <>
+                      {/* Actual Product Image */}
+                      <Image
+                        src={currentImage.url}
+                        alt={currentImage.altText || product.name}
+                        fill
+                        className="object-cover"
+                        priority
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                      />
+
+                      {/* Navigation Arrows */}
+                      {currentImages.length > 1 && (
+                        <>
+                          <button
+                            onClick={handlePreviousImage}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                            aria-label="Previous image"
+                          >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={handleNextImage}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all opacity-0 group-hover:opacity-100 z-10"
+                            aria-label="Next image"
+                          >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+
+                      {/* Image Counter */}
+                      {currentImages.length > 1 && (
+                        <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium z-10">
+                          {selectedImageIndex + 1} / {currentImages.length}
                         </div>
-                      </button>
-                    ))}
-                  </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* Placeholder when no images */}
+                      <div className="absolute inset-0 pattern-bg opacity-20"></div>
+                      <div
+                        className="absolute inset-0 flex items-center justify-center transition-colors duration-500"
+                        style={{ backgroundColor: (selectedColor?.colorCode || '#800000') + '30' }}
+                      >
+                        <div className="text-center text-white">
+                          <svg className="w-32 h-32 mx-auto mb-6 drop-shadow-2xl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                          </svg>
+                          {hasColors && (
+                            <div className="text-2xl font-bold bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full inline-block">
+                              {selectedColor?.color}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Stock Badge */}
+                  {hasColors && selectedColor && !selectedColor.inStock && (
+                    <div className="absolute top-6 right-6 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg z-10">
+                      Out of Stock
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* Color Variant Selector - Below Main Image */}
+                {hasColors && product.colors.length > 1 && (
+                  <div className="pt-4">
+                    <div className="grid grid-cols-5 gap-3">
+                      {product.colors.map((color) => (
+                        <button
+                          key={color.color}
+                          onClick={() => setSelectedColor(color)}
+                          className={`aspect-square rounded-xl transition-all ${
+                            selectedColor?.color === color.color
+                              ? 'ring-4 ring-maroon scale-105 shadow-xl'
+                              : 'ring-2 ring-gray-300 hover:ring-saffron hover:scale-105'
+                          }`}
+                        >
+                          <div
+                            className="w-full h-full rounded-xl flex items-center justify-center text-white font-semibold text-xs p-2"
+                            style={{ backgroundColor: color.colorCode }}
+                          >
+                            <span className="text-center leading-tight">{color.color.split(' ')[0]}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Product Info */}
@@ -323,51 +324,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   {product.description}
                 </p>
               </div>
-
-              {/* Color Selection */}
-              {hasColors && (
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold text-maroon mb-4">
-                    Select Color ({product.colors.length} options available)
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {product.colors.map((color) => (
-                      <button
-                        key={color.color}
-                        onClick={() => setSelectedColor(color)}
-                        disabled={!color.inStock}
-                        className={`group flex items-center space-x-3 p-3 rounded-lg border-2 transition-all ${
-                          selectedColor?.color === color.color
-                            ? 'border-maroon bg-maroon/5'
-                            : 'border-gray-300 hover:border-saffron'
-                        } ${!color.inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        <div
-                          className="w-12 h-12 rounded-full flex-shrink-0 shadow-md relative"
-                          style={{ backgroundColor: color.colorCode }}
-                        >
-                          {!color.inStock && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="w-full h-0.5 bg-gray-800 rotate-45"></div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="font-semibold text-gray-900">{color.color}</div>
-                          <div className="text-xs text-gray-500">
-                            {color.inStock ? 'In Stock' : 'Out of Stock'}
-                          </div>
-                        </div>
-                        {selectedColor?.color === color.color && (
-                          <svg className="w-5 h-5 text-maroon" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Product Details */}
               <div className="border-t pt-6 space-y-3">

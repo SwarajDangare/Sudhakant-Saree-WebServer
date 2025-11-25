@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Product } from '@/types/product';
 import { useCart } from '@/contexts/CartContext';
 
@@ -12,11 +13,16 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   // Default color if no colors available
-  const defaultColor = { color: 'Default', colorCode: '#800000', inStock: true };
+  const defaultColor = { color: 'Default', colorCode: '#800000', inStock: true, images: [] };
   const [selectedColor, setSelectedColor] = useState(product.colors[0] || defaultColor);
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const hasColors = product.colors && product.colors.length > 0;
+
+  // Get the first image of the selected color, or use placeholder
+  const firstImage = selectedColor?.images && selectedColor.images.length > 0
+    ? selectedColor.images[0]
+    : null;
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -43,37 +49,52 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
       <Link href={`/product/${product.id}`}>
-        {/* Product Image */}
-        <div className="aspect-[3/4] bg-gradient-to-br from-maroon via-indian-red to-saffron relative group">
-          {/* Pattern overlay */}
-          <div className="absolute inset-0 pattern-bg opacity-20"></div>
+        {/* Product Image - SQUARE FORMAT */}
+        <div className="aspect-square bg-gradient-to-br from-maroon via-indian-red to-saffron relative group overflow-hidden">
+          {firstImage ? (
+            <>
+              {/* Actual product image */}
+              <Image
+                src={firstImage.url}
+                alt={firstImage.altText || product.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+            </>
+          ) : (
+            <>
+              {/* Pattern overlay */}
+              <div className="absolute inset-0 pattern-bg opacity-20"></div>
 
-          {/* Image placeholder with selected color */}
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{ backgroundColor: (selectedColor?.colorCode || '#800000') + '20' }}
-          >
-            <div className="text-center text-white">
-              <svg className="w-24 h-24 mx-auto mb-4 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-              </svg>
-              {hasColors && (
-                <div className="text-sm font-semibold bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
-                  {selectedColor?.color}
+              {/* Image placeholder with selected color */}
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ backgroundColor: (selectedColor?.colorCode || '#800000') + '20' }}
+              >
+                <div className="text-center text-white">
+                  <svg className="w-24 h-24 mx-auto mb-4 drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                  </svg>
+                  {hasColors && (
+                    <div className="text-sm font-semibold bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
+                      {selectedColor?.color}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            </>
+          )}
 
           {/* Stock Badge */}
           {hasColors && selectedColor && !selectedColor.inStock && (
-            <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+            <div className="absolute top-4 right-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold z-10">
               Out of Stock
             </div>
           )}
 
           {/* Category Badge */}
-          <div className="absolute top-4 left-4 bg-golden text-maroon px-3 py-1 rounded-full text-sm font-semibold capitalize">
+          <div className="absolute top-4 left-4 bg-golden text-maroon px-3 py-1 rounded-full text-sm font-semibold capitalize z-10">
             {product.category}
           </div>
 
