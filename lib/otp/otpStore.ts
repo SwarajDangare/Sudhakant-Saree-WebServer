@@ -11,11 +11,11 @@ const otpStore = new Map<string, OTPEntry>();
 // Clean up expired OTPs every 5 minutes
 setInterval(() => {
   const now = Date.now();
-  for (const [key, entry] of otpStore.entries()) {
+  otpStore.forEach((entry, key) => {
     if (now > entry.expiresAt) {
       otpStore.delete(key);
     }
-  }
+  });
 }, 5 * 60 * 1000);
 
 /**
