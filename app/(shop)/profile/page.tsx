@@ -9,10 +9,20 @@ export default function ProfilePage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [originalEmail, setOriginalEmail] = useState(''); // Track original email
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Email verification states
+  const [emailOtp, setEmailOtp] = useState('');
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [isSendingOTP, setIsSendingOTP] = useState(false);
+  const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -23,9 +33,99 @@ export default function ProfilePage() {
   useEffect(() => {
     if (session?.user) {
       setName(session.user.name || '');
-      setEmail(session.user.email || '');
+      const userEmail = session.user.email || '';
+      setEmail(userEmail);
+      setOriginalEmail(userEmail);
+      // If email exists and hasn't changed, consider it verified
+      if (userEmail) {
+        setEmailVerified(true);
+      }
     }
   }, [session]);
+
+  // Check if email has changed
+  const emailHasChanged = email !== originalEmail;
+
+  // Handle sending OTP to email
+  const handleSendEmailOTP = async () => {
+    if (!email) {
+      setEmailError('Please enter an email address');
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    setIsSendingOTP(true);
+    setEmailError('');
+    setEmailSuccess('');
+
+    try {
+      const response = await fetch('/api/email/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          name: name || session?.user?.name || 'Customer',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      setOtpSent(true);
+      setEmailSuccess('OTP sent! Check your email inbox.');
+      setEmailOtp('');
+    } catch (error) {
+      setEmailError(error instanceof Error ? error.message : 'Failed to send OTP');
+    } finally {
+      setIsSendingOTP(false);
+    }
+  };
+
+  // Handle verifying OTP
+  const handleVerifyEmailOTP = async () => {
+    if (!emailOtp || emailOtp.length !== 6) {
+      setEmailError('Please enter the 6-digit OTP');
+      return;
+    }
+
+    setIsVerifyingOTP(true);
+    setEmailError('');
+
+    try {
+      const response = await fetch('/api/email/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          otp: emailOtp,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Invalid OTP');
+      }
+
+      setEmailVerified(true);
+      setEmailSuccess('✅ Email verified successfully!');
+      setEmailOtp('');
+      setOtpSent(false);
+    } catch (error) {
+      setEmailError(error instanceof Error ? error.message : 'Failed to verify OTP');
+    } finally {
+      setIsVerifyingOTP(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,18 +135,27 @@ export default function ProfilePage() {
       return;
     }
 
+    // If email has changed and is not empty, require verification
+    if (emailHasChanged && email && !emailVerified) {
+      setError('Please verify your email address before saving');
+      return;
+    }
+
     setIsSaving(true);
     setError('');
     setSuccess('');
 
     try {
+      // Only send verified email or null
+      const emailToSave = emailVerified && email ? email : null;
+
       // Call API to update customer profile
       const response = await fetch('/api/customers/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email: emailToSave }),
       });
 
       if (!response.ok) {
@@ -58,7 +167,9 @@ export default function ProfilePage() {
 
       // Update local state immediately with new data
       setName(updatedCustomer.name || '');
-      setEmail(updatedCustomer.email || '');
+      const newEmail = updatedCustomer.email || '';
+      setEmail(newEmail);
+      setOriginalEmail(newEmail);
 
       // Update session with new data
       await update({
@@ -72,6 +183,10 @@ export default function ProfilePage() {
 
       setSuccess('Profile updated successfully!');
       setIsEditing(false);
+      setOtpSent(false);
+      setEmailOtp('');
+      setEmailError('');
+      setEmailSuccess('');
 
       // Auto-dismiss success message after 3 seconds
       setTimeout(() => {
@@ -167,19 +282,103 @@ export default function ProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email (Optional)
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={!isEditing}
-                placeholder="Add your email address"
-                className={`w-full border border-gray-300 rounded-md px-3 py-2 ${
-                  !isEditing ? 'bg-gray-50' : ''
-                }`}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                We&apos;ll use this to send order updates
-              </p>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      // Reset verification when email changes
+                      if (e.target.value !== originalEmail) {
+                        setEmailVerified(false);
+                        setOtpSent(false);
+                        setEmailOtp('');
+                        setEmailError('');
+                        setEmailSuccess('');
+                      } else if (e.target.value === originalEmail && originalEmail) {
+                        // If changed back to original, mark as verified
+                        setEmailVerified(true);
+                      }
+                    }}
+                    disabled={!isEditing}
+                    placeholder="your.email@example.com"
+                    className={`flex-1 border border-gray-300 rounded-md px-3 py-2 ${
+                      !isEditing ? 'bg-gray-50' : ''
+                    }`}
+                  />
+                  {isEditing && emailHasChanged && email && !emailVerified && (
+                    <button
+                      type="button"
+                      onClick={handleSendEmailOTP}
+                      disabled={isSendingOTP}
+                      className="px-4 py-2 bg-maroon text-white rounded-md hover:bg-deep-maroon disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {isSendingOTP ? 'Sending...' : otpSent ? 'Resend Code' : 'Send Code'}
+                    </button>
+                  )}
+                  {isEditing && emailVerified && email && (
+                    <span className="flex items-center gap-1 text-green-600 font-medium px-3">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Verified
+                    </span>
+                  )}
+                </div>
+
+                {/* OTP Input Section */}
+                {isEditing && otpSent && !emailVerified && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3 space-y-2">
+                    <p className="text-sm text-blue-800">
+                      📧 Verification code sent to <strong>{email}</strong>
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={emailOtp}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setEmailOtp(value);
+                        }}
+                        placeholder="Enter 6-digit code"
+                        maxLength={6}
+                        className="flex-1 border border-blue-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleVerifyEmailOTP}
+                        disabled={isVerifyingOTP || emailOtp.length !== 6}
+                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                      >
+                        {isVerifyingOTP ? 'Verifying...' : 'Verify'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Email Messages */}
+                {emailError && (
+                  <p className="text-sm text-red-600 flex items-start gap-1">
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    {emailError}
+                  </p>
+                )}
+                {emailSuccess && (
+                  <p className="text-sm text-green-600 flex items-start gap-1">
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    {emailSuccess}
+                  </p>
+                )}
+
+                <p className="text-xs text-gray-500">
+                  💡 <strong>Tip:</strong> Add your email to receive automated order confirmations and shipping updates!
+                </p>
+              </div>
             </div>
 
             <div className="flex gap-3">
@@ -197,9 +396,17 @@ export default function ProfilePage() {
                     onClick={() => {
                       setIsEditing(false);
                       setName(session.user.name || '');
-                      setEmail(session.user.email || '');
+                      const userEmail = session.user.email || '';
+                      setEmail(userEmail);
+                      setOriginalEmail(userEmail);
                       setError('');
                       setSuccess('');
+                      // Reset email verification states
+                      setEmailVerified(!!userEmail);
+                      setOtpSent(false);
+                      setEmailOtp('');
+                      setEmailError('');
+                      setEmailSuccess('');
                     }}
                     disabled={isSaving}
                     className="border-2 border-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-50 disabled:opacity-50"
