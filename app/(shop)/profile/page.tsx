@@ -24,6 +24,12 @@ export default function ProfilePage() {
   const [emailSuccess, setEmailSuccess] = useState('');
   const [otpSent, setOtpSent] = useState(false);
 
+  // Account deletion states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login?callbackUrl=/profile');
@@ -197,6 +203,36 @@ export default function ProfilePage() {
       setError(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      setDeleteError('Please type DELETE to confirm');
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError('');
+
+    try {
+      const response = await fetch('/api/customers/profile', {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.error || 'Failed to delete account');
+      }
+
+      // Account deleted successfully - redirect to home and sign out
+      window.location.href = '/api/auth/signout?callbackUrl=/';
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Failed to delete account');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -452,7 +488,102 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+
+        {/* Danger Zone */}
+        <div className="mt-6 bg-white rounded-lg shadow-md p-6 border-2 border-red-200">
+          <h2 className="text-xl font-bold text-red-600 mb-2 flex items-center gap-2">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            Danger Zone
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Once you delete your account, there is no going back. Please be certain.
+          </p>
+          <button
+            onClick={() => {
+              setShowDeleteModal(true);
+              setDeleteConfirmText('');
+              setDeleteError('');
+            }}
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition font-medium"
+          >
+            Delete My Account
+          </button>
+        </div>
       </div>
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Delete Account</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+                </p>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+                  <p className="text-sm text-yellow-800 font-medium mb-1">⚠️ What will be deleted:</p>
+                  <ul className="text-xs text-yellow-700 list-disc list-inside space-y-1">
+                    <li>Your profile information</li>
+                    <li>All saved addresses</li>
+                    <li>Shopping cart items</li>
+                    <li>Access to your account</li>
+                  </ul>
+                </div>
+                <p className="text-sm text-gray-700 mb-4">
+                  Please type <strong className="font-mono text-red-600">DELETE</strong> to confirm:
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => {
+                    setDeleteConfirmText(e.target.value);
+                    setDeleteError('');
+                  }}
+                  placeholder="Type DELETE here"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  autoFocus
+                />
+                {deleteError && (
+                  <p className="text-sm text-red-600 mb-4 flex items-start gap-1">
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    {deleteError}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteConfirmText('');
+                  setDeleteError('');
+                }}
+                disabled={isDeleting}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={isDeleting || deleteConfirmText !== 'DELETE'}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
