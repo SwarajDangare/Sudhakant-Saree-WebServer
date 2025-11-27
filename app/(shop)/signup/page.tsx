@@ -446,7 +446,7 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              disabled={isLoading || phoneNumber.length !== 10 || !name.trim() || (email.trim() && !emailVerified)}
+              disabled={isLoading || phoneNumber.length !== 10 || !name.trim() || (email.trim() !== '' && !emailVerified)}
               className="w-full py-3 px-4 bg-maroon text-white rounded-lg font-semibold text-lg hover:bg-deep-maroon focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-maroon disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {isLoading ? (
