@@ -6,6 +6,8 @@ import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { isSuperAdmin } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/admin/users/[id]
  * Get a specific user (SUPER_ADMIN only)

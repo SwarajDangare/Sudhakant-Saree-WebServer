@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { db, products, productColors, productImages, colorImages } from '@/db';
 import { eq, asc } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 // GET a single product
 export async function GET(
   request: NextRequest,
