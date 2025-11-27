@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { customerAuthOptions } from '@/lib/customer-auth';
-import { db, orders, orderItems, carts, cartItems, products, productColors, addresses } from '@/db';
+import { db, orders, orderItems, carts, cartItems, products, productColors, addresses, customers } from '@/db';
 import { eq, desc } from 'drizzle-orm';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -191,6 +192,46 @@ export async function POST(request: NextRequest) {
       items: orderItemsData,
       address,
     };
+
+    // Send order confirmation email (don't block response if email fails)
+    try {
+      // Get customer details
+      const [customer] = await db
+        .select()
+        .from(customers)
+        .where(eq(customers.id, session.user.id))
+        .limit(1);
+
+      if (customer && customer.email) {
+        // Send confirmation email
+        await sendOrderConfirmationEmail({
+          orderNumber: newOrder.orderNumber,
+          customerName: customer.name || address.name || 'Valued Customer',
+          customerEmail: customer.email,
+          items: orderItemsData,
+          subtotal: newOrder.subtotal,
+          total: newOrder.total,
+          address: {
+            name: address.name,
+            phoneNumber: address.phoneNumber,
+            addressLine1: address.addressLine1,
+            addressLine2: address.addressLine2,
+            city: address.city,
+            state: address.state,
+            pincode: address.pincode,
+          },
+          paymentMethod: newOrder.paymentMethod,
+          orderDate: newOrder.createdAt.toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+        });
+      }
+    } catch (emailError) {
+      // Log but don't fail the order creation
+      console.error('Failed to send order confirmation email:', emailError);
+    }
 
     return NextResponse.json(completeOrder, { status: 201 });
   } catch (error) {
