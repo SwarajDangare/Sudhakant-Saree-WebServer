@@ -16,10 +16,18 @@ export default function SignupPage() {
   const [step, setStep] = useState<SignupStep>('details');
   const [phoneNumber, setPhoneNumber] = useState(phoneFromUrl);
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [showEmailSection, setShowEmailSection] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingOTP, setIsSendingOTP] = useState(false);
+  const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
 
   // Address form fields
   const [addressData, setAddressData] = useState({
@@ -41,12 +49,87 @@ export default function SignupPage() {
     }));
   }, [name, phoneNumber]);
 
+  const handleSendEmailOTP = async () => {
+    if (!email.trim() || !name.trim()) {
+      setEmailError('Please enter your name and email first');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    setIsSendingOTP(true);
+    setEmailError('');
+    setEmailSuccess('');
+
+    try {
+      const response = await fetch('/api/email/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      setEmailSuccess('OTP sent! Check your email inbox.');
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : 'Failed to send OTP');
+    } finally {
+      setIsSendingOTP(false);
+    }
+  };
+
+  const handleVerifyEmailOTP = async () => {
+    if (!emailOtp.trim() || emailOtp.length !== 6) {
+      setEmailError('Please enter the 6-digit OTP');
+      return;
+    }
+
+    setIsVerifyingOTP(true);
+    setEmailError('');
+    setEmailSuccess('');
+
+    try {
+      const response = await fetch('/api/email/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: emailOtp }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Invalid OTP');
+      }
+
+      setEmailVerified(true);
+      setEmailSuccess('✅ Email verified successfully!');
+      setEmailOtp('');
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : 'Failed to verify OTP');
+    } finally {
+      setIsVerifyingOTP(false);
+    }
+  };
+
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
+      // If email is provided but not verified, show error
+      if (email.trim() && !emailVerified) {
+        throw new Error('Please verify your email address before continuing');
+      }
+
       // Check if phone number is already registered
       const checkResponse = await fetch('/api/customers/check-phone', {
         method: 'POST',
@@ -84,6 +167,7 @@ export default function SignupPage() {
         body: JSON.stringify({
           phoneNumber,
           name,
+          email: emailVerified && email ? email : null,
           address: showAddressForm ? addressData : null,
         }),
       });
@@ -169,6 +253,110 @@ export default function SignupPage() {
                 placeholder="Enter your full name"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-maroon focus:border-transparent transition-all"
               />
+            </div>
+
+            {/* Optional Email Section */}
+            <div className="border-t border-gray-200 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowEmailSection(!showEmailSection)}
+                className="flex items-center justify-between w-full text-left text-sm font-semibold text-gray-700 hover:text-maroon transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <span>Add Email (Optional)</span>
+                  {emailVerified && (
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                      ✓ Verified
+                    </span>
+                  )}
+                </span>
+                <svg
+                  className={`w-5 h-5 transition-transform ${showEmailSection ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <p className="text-xs text-gray-500 mt-1 ml-1">
+                📧 Get order updates via email
+              </p>
+
+              {showEmailSection && (
+                <div className="mt-4 space-y-3 bg-gray-50 p-4 rounded-lg">
+                  {emailError && (
+                    <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
+                      {emailError}
+                    </div>
+                  )}
+                  {emailSuccess && (
+                    <div className="text-sm text-green-600 bg-green-50 border border-green-200 rounded px-3 py-2">
+                      {emailSuccess}
+                    </div>
+                  )}
+
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={emailVerified}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-maroon disabled:bg-gray-100"
+                    />
+                  </div>
+
+                  {!emailVerified ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleSendEmailOTP}
+                        disabled={isSendingOTP || !email.trim()}
+                        className="w-full bg-maroon text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-deep-maroon disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSendingOTP ? 'Sending OTP...' : 'Send Verification Code'}
+                      </button>
+
+                      {emailSuccess && (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Enter 6-digit OTP"
+                            value={emailOtp}
+                            onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            maxLength={6}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-maroon text-center font-mono text-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyEmailOTP}
+                            disabled={isVerifyingOTP || emailOtp.length !== 6}
+                            className="w-full bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isVerifyingOTP ? 'Verifying...' : 'Verify Email'}
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-md px-3 py-2">
+                      <span className="text-sm text-green-800">✅ Email verified</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmailVerified(false);
+                          setEmailOtp('');
+                          setEmailSuccess('');
+                        }}
+                        className="text-xs text-green-700 hover:text-green-900 underline"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Optional Address Section */}
@@ -258,7 +446,7 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              disabled={isLoading || phoneNumber.length !== 10 || !name.trim()}
+              disabled={isLoading || phoneNumber.length !== 10 || !name.trim() || (email.trim() !== '' && !emailVerified)}
               className="w-full py-3 px-4 bg-maroon text-white rounded-lg font-semibold text-lg hover:bg-deep-maroon focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-maroon disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {isLoading ? (
@@ -292,6 +480,9 @@ export default function SignupPage() {
               <p className="text-xs text-gray-500 mb-1">Signing up as</p>
               <p className="text-lg font-semibold text-gray-900">{name}</p>
               <p className="text-sm text-gray-600">{phoneNumber}</p>
+              {emailVerified && email && (
+                <p className="text-sm text-green-600 mt-1">✅ {email}</p>
+              )}
             </div>
 
             <div>
