@@ -1,8 +1,8 @@
 # CLAUDE.md - AI Assistant Guide for Sudhakant Sarees
 
-> **Last Updated:** November 16, 2025
+> **Last Updated:** November 27, 2025
 > **Project:** Sudhakant Sarees - Elegant Saree Marketplace
-> **Stage:** Phase 2 Development (API Integration & Admin Panel)
+> **Stage:** Phase 4 Development (E-Commerce Features & Production Deployment)
 
 ## Table of Contents
 
@@ -28,27 +28,40 @@
 
 - **Frontend:** Fully responsive UI with custom design system
 - **Backend:** PostgreSQL database (Neon) with Drizzle ORM
-- **Authentication:** NextAuth.js (infrastructure ready, not yet implemented)
-- **Media:** Cloudinary integration for image management
-- **Deployment:** Next.js deployment (Vercel, or other platforms)
+- **Authentication:** NextAuth.js with JWT sessions and role-based permissions
+- **Media:** Cloudinary integration for image management and CDN delivery
+- **Deployment:** Cloudflare Pages with Edge Runtime support
 
 ### Current Status
 
-✅ **Completed:**
+✅ **Completed (Phases 1-3):**
 - UI/UX design and responsive layout
-- Component architecture
-- Database schema (Drizzle ORM)
-- Static routing and navigation
-- Mock data for development
-- Design system and branding
-- Migration from Prisma to Drizzle ORM
+- Component architecture with Server/Client components
+- Database schema with Drizzle ORM (migrated from Prisma)
+- Complete API endpoints (Products, Categories, Sections, Orders, Users, Cart, Addresses)
+- Admin panel with full CRUD operations
+- Authentication system with NextAuth.js
+- Role-based permission system (SUPER_ADMIN, SHOP_MANAGER, SALESMAN)
+- Real database integration with Neon PostgreSQL
+- Cloudinary image upload functionality
+- Product color variants with multiple images
+- Email OTP verification for admin users
+- Order management system
+- Customer management
+- Shopping cart backend
 
-🚧 **In Progress:**
-- API endpoints implementation
-- Admin panel for product management
-- Authentication system
-- Real database integration
-- Image upload functionality
+🚧 **In Progress (Phase 4):**
+- Customer-facing checkout flow
+- Payment gateway integration
+- Email notifications for orders
+- Invoice generation
+- Enhanced order tracking
+
+🎯 **Next Up (Phase 5):**
+- Production deployment optimization
+- Performance and SEO enhancements
+- Custom domain setup
+- Analytics integration
 
 ---
 
@@ -1017,32 +1030,97 @@ When starting a new task:
 
 ## Project Roadmap (For Context)
 
-### Phase 1: Foundation ✅
+### Phase 1: Foundation ✅ COMPLETED
 - [x] UI/UX Design
 - [x] Component Architecture
-- [x] Database Schema
+- [x] Database Schema (Drizzle ORM)
 - [x] Mock Data Setup
+- [x] Migration from Prisma to Drizzle ORM
 
-### Phase 2: Backend Integration 🚧
-- [ ] API Routes Implementation
-- [ ] Database Integration
-- [ ] Image Upload System
-- [ ] Authentication System
-- [ ] Form Validation
+### Phase 2: Backend Integration ✅ COMPLETED
+- [x] API Routes Implementation (Products, Categories, Sections, Orders, Users, Customers, Cart, Addresses)
+- [x] Database Integration (PostgreSQL via Neon with Drizzle ORM)
+- [x] Image Upload System (Cloudinary with upload widget)
+- [x] Authentication System (NextAuth.js with JWT sessions)
+- [x] Form Validation (React Hook Form + Zod schemas)
+- [x] Role-based Permission System (SUPER_ADMIN, SHOP_MANAGER, SALESMAN)
+- [x] Email OTP Verification for Admin Users
+- [x] Lazy Database Initialization for Edge Runtime
 
-### Phase 3: Admin Panel (Upcoming)
-- [ ] Admin Dashboard
-- [ ] Product Management CRUD
-- [ ] Category Management
-- [ ] User Management
-- [ ] Image Management
+### Phase 3: Admin Panel ✅ COMPLETED
+- [x] Admin Dashboard (Statistics, Recent Orders)
+- [x] Product Management CRUD
+  - [x] Product creation and editing
+  - [x] Color variants with multiple images per color
+  - [x] Product image management
+  - [x] Featured product toggle
+  - [x] Price and discount management
+- [x] Category Management (Create, Edit, Delete)
+- [x] Section Management (Hierarchical category system)
+- [x] User Management
+  - [x] Admin user CRUD operations
+  - [x] Role-based access control
+  - [x] Email verification with OTP
+  - [x] Password management
+- [x] Customer Management (View customer data and orders)
+- [x] Order Management
+  - [x] View all orders
+  - [x] Order status updates
+  - [x] Order details with customer info
+- [x] Image Management (Cloudinary integration)
+- [x] Password Visibility Toggle Component
 
-### Phase 4: E-Commerce Features (Upcoming)
-- [ ] Shopping Cart
-- [ ] Checkout Flow
-- [ ] Order Management
-- [ ] Payment Integration
-- [ ] Email Notifications
+### Phase 4: E-Commerce Features 🚧 IN PROGRESS
+- [x] Shopping Cart (Backend API complete)
+- [x] Order System (Backend complete with order creation and management)
+- [x] Customer Addresses (Multi-address support)
+- [x] Product Detail Page (Redesigned with color selection)
+- [x] Customer Profile Page
+- 🚧 Checkout Flow (Backend ready, frontend needs enhancement)
+- [ ] Payment Gateway Integration (COD, UPI, Card, Net Banking)
+- [ ] Email Notifications (Order confirmations, status updates)
+- [ ] WhatsApp Notifications (Optional)
+- [ ] Invoice Generation (PDF)
+- [ ] Order Tracking for Customers
+
+### Phase 5: Deployment & Production 🚧 IN PROGRESS
+- [x] Cloudflare Pages Build Fixes
+- [x] Edge Runtime Compatibility
+- [x] Environment Configuration
+- [ ] Production Database Setup
+- [ ] SSL/HTTPS Configuration
+- [ ] Custom Domain Setup
+- [ ] Performance Optimization
+- [ ] SEO Optimization
+- [ ] Analytics Integration
+
+### Phase 6: Future Enhancements (Planned)
+- [ ] Product Reviews and Ratings
+- [ ] Wishlist Functionality
+- [ ] Product Search and Filters
+- [ ] Bulk Product Upload (CSV/Excel)
+- [ ] Inventory Management
+- [ ] Sales Reports and Analytics
+- [ ] Customer Loyalty Program
+- [ ] Multi-language Support
+- [ ] PWA (Progressive Web App) Features
+- [ ] Mobile App (React Native)
+
+---
+
+## Recent Major Updates
+
+### November 2025 Updates:
+1. **Role-Based Permissions**: Implemented granular permission system for three admin roles
+2. **Product Color Variants**: Added support for multiple color variants with dedicated images
+3. **Section Management**: Built hierarchical category system (Sections → Categories → Products)
+4. **Order Management**: Complete order lifecycle management with status tracking
+5. **Email OTP Verification**: Secure admin user email verification system
+6. **Cloudinary Integration**: Full image upload and management with CDN delivery
+7. **Product Detail Redesign**: Modern minimalist UI with square image format
+8. **Database Optimizations**: Lazy initialization for better Edge Runtime performance
+9. **Admin User Management**: Complete CRUD for managing admin accounts
+10. **Deployment Fixes**: Resolved Cloudflare Pages build issues
 
 ---
 
@@ -1051,11 +1129,14 @@ When starting a new task:
 For questions about this codebase:
 - Check this CLAUDE.md file first
 - Review the README.md for general project info
+- Review CLOUDINARY_SETUP.md for image upload configuration
 - Examine existing code patterns before implementing new features
 - Test changes locally before committing
+- Check the database schema in `db/schema/index.ts`
+- Review permissions in `lib/permissions.ts` before modifying access controls
 
 **Remember:** This is a production-ready e-commerce platform. Maintain high code quality and test thoroughly!
 
 ---
 
-*Last updated by AI Assistant on November 16, 2025*
+*Last updated: November 27, 2025*
