@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { db, orders } from '@/db';
+import { db, orders, customers } from '@/db';
 import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/lib/permissions';
+import { sendOrderStatusUpdateEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +64,29 @@ export async function PUT(
       })
       .where(eq(orders.id, params.id))
       .returning();
+
+    // Send status update email (don't block response if email fails)
+    try {
+      // Get customer details
+      const [customer] = await db
+        .select()
+        .from(customers)
+        .where(eq(customers.id, updatedOrder.customerId))
+        .limit(1);
+
+      if (customer && customer.email) {
+        // Send status update email
+        await sendOrderStatusUpdateEmail({
+          orderNumber: updatedOrder.orderNumber,
+          customerName: customer.name || 'Valued Customer',
+          customerEmail: customer.email,
+          status: status as 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED',
+        });
+      }
+    } catch (emailError) {
+      // Log but don't fail the status update
+      console.error('Failed to send order status update email:', emailError);
+    }
 
     return NextResponse.json(updatedOrder);
   } catch (error) {
