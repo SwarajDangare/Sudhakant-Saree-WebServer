@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { phoneNumber, name, address } = body;
+    const { phoneNumber, name, email, address } = body;
 
     // Validate required fields
     if (!phoneNumber || !name) {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       .values({
         phoneNumber,
         name,
-        email: null,
+        email: email || null,
       })
       .returning();
 
