@@ -532,6 +532,7 @@ export default function ProfilePage() {
                   <p className="text-sm text-yellow-800 font-medium mb-1">⚠️ What will be deleted:</p>
                   <ul className="text-xs text-yellow-700 list-disc list-inside space-y-1">
                     <li>Your profile information</li>
+                    <li>All order history and order details</li>
                     <li>All saved addresses</li>
                     <li>Shopping cart items</li>
                     <li>Access to your account</li>

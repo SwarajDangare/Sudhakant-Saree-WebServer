@@ -129,23 +129,11 @@ export async function DELETE() {
       );
     }
 
-    // Check if customer has any orders
-    const customerOrders = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.customerId, session.user.id))
-      .limit(1);
-
-    if (customerOrders.length > 0) {
-      return NextResponse.json(
-        {
-          error: 'Cannot delete account with order history',
-          message: 'Your account has existing orders and cannot be deleted. For privacy, you can remove your email and personal information from your profile instead.',
-          hasOrders: true,
-        },
-        { status: 400 }
-      );
-    }
+    // Delete all customer orders (this will cascade delete order items)
+    // Must delete orders first due to foreign key constraints on addresses
+    await db
+      .delete(orders)
+      .where(eq(orders.customerId, session.user.id));
 
     // Delete customer (addresses and carts will cascade delete automatically)
     await db
