@@ -4,6 +4,8 @@ import { customerAuthOptions } from '@/lib/customer-auth';
 import { db, orders, orderItems, carts, cartItems, products, productColors, addresses } from '@/db';
 import { eq, desc } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch all orders for customer
 export async function GET(request: NextRequest) {
   try {

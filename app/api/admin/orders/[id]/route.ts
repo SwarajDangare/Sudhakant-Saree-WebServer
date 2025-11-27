@@ -5,6 +5,8 @@ import { db, orders } from '@/db';
 import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * PUT /api/admin/orders/[id]
  * Update order status (SHOP_MANAGER and SUPER_ADMIN only)

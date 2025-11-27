@@ -4,6 +4,8 @@ import { customerAuthOptions } from '@/lib/customer-auth';
 import { db, customers } from '@/db';
 import { eq } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Get customer profile
 export async function GET() {
   try {

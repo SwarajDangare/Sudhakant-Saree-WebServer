@@ -4,6 +4,8 @@ import { customerAuthOptions } from '@/lib/customer-auth';
 import { db, addresses } from '@/db';
 import { eq, and, ne } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 // PATCH - Update address
 export async function PATCH(
   request: NextRequest,

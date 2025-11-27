@@ -5,6 +5,8 @@ import { db, customers, orders } from '@/db';
 import { eq, sql, desc } from 'drizzle-orm';
 import { getPermissions } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Get all customers with order statistics
 export async function GET(request: NextRequest) {
   try {
