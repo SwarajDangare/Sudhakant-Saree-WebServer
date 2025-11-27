@@ -4,6 +4,8 @@ import { customerAuthOptions } from '@/lib/customer-auth';
 import { db, carts, cartItems, products, productImages, productColors } from '@/db';
 import { eq, and, isNull } from 'drizzle-orm';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch cart
 export async function GET(request: NextRequest) {
   try {

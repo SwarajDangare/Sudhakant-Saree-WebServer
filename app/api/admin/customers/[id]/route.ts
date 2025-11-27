@@ -5,6 +5,8 @@ import { db, customers, addresses, orders, orderItems, products, productColors }
 import { eq, desc } from 'drizzle-orm';
 import { getPermissions } from '@/lib/permissions';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Get specific customer with full order history
 export async function GET(
   request: NextRequest,
