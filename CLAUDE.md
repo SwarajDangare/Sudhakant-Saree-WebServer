@@ -30,7 +30,7 @@
 - **Backend:** PostgreSQL database (Neon) with Drizzle ORM
 - **Authentication:** NextAuth.js (infrastructure ready, not yet implemented)
 - **Media:** Cloudinary integration for image management
-- **Deployment:** Cloudflare Pages with Edge Runtime support
+- **Deployment:** Next.js deployment (Vercel, or other platforms)
 
 ### Current Status
 
@@ -920,7 +920,7 @@ export default function ContactForm() {
 
 ## Deployment
 
-### Cloudflare Pages Configuration
+### Deployment Configuration
 
 **Build Settings:**
 - **Build Command:** `npm run build`
@@ -935,12 +935,7 @@ export default function ContactForm() {
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
 
-### Edge Runtime
-
-Add to pages/routes for Cloudflare compatibility:
-```typescript
-export const runtime = 'edge'
-```
+**Note:** This project can be deployed to any Next.js-compatible platform (Vercel, Netlify, etc.)
 
 ### Build Validation
 
@@ -965,10 +960,10 @@ npm run db:generate
 1. **Read existing code patterns** - This project has established conventions
 2. **Check TypeScript types** - Maintain type safety throughout
 3. **Server vs Client components** - Use 'use client' only when necessary
-4. **Database schema** - Check Prisma schema before data operations
+4. **Database schema** - Check Drizzle schema before data operations
 5. **Responsive design** - Test mobile, tablet, and desktop layouts
 6. **Color scheme** - Use defined brand colors from config
-7. **Edge runtime** - Ensure compatibility with Cloudflare Pages
+7. **Build validation** - Always test builds before deploying
 
 ### Common Pitfalls to Avoid
 
