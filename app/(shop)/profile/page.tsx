@@ -38,7 +38,9 @@ export default function ProfilePage() {
   }, [status, router]);
 
   useEffect(() => {
-    if (session?.user) {
+    // Only sync from session if not currently editing
+    // This prevents losing user input when they switch tabs
+    if (session?.user && !isEditing) {
       setName(session.user.name || '');
       const userEmail = session.user.email || '';
       setEmail(userEmail);
@@ -48,7 +50,7 @@ export default function ProfilePage() {
         setEmailVerified(true);
       }
     }
-  }, [session]);
+  }, [session, isEditing]);
 
   // Countdown timer for resend button
   useEffect(() => {
