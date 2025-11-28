@@ -28,6 +28,7 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [emailSuccess, setEmailSuccess] = useState('');
+  const [resendCountdown, setResendCountdown] = useState(0); // Countdown for resend button
 
   // Address form fields
   const [addressData, setAddressData] = useState({
@@ -48,6 +49,16 @@ export default function SignupPage() {
       phoneNumber: phoneNumber,
     }));
   }, [name, phoneNumber]);
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => {
+        setResendCountdown(resendCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCountdown]);
 
   const handleSendEmailOTP = async () => {
     if (!email.trim() || !name.trim()) {
@@ -75,9 +86,15 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle rate limiting with countdown
+        if (response.status === 429 && data.remainingSeconds) {
+          setResendCountdown(data.remainingSeconds);
+        }
         throw new Error(data.error || 'Failed to send OTP');
       }
 
+      // Start countdown for 2 minutes (120 seconds)
+      setResendCountdown(120);
       setEmailSuccess('OTP sent! Check your email inbox.');
     } catch (err) {
       setEmailError(err instanceof Error ? err.message : 'Failed to send OTP');
@@ -312,10 +329,16 @@ export default function SignupPage() {
                       <button
                         type="button"
                         onClick={handleSendEmailOTP}
-                        disabled={isSendingOTP || !email.trim()}
+                        disabled={isSendingOTP || !email.trim() || resendCountdown > 0}
                         className="w-full bg-maroon text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-deep-maroon disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isSendingOTP ? 'Sending OTP...' : 'Send Verification Code'}
+                        {isSendingOTP
+                          ? 'Sending OTP...'
+                          : resendCountdown > 0
+                          ? `Resend in ${Math.floor(resendCountdown / 60)}:${String(resendCountdown % 60).padStart(2, '0')}`
+                          : emailSuccess
+                          ? 'Resend Code'
+                          : 'Send Verification Code'}
                       </button>
 
                       {emailSuccess && (

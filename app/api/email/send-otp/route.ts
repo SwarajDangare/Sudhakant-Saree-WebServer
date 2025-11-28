@@ -32,9 +32,15 @@ export async function POST(request: NextRequest) {
     // Check if there's already a valid OTP (rate limiting)
     if (hasValidOTP(email)) {
       const remaining = getOTPRemainingTime(email);
+      const minutes = Math.floor(remaining / 60);
+      const seconds = remaining % 60;
+      const timeString = minutes > 0
+        ? `${minutes}m ${seconds}s`
+        : `${seconds}s`;
       return NextResponse.json(
         {
-          error: `Please wait ${Math.ceil(remaining / 60)} minutes before requesting a new OTP`,
+          error: `Please wait ${timeString} before requesting a new OTP`,
+          remainingSeconds: remaining,
         },
         { status: 429 }
       );
@@ -59,7 +65,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'OTP sent successfully to your email',
-      expiresIn: 600, // 10 minutes in seconds
+      expiresIn: 120, // 2 minutes in seconds
     });
   } catch (error) {
     console.error('Error sending OTP:', error);

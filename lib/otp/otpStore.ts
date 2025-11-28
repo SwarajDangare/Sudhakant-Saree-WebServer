@@ -26,14 +26,14 @@ export function generateOTP(): string {
 }
 
 /**
- * Store OTP for an email (expires in 10 minutes)
+ * Store OTP for an email (expires in 2 minutes)
  */
 export function storeOTP(email: string, otp: string): void {
   const now = Date.now();
   otpStore.set(email.toLowerCase(), {
     otp,
     email: email.toLowerCase(),
-    expiresAt: now + 10 * 60 * 1000, // 10 minutes
+    expiresAt: now + 2 * 60 * 1000, // 2 minutes
     createdAt: now,
   });
 }

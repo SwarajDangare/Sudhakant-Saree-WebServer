@@ -246,7 +246,7 @@ export async function sendOTPEmail(customerEmail: string, customerName: string, 
               <div class="otp-box">
                 <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Your OTP Code</p>
                 <div class="otp-code">${otp}</div>
-                <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">Valid for 10 minutes</p>
+                <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">Valid for 2 minutes</p>
               </div>
 
               <p style="margin-top: 30px;">Please enter this code to verify your email address and start receiving order updates.</p>
