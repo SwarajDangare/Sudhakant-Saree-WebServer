@@ -4,17 +4,25 @@ import { verifyOTP } from '@/lib/otp/otpStore';
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/email/verify-otp
- * Verify OTP for email verification
+ * POST /api/phone/verify-otp
+ * Verify OTP for phone number verification
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, otp } = body;
+    const { phoneNumber, otp } = body;
 
-    if (!email || !otp) {
+    if (!phoneNumber || !otp) {
       return NextResponse.json(
-        { error: 'Email and OTP are required' },
+        { error: 'Phone number and OTP are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate phone number format
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      return NextResponse.json(
+        { error: 'Invalid phone number format' },
         { status: 400 }
       );
     }
@@ -26,12 +34,12 @@ export async function POST(request: NextRequest) {
       // OTP verification disabled (testing mode) - skip verification
       return NextResponse.json({
         success: true,
-        message: 'Email verified successfully (testing mode)',
+        message: 'Phone verified successfully (testing mode)',
       });
     }
 
     // Normal OTP verification (production mode)
-    const isValid = verifyOTP(email, otp);
+    const isValid = verifyOTP(phoneNumber, otp);
 
     if (!isValid) {
       return NextResponse.json(
@@ -42,10 +50,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Email verified successfully',
+      message: 'Phone number verified successfully',
     });
   } catch (error) {
-    console.error('Error verifying OTP:', error);
+    console.error('Error verifying phone OTP:', error);
     return NextResponse.json(
       { error: 'Failed to verify OTP' },
       { status: 500 }

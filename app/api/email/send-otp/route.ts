@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateOTP, storeOTP, hasValidOTP, getOTPRemainingTime } from '@/lib/otp/otpStore';
+import { generateOTP, checkRateLimit } from '@/lib/otp/otpStore';
 import { sendOTPEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
@@ -29,28 +29,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if there's already a valid OTP (rate limiting)
-    if (hasValidOTP(email)) {
-      const remaining = getOTPRemainingTime(email);
-      const minutes = Math.floor(remaining / 60);
-      const seconds = remaining % 60;
+    // Check rate limit
+    const rateLimit = checkRateLimit(email);
+    if (!rateLimit.allowed) {
+      const minutes = Math.floor(rateLimit.remainingSeconds / 60);
+      const seconds = rateLimit.remainingSeconds % 60;
       const timeString = minutes > 0
         ? `${minutes}m ${seconds}s`
         : `${seconds}s`;
       return NextResponse.json(
         {
           error: `Please wait ${timeString} before requesting a new OTP`,
-          remainingSeconds: remaining,
+          remainingSeconds: rateLimit.remainingSeconds,
         },
         { status: 429 }
       );
     }
 
-    // Generate OTP
-    const otp = generateOTP();
-
-    // Store OTP
-    storeOTP(email, otp);
+    // Generate and store OTP
+    const otp = generateOTP(email);
 
     // Send OTP email
     const emailResult = await sendOTPEmail(email, name, otp);
