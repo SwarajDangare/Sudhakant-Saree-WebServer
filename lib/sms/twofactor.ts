@@ -51,16 +51,16 @@ export async function sendSMSOTP(
       // Sends OTP via automated voice call
       url = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/VOICE/CALL/${phoneNumber}/${otp}`;
     } else {
-      // 2Factor SMS API (default)
-      // Correct format: /API/V1/{apiKey}/SMS/{phoneNumber}/{otp}
-      // Do NOT add sender ID at the end for SMS
-      url = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneNumber}/${otp}`;
+      // 2Factor SMS API
+      // Try with +91 country code prefix
+      url = `https://2factor.in/API/V1/${apiKey}/SMS/+91${phoneNumber}/${otp}`;
     }
 
     console.log('🌐 API URL:', url);
+    console.log('🔧 HTTP Method: GET');
 
     const response = await fetch(url, {
-      method: 'POST',  // Changed from GET to POST for SMS API
+      method: 'GET',  // Try GET method
     });
 
     if (!response.ok) {
