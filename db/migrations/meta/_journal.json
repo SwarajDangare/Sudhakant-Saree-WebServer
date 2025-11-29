@@ -43,6 +43,13 @@
       "when": 1764430013581,
       "tag": "0005_jittery_stephen_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1764431526866,
+      "tag": "0006_breezy_trish_tilby",
+      "breakpoints": true
     }
   ]
 }

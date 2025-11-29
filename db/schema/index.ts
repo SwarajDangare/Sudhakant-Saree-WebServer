@@ -52,6 +52,16 @@ export const rolePermissions = pgTable('role_permissions', {
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
 
+// User-Specific Permissions (Override role permissions for individual users)
+export const userPermissions = pgTable('user_permissions', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  permissionId: text('permissionId').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  enabled: boolean('enabled').default(false).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
 // Customer Management (Phone-based authentication)
 export const customers = pgTable('customers', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -319,6 +329,7 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 // Permissions Relations
 export const permissionsRelations = relations(permissions, ({ many }) => ({
   rolePermissions: many(rolePermissions),
+  userPermissions: many(userPermissions),
 }));
 
 export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
@@ -326,4 +337,19 @@ export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => 
     fields: [rolePermissions.permissionId],
     references: [permissions.id],
   }),
+}));
+
+export const userPermissionsRelations = relations(userPermissions, ({ one }) => ({
+  user: one(users, {
+    fields: [userPermissions.userId],
+    references: [users.id],
+  }),
+  permission: one(permissions, {
+    fields: [userPermissions.permissionId],
+    references: [permissions.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  userPermissions: many(userPermissions),
 }));
