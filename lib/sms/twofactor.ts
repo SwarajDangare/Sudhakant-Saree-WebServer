@@ -57,8 +57,10 @@ export async function sendSMSOTP(
       url = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneNumber}/${otp}`;
     }
 
+    console.log('🌐 API URL:', url);
+
     const response = await fetch(url, {
-      method: 'GET',
+      method: 'POST',  // Changed from GET to POST for SMS API
     });
 
     if (!response.ok) {
