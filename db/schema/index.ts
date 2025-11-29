@@ -30,6 +30,28 @@ export const emailOtps = pgTable('email_otps', {
   createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
+// Permissions System (Dynamic)
+export const permissions = pgTable('permissions', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text('name').notNull(), // Display name (e.g., "Manage Products")
+  key: text('key').notNull().unique(), // Unique identifier (e.g., "manage_products")
+  description: text('description').notNull(),
+  category: text('category').notNull(), // Group permissions (e.g., "Products", "Orders", "System")
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Role Permissions Matrix (Many-to-Many with enabled status)
+export const rolePermissions = pgTable('role_permissions', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  role: roleEnum('role').notNull(),
+  permissionId: text('permissionId').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  enabled: boolean('enabled').default(false).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
 // Customer Management (Phone-based authentication)
 export const customers = pgTable('customers', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -291,5 +313,17 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   productColor: one(productColors, {
     fields: [orderItems.productColorId],
     references: [productColors.id],
+  }),
+}));
+
+// Permissions Relations
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions),
+}));
+
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+  permission: one(permissions, {
+    fields: [rolePermissions.permissionId],
+    references: [permissions.id],
   }),
 }));
