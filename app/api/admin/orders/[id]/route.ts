@@ -5,6 +5,7 @@ import { db, orders, customers, orderItems, addresses } from '@/db';
 import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/lib/permissions';
 import { sendOrderStatusUpdateEmail, sendOrderConfirmationEmail } from '@/lib/email';
+import { generateOrderUpdateWhatsAppLink } from '@/lib/whatsapp';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,6 +67,8 @@ export async function PUT(
       .returning();
 
     // Send email based on status (don't block response if email fails)
+    let whatsappLink = '';
+
     try {
       // Get customer details
       const [customer] = await db
@@ -74,15 +77,33 @@ export async function PUT(
         .where(eq(customers.id, updatedOrder.customerId))
         .limit(1);
 
-      if (customer && customer.email) {
+      if (customer) {
+        // Get order items for WhatsApp message
+        const items = await db
+          .select()
+          .from(orderItems)
+          .where(eq(orderItems.orderId, updatedOrder.id));
+
+        // Generate WhatsApp link for order update
+        whatsappLink = generateOrderUpdateWhatsAppLink(
+          customer.phoneNumber,
+          {
+            orderNumber: updatedOrder.orderNumber,
+            customerName: customer.name || 'Valued Customer',
+            status: status,
+            total: updatedOrder.total.toString(),
+            items: items.map((item) => ({
+              productName: item.productName,
+              quantity: item.quantity,
+              price: item.price.toString(),
+            })),
+          }
+        );
+
+        // Send email if customer has email
+        if (customer.email) {
         // For CONFIRMED status, send detailed order confirmation email
         if (status === 'CONFIRMED') {
-          // Get order items
-          const items = await db
-            .select()
-            .from(orderItems)
-            .where(eq(orderItems.orderId, updatedOrder.id));
-
           // Get delivery address
           const [address] = await db
             .select()
@@ -137,7 +158,11 @@ export async function PUT(
       console.error('Failed to send order email:', emailError);
     }
 
-    return NextResponse.json(updatedOrder);
+    // Return updated order with WhatsApp link
+    return NextResponse.json({
+      ...updatedOrder,
+      whatsappLink,
+    });
   } catch (error) {
     console.error('Error updating order:', error);
     return NextResponse.json(
