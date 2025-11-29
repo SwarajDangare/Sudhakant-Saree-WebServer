@@ -100,10 +100,10 @@ export async function PUT(
           }
         );
 
-        // Send email if customer has email
-        if (customer.email) {
-        // For CONFIRMED status, send detailed order confirmation email
-        if (status === 'CONFIRMED') {
+          // Send email if customer has email
+          if (customer.email) {
+            // For CONFIRMED status, send detailed order confirmation email
+            if (status === 'CONFIRMED') {
           // Get delivery address
           const [address] = await db
             .select()
@@ -111,46 +111,47 @@ export async function PUT(
             .where(eq(addresses.id, updatedOrder.addressId))
             .limit(1);
 
-          if (address) {
-            // Send comprehensive order confirmation email
-            await sendOrderConfirmationEmail({
+            if (address) {
+              // Send comprehensive order confirmation email
+              await sendOrderConfirmationEmail({
+                orderNumber: updatedOrder.orderNumber,
+                customerName: customer.name || address.name || 'Valued Customer',
+                customerEmail: customer.email,
+                items: items.map((item) => ({
+                  productName: item.productName,
+                  productColor: item.productColor,
+                  quantity: item.quantity,
+                  price: item.price,
+                  subtotal: item.subtotal,
+                })),
+                subtotal: updatedOrder.subtotal,
+                total: updatedOrder.total,
+                address: {
+                  name: address.name,
+                  phoneNumber: address.phoneNumber,
+                  addressLine1: address.addressLine1,
+                  addressLine2: address.addressLine2,
+                  city: address.city,
+                  state: address.state,
+                  pincode: address.pincode,
+                },
+                paymentMethod: updatedOrder.paymentMethod,
+                orderDate: updatedOrder.createdAt.toLocaleDateString('en-IN', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                }),
+              });
+            }
+          } else {
+            // For other status updates, send status update email
+            await sendOrderStatusUpdateEmail({
               orderNumber: updatedOrder.orderNumber,
-              customerName: customer.name || address.name || 'Valued Customer',
+              customerName: customer.name || 'Valued Customer',
               customerEmail: customer.email,
-              items: items.map((item) => ({
-                productName: item.productName,
-                productColor: item.productColor,
-                quantity: item.quantity,
-                price: item.price,
-                subtotal: item.subtotal,
-              })),
-              subtotal: updatedOrder.subtotal,
-              total: updatedOrder.total,
-              address: {
-                name: address.name,
-                phoneNumber: address.phoneNumber,
-                addressLine1: address.addressLine1,
-                addressLine2: address.addressLine2,
-                city: address.city,
-                state: address.state,
-                pincode: address.pincode,
-              },
-              paymentMethod: updatedOrder.paymentMethod,
-              orderDate: updatedOrder.createdAt.toLocaleDateString('en-IN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              }),
+              status: status as 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED',
             });
           }
-        } else {
-          // For other status updates, send status update email
-          await sendOrderStatusUpdateEmail({
-            orderNumber: updatedOrder.orderNumber,
-            customerName: customer.name || 'Valued Customer',
-            customerEmail: customer.email,
-            status: status as 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED',
-          });
         }
       }
     } catch (emailError) {
