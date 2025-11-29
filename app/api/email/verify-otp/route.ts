@@ -19,7 +19,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify OTP
+    // Check if OTP verification is enabled
+    const otpEnabled = process.env.OTP_ENABLED !== 'false';
+
+    if (!otpEnabled) {
+      // OTP verification disabled (testing mode) - skip verification
+      return NextResponse.json({
+        success: true,
+        message: 'Email verified successfully (testing mode)',
+      });
+    }
+
+    // Normal OTP verification (production mode)
     const isValid = verifyOTP(email, otp);
 
     if (!isValid) {

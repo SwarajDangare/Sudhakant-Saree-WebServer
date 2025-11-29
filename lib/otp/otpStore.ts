@@ -1,9 +1,10 @@
 // Simple in-memory OTP storage (for production, use Redis or database)
 interface OTPEntry {
   otp: string;
-  email: string;
+  identifier: string; // email or phone number
   expiresAt: number;
   createdAt: number;
+  sessionId?: string; // 2Factor session ID for phone OTP
 }
 
 const otpStore = new Map<string, OTPEntry>();
@@ -19,30 +20,53 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 /**
- * Generate a random 6-digit OTP
+ * Generate a random 6-digit OTP and store it
+ * @param identifier - Email or phone number
+ * @param sessionId - Optional 2Factor session ID for phone OTP
+ * @returns The generated OTP
  */
-export function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+export function generateOTP(identifier: string, sessionId?: string): string {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const now = Date.now();
+
+  otpStore.set(identifier.toLowerCase(), {
+    otp,
+    identifier: identifier.toLowerCase(),
+    expiresAt: now + 2 * 60 * 1000, // 2 minutes
+    createdAt: now,
+    sessionId,
+  });
+
+  return otp;
 }
 
 /**
- * Store OTP for an email (expires in 10 minutes)
+ * Get session ID for phone OTP verification (2Factor)
  */
-export function storeOTP(email: string, otp: string): void {
+export function getSessionId(identifier: string): string | undefined {
+  const entry = otpStore.get(identifier.toLowerCase());
+  return entry?.sessionId;
+}
+
+/**
+ * Store OTP for an identifier (email or phone number)
+ * @deprecated Use generateOTP instead
+ */
+export function storeOTP(identifier: string, otp: string): void {
   const now = Date.now();
-  otpStore.set(email.toLowerCase(), {
+  otpStore.set(identifier.toLowerCase(), {
     otp,
-    email: email.toLowerCase(),
-    expiresAt: now + 10 * 60 * 1000, // 10 minutes
+    identifier: identifier.toLowerCase(),
+    expiresAt: now + 2 * 60 * 1000, // 2 minutes
     createdAt: now,
   });
 }
 
 /**
- * Verify OTP for an email
+ * Verify OTP for an identifier (email or phone number)
  */
-export function verifyOTP(email: string, otp: string): boolean {
-  const entry = otpStore.get(email.toLowerCase());
+export function verifyOTP(identifier: string, otp: string): boolean {
+  const entry = otpStore.get(identifier.toLowerCase());
 
   if (!entry) {
     return false;
@@ -52,14 +76,14 @@ export function verifyOTP(email: string, otp: string): boolean {
 
   // Check if OTP is expired
   if (now > entry.expiresAt) {
-    otpStore.delete(email.toLowerCase());
+    otpStore.delete(identifier.toLowerCase());
     return false;
   }
 
   // Check if OTP matches
   if (entry.otp === otp) {
     // Delete OTP after successful verification
-    otpStore.delete(email.toLowerCase());
+    otpStore.delete(identifier.toLowerCase());
     return true;
   }
 
@@ -69,8 +93,8 @@ export function verifyOTP(email: string, otp: string): boolean {
 /**
  * Check if OTP exists and is not expired
  */
-export function hasValidOTP(email: string): boolean {
-  const entry = otpStore.get(email.toLowerCase());
+export function hasValidOTP(identifier: string): boolean {
+  const entry = otpStore.get(identifier.toLowerCase());
 
   if (!entry) {
     return false;
@@ -83,8 +107,8 @@ export function hasValidOTP(email: string): boolean {
 /**
  * Get remaining time for OTP in seconds
  */
-export function getOTPRemainingTime(email: string): number {
-  const entry = otpStore.get(email.toLowerCase());
+export function getOTPRemainingTime(identifier: string): number {
+  const entry = otpStore.get(identifier.toLowerCase());
 
   if (!entry) {
     return 0;
@@ -96,8 +120,32 @@ export function getOTPRemainingTime(email: string): number {
 }
 
 /**
- * Delete OTP for an email
+ * Check rate limit for OTP requests
+ * Returns whether the request is allowed and remaining seconds if not
  */
-export function deleteOTP(email: string): void {
-  otpStore.delete(email.toLowerCase());
+export function checkRateLimit(identifier: string): { allowed: boolean; remainingSeconds: number } {
+  const entry = otpStore.get(identifier.toLowerCase());
+
+  if (!entry) {
+    // No OTP exists, allow request
+    return { allowed: true, remainingSeconds: 0 };
+  }
+
+  const now = Date.now();
+  const remaining = Math.max(0, Math.ceil((entry.expiresAt - now) / 1000));
+
+  if (remaining > 0) {
+    // OTP still valid, rate limit applies
+    return { allowed: false, remainingSeconds: remaining };
+  }
+
+  // OTP expired, allow new request
+  return { allowed: true, remainingSeconds: 0 };
+}
+
+/**
+ * Delete OTP for an identifier
+ */
+export function deleteOTP(identifier: string): void {
+  otpStore.delete(identifier.toLowerCase());
 }

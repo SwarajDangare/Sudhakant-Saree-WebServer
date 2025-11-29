@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [emailError, setEmailError] = useState('');
   const [emailSuccess, setEmailSuccess] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0); // Countdown for resend button
 
   // Account deletion states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -37,7 +38,9 @@ export default function ProfilePage() {
   }, [status, router]);
 
   useEffect(() => {
-    if (session?.user) {
+    // Only sync from session if not currently editing
+    // This prevents losing user input when they switch tabs
+    if (session?.user && !isEditing) {
       setName(session.user.name || '');
       const userEmail = session.user.email || '';
       setEmail(userEmail);
@@ -47,7 +50,17 @@ export default function ProfilePage() {
         setEmailVerified(true);
       }
     }
-  }, [session]);
+  }, [session, isEditing]);
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => {
+        setResendCountdown(resendCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCountdown]);
 
   // Check if email has changed
   const emailHasChanged = email !== originalEmail;
@@ -83,9 +96,15 @@ export default function ProfilePage() {
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle rate limiting with countdown
+        if (response.status === 429 && data.remainingSeconds) {
+          setResendCountdown(data.remainingSeconds);
+        }
         throw new Error(data.error || 'Failed to send OTP');
       }
 
+      // Start countdown for 2 minutes (120 seconds)
+      setResendCountdown(120);
       setOtpSent(true);
       setEmailSuccess('OTP sent! Check your email inbox.');
       setEmailOtp('');
@@ -226,8 +245,8 @@ export default function ProfilePage() {
         throw new Error(data.message || data.error || 'Failed to delete account');
       }
 
-      // Account deleted successfully - redirect to home and sign out
-      window.location.href = '/api/auth/signout?callbackUrl=/';
+      // Account deleted successfully - sign out and redirect to home
+      await signOut({ redirect: true, callbackUrl: '/' });
     } catch (error) {
       console.error('Error deleting account:', error);
       setDeleteError(error instanceof Error ? error.message : 'Failed to delete account');
@@ -347,10 +366,16 @@ export default function ProfilePage() {
                     <button
                       type="button"
                       onClick={handleSendEmailOTP}
-                      disabled={isSendingOTP}
+                      disabled={isSendingOTP || resendCountdown > 0}
                       className="px-4 py-2 bg-maroon text-white rounded-md hover:bg-deep-maroon disabled:opacity-50 whitespace-nowrap"
                     >
-                      {isSendingOTP ? 'Sending...' : otpSent ? 'Resend Code' : 'Send Code'}
+                      {isSendingOTP
+                        ? 'Sending...'
+                        : resendCountdown > 0
+                        ? `${Math.floor(resendCountdown / 60)}:${String(resendCountdown % 60).padStart(2, '0')}`
+                        : otpSent
+                        ? 'Resend Code'
+                        : 'Send Code'}
                     </button>
                   )}
                   {isEditing && emailVerified && email && (

@@ -28,6 +28,11 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [emailSuccess, setEmailSuccess] = useState('');
+  const [resendCountdown, setResendCountdown] = useState(0); // Countdown for resend button (email)
+  const [phoneResendCountdown, setPhoneResendCountdown] = useState(0); // Countdown for phone OTP resend
+  const [isSendingPhoneOTP, setIsSendingPhoneOTP] = useState(false);
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneOtpError, setPhoneOtpError] = useState('');
 
   // Address form fields
   const [addressData, setAddressData] = useState({
@@ -48,6 +53,26 @@ export default function SignupPage() {
       phoneNumber: phoneNumber,
     }));
   }, [name, phoneNumber]);
+
+  // Countdown timer for email resend button
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => {
+        setResendCountdown(resendCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCountdown]);
+
+  // Countdown timer for phone OTP resend button
+  useEffect(() => {
+    if (phoneResendCountdown > 0) {
+      const timer = setTimeout(() => {
+        setPhoneResendCountdown(phoneResendCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [phoneResendCountdown]);
 
   const handleSendEmailOTP = async () => {
     if (!email.trim() || !name.trim()) {
@@ -75,9 +100,15 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle rate limiting with countdown
+        if (response.status === 429 && data.remainingSeconds) {
+          setResendCountdown(data.remainingSeconds);
+        }
         throw new Error(data.error || 'Failed to send OTP');
       }
 
+      // Start countdown for 2 minutes (120 seconds)
+      setResendCountdown(120);
       setEmailSuccess('OTP sent! Check your email inbox.');
     } catch (err) {
       setEmailError(err instanceof Error ? err.message : 'Failed to send OTP');
@@ -119,6 +150,37 @@ export default function SignupPage() {
     }
   };
 
+  const handleSendPhoneOTP = async () => {
+    setIsSendingPhoneOTP(true);
+    setPhoneOtpError('');
+
+    try {
+      const response = await fetch('/api/phone/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle rate limiting with countdown
+        if (response.status === 429 && data.remainingSeconds) {
+          setPhoneResendCountdown(data.remainingSeconds);
+        }
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      // Start countdown for 2 minutes (120 seconds)
+      setPhoneResendCountdown(120);
+      setPhoneOtpSent(true);
+    } catch (err) {
+      setPhoneOtpError(err instanceof Error ? err.message : 'Failed to send OTP');
+    } finally {
+      setIsSendingPhoneOTP(false);
+    }
+  };
+
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -143,8 +205,11 @@ export default function SignupPage() {
         throw new Error('Phone number already registered. Please login instead.');
       }
 
-      // Validation passed, move to OTP step (account will be created after OTP verification)
+      // Validation passed, move to OTP step
       setStep('otp');
+
+      // Automatically send phone OTP when moving to OTP step
+      await handleSendPhoneOTP();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -155,10 +220,24 @@ export default function SignupPage() {
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setPhoneOtpError('');
     setIsLoading(true);
 
     try {
-      // All OTPs are correct for testing - so proceed to create account
+      // Verify phone OTP first (unless in testing mode)
+      const verifyResponse = await fetch('/api/phone/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber, otp }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData.error || 'Invalid OTP');
+      }
+
+      // OTP verified successfully, proceed to create account
 
       // Step 1: Create customer account in database
       const signupResponse = await fetch('/api/customers/signup', {
@@ -312,10 +391,16 @@ export default function SignupPage() {
                       <button
                         type="button"
                         onClick={handleSendEmailOTP}
-                        disabled={isSendingOTP || !email.trim()}
+                        disabled={isSendingOTP || !email.trim() || resendCountdown > 0}
                         className="w-full bg-maroon text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-deep-maroon disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {isSendingOTP ? 'Sending OTP...' : 'Send Verification Code'}
+                        {isSendingOTP
+                          ? 'Sending OTP...'
+                          : resendCountdown > 0
+                          ? `Resend in ${Math.floor(resendCountdown / 60)}:${String(resendCountdown % 60).padStart(2, '0')}`
+                          : emailSuccess
+                          ? 'Resend Code'
+                          : 'Send Verification Code'}
                       </button>
 
                       {emailSuccess && (
@@ -485,6 +570,18 @@ export default function SignupPage() {
               )}
             </div>
 
+            {phoneOtpError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                {phoneOtpError}
+              </div>
+            )}
+
+            {phoneOtpSent && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+                📱 OTP sent to {phoneNumber}
+              </div>
+            )}
+
             <div>
               <label htmlFor="otp" className="block text-sm font-semibold text-gray-700 mb-2">
                 Enter 6-Digit OTP
@@ -501,9 +598,22 @@ export default function SignupPage() {
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-maroon focus:border-transparent transition-all text-center text-2xl tracking-widest font-semibold"
                 autoFocus
               />
-              <p className="mt-2 text-xs text-center text-gray-500">
-                For testing: Any 6-digit code will work
-              </p>
+              <div className="mt-3 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleSendPhoneOTP}
+                  disabled={isSendingPhoneOTP || phoneResendCountdown > 0}
+                  className="text-sm text-maroon hover:text-deep-maroon font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSendingPhoneOTP
+                    ? 'Sending OTP...'
+                    : phoneResendCountdown > 0
+                    ? `Resend OTP in ${Math.floor(phoneResendCountdown / 60)}:${String(phoneResendCountdown % 60).padStart(2, '0')}`
+                    : phoneOtpSent
+                    ? 'Resend OTP'
+                    : 'Send OTP'}
+                </button>
+              </div>
             </div>
 
             <button
