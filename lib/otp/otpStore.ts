@@ -4,6 +4,7 @@ interface OTPEntry {
   identifier: string; // email or phone number
   expiresAt: number;
   createdAt: number;
+  sessionId?: string; // 2Factor session ID for phone OTP
 }
 
 const otpStore = new Map<string, OTPEntry>();
@@ -21,9 +22,10 @@ setInterval(() => {
 /**
  * Generate a random 6-digit OTP and store it
  * @param identifier - Email or phone number
+ * @param sessionId - Optional 2Factor session ID for phone OTP
  * @returns The generated OTP
  */
-export function generateOTP(identifier: string): string {
+export function generateOTP(identifier: string, sessionId?: string): string {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const now = Date.now();
 
@@ -32,9 +34,18 @@ export function generateOTP(identifier: string): string {
     identifier: identifier.toLowerCase(),
     expiresAt: now + 2 * 60 * 1000, // 2 minutes
     createdAt: now,
+    sessionId,
   });
 
   return otp;
+}
+
+/**
+ * Get session ID for phone OTP verification (2Factor)
+ */
+export function getSessionId(identifier: string): string | undefined {
+  const entry = otpStore.get(identifier.toLowerCase());
+  return entry?.sessionId;
 }
 
 /**

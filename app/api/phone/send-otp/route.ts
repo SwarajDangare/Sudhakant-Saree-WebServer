@@ -55,17 +55,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate OTP
-    const otp = generateOTP(phoneNumber);
-
-    // Send OTP via 2Factor (no country code needed - it's for India by default)
-    const result = await sendSMSOTP(phoneNumber, otp);
+    // Send OTP via 2Factor AUTOGEN (generates OTP automatically)
+    // We pass a dummy OTP since AUTOGEN doesn't use it
+    const result = await sendSMSOTP(phoneNumber, '000000');
 
     if (!result.success) {
       return NextResponse.json(
         { error: 'Failed to send OTP. Please try again.' },
         { status: 500 }
       );
+    }
+
+    // Store session ID for verification
+    if (result.sessionId) {
+      // Generate a placeholder OTP and store with session ID
+      generateOTP(phoneNumber, result.sessionId);
     }
 
     return NextResponse.json({

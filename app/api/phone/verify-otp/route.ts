@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyOTP } from '@/lib/otp/otpStore';
+import { verifyOTP, getSessionId } from '@/lib/otp/otpStore';
+import { verify2FactorOTP } from '@/lib/sms/twofactor';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,12 +39,22 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Normal OTP verification (production mode)
-    const isValid = verifyOTP(phoneNumber, otp);
+    // Get session ID for 2Factor verification
+    const sessionId = getSessionId(phoneNumber);
 
-    if (!isValid) {
+    if (!sessionId) {
       return NextResponse.json(
-        { error: 'Invalid or expired OTP' },
+        { error: 'No OTP session found. Please request a new OTP.' },
+        { status: 400 }
+      );
+    }
+
+    // Verify OTP with 2Factor
+    const result = await verify2FactorOTP(sessionId, otp);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.message || 'Invalid or expired OTP' },
         { status: 400 }
       );
     }

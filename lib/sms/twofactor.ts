@@ -19,17 +19,17 @@ interface VerifyOTPResponse {
 type DeliveryMethod = 'SMS' | 'CALL';
 
 /**
- * Send OTP via SMS or Voice Call using 2Factor
+ * Send OTP via SMS using 2Factor AUTOGEN (recommended)
+ * AUTOGEN automatically generates a 4 or 6 digit OTP
  * @param phoneNumber - 10-digit phone number (without country code)
- * @param otp - 6-digit OTP code
  * @param method - Delivery method: 'SMS' or 'CALL' (default from env)
- * @returns Promise with response from 2Factor
+ * @returns Promise with session ID for verification
  */
 export async function sendSMSOTP(
   phoneNumber: string,
   otp: string,
   method?: DeliveryMethod
-): Promise<{ success: boolean; message: string }> {
+): Promise<{ success: boolean; message: string; sessionId?: string }> {
   try {
     const apiKey = process.env.TWOFACTOR_API_KEY;
 
@@ -42,25 +42,24 @@ export async function sendSMSOTP(
 
     console.log('🔔 OTP Delivery Method:', deliveryMethod);
     console.log('📞 Phone Number:', phoneNumber);
-    console.log('🔢 OTP:', otp);
+    console.log('🔢 Using AUTOGEN (2Factor generates OTP)');
 
     let url: string;
 
     if (deliveryMethod === 'CALL') {
-      // 2Factor Voice Call API
-      // Sends OTP via automated voice call
-      url = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/VOICE/CALL/${phoneNumber}/${otp}`;
+      // 2Factor Voice Call API with AUTOGEN
+      url = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/VOICE/AUTOGEN/${phoneNumber}`;
     } else {
-      // 2Factor SMS API
-      // Try with +91 country code prefix
-      url = `https://2factor.in/API/V1/${apiKey}/SMS/+91${phoneNumber}/${otp}`;
+      // 2Factor SMS API with AUTOGEN (recommended)
+      // This auto-generates 4 or 6 digit OTP and sends via SMS
+      url = `https://2factor.in/API/V1/${apiKey}/SMS/+91${phoneNumber}/AUTOGEN`;
     }
 
     console.log('🌐 API URL:', url);
     console.log('🔧 HTTP Method: GET');
 
     const response = await fetch(url, {
-      method: 'GET',  // Try GET method
+      method: 'GET',
     });
 
     if (!response.ok) {
@@ -71,12 +70,15 @@ export async function sendSMSOTP(
 
     const data: SendOTPResponse = await response.json();
 
+    console.log('📨 2Factor Response:', JSON.stringify(data));
+
     // Check response status
     if (data.Status === 'Success') {
       const deliveryType = deliveryMethod === 'CALL' ? 'voice call' : 'SMS';
       return {
         success: true,
         message: data.Details || `OTP sent successfully via ${deliveryType}`,
+        sessionId: data.Details, // 2Factor returns session ID in Details field
       };
     } else {
       return {
@@ -89,6 +91,57 @@ export async function sendSMSOTP(
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Failed to send OTP',
+    };
+  }
+}
+
+/**
+ * Verify OTP using 2Factor's verification endpoint
+ * @param sessionId - Session ID returned from sendSMSOTP
+ * @param otp - OTP entered by user
+ * @returns Promise with verification result
+ */
+export async function verify2FactorOTP(
+  sessionId: string,
+  otp: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const apiKey = process.env.TWOFACTOR_API_KEY;
+
+    if (!apiKey) {
+      throw new Error('TWOFACTOR_API_KEY not configured');
+    }
+
+    // 2Factor OTP Verification endpoint
+    const url = `https://2factor.in/API/V1/${apiKey}/SMS/VERIFY/${sessionId}/${otp}`;
+
+    console.log('🔍 Verifying OTP with 2Factor');
+    console.log('🔑 Session ID:', sessionId);
+    console.log('🔢 OTP:', otp);
+
+    const response = await fetch(url, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('2Factor Verify Error:', errorText);
+      throw new Error(`2Factor Verify failed: ${response.status}`);
+    }
+
+    const data: VerifyOTPResponse = await response.json();
+
+    console.log('✅ Verification Response:', JSON.stringify(data));
+
+    return {
+      success: data.Status === 'Success',
+      message: data.Details || (data.Status === 'Success' ? 'OTP verified successfully' : 'Invalid OTP'),
+    };
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to verify OTP',
     };
   }
 }
