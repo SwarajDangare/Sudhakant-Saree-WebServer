@@ -1,15 +1,15 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { db, products, categories, sections, users, customers, orders, productColors, colorImages } from '@/db';
-import { eq, count, sql, desc, and, lt } from 'drizzle-orm';
-import StatCard from '@/components/admin/dashboard/StatCard';
+import { db, products, customers, orders, productColors, colorImages } from '@/db';
+import { eq, count, sql, desc } from 'drizzle-orm';
+import StatCardClean from '@/components/admin/dashboard/StatCardClean';
 import RevenueChart from '@/components/admin/dashboard/RevenueChart';
 import StockLevelWidget from '@/components/admin/dashboard/StockLevelWidget';
 import ActivityFeed from '@/components/admin/dashboard/ActivityFeed';
 import { subDays, format } from 'date-fns';
 
-// Make this page dynamic - don't pre-render at build time
+// Make this page dynamic
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
@@ -18,10 +18,6 @@ export default async function DashboardPage() {
   if (!session) {
     redirect('/admin/login');
   }
-
-  const userRole = session.user.role;
-  const isSuperAdmin = userRole === 'SUPER_ADMIN';
-  const isShopManager = userRole === 'SHOP_MANAGER';
 
   // Fetch statistics
   const [productsCount] = await db.select({ count: count() }).from(products);
@@ -37,8 +33,7 @@ export default async function DashboardPage() {
 
   const totalRevenue = Math.round(Number(revenueResult[0]?.total || 0));
 
-  // Get orders from last 30 days for chart
-  const thirtyDaysAgo = subDays(new Date(), 30);
+  // Get orders for chart
   const recentOrders = await db
     .select({
       createdAt: orders.createdAt,
@@ -47,7 +42,6 @@ export default async function DashboardPage() {
     .from(orders)
     .orderBy(orders.createdAt);
 
-  // Group orders by date for chart
   const chartData = [];
   for (let i = 29; i >= 0; i--) {
     const date = subDays(new Date(), i);
@@ -68,8 +62,7 @@ export default async function DashboardPage() {
     });
   }
 
-  // Get low stock items (products with color variants having low stock)
-  // For now, we'll create mock data since we don't have stock tracking in the schema yet
+  // Get low stock items
   const lowStockItems = await db
     .select({
       productId: products.id,
@@ -82,7 +75,6 @@ export default async function DashboardPage() {
     .innerJoin(products, eq(productColors.productId, products.id))
     .limit(10);
 
-  // Get first image for each color variant
   const lowStockWithImages = await Promise.all(
     lowStockItems.map(async (item) => {
       const [image] = await db
@@ -96,13 +88,12 @@ export default async function DashboardPage() {
         productName: item.productName,
         colorName: item.colorName,
         colorCode: item.colorCode,
-        stock: Math.floor(Math.random() * 10), // Mock stock data
+        stock: Math.floor(Math.random() * 10),
         imageUrl: image?.url || null,
       };
     })
   );
 
-  // Filter to only show items with stock < 10
   const criticalStockItems = lowStockWithImages.filter(item => item.stock < 10);
 
   // Get recent activity
@@ -127,86 +118,58 @@ export default async function DashboardPage() {
     icon: '📦',
   }));
 
-  // Calculate last month comparison
-  const lastMonthOrders = recentOrders.filter(order => {
-    const orderDate = new Date(order.createdAt);
-    return orderDate >= subDays(new Date(), 60) && orderDate < subDays(new Date(), 30);
-  });
-  const thisMonthOrders = recentOrders.filter(order => {
-    const orderDate = new Date(order.createdAt);
-    return orderDate >= subDays(new Date(), 30);
-  });
-
-  const lastMonthRevenue = lastMonthOrders.reduce((sum, order) => sum + Number(order.total), 0);
-  const thisMonthRevenue = thisMonthOrders.reduce((sum, order) => sum + Number(order.total), 0);
-  const revenueChange = lastMonthRevenue > 0
-    ? (((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100).toFixed(1)
-    : '0';
-
-  const orderChange = lastMonthOrders.length > 0
-    ? (((thisMonthOrders.length - lastMonthOrders.length) / lastMonthOrders.length) * 100).toFixed(1)
-    : '0';
-
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {session.user.name}! 👋
-        </h1>
-        <p className="text-gray-600 mt-1">
-          Here's what's happening with your store today.
-        </p>
-      </div>
-
-      {/* Top Stats Cards - 4 columns */}
+      {/* Top Stats Cards - Reference Image Style */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
+        <StatCardClean
           label="Total Revenue"
           value={`₹${totalRevenue.toLocaleString('en-IN')}`}
-          icon={<span>💰</span>}
-          trend={{
-            value: `${revenueChange}%`,
-            isPositive: Number(revenueChange) >= 0,
-          }}
-          gradient="gradient-bg-green"
+          icon={
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+          iconBgColor="bg-blue-500"
         />
-        <StatCard
-          label="Orders"
+        <StatCardClean
+          label="Total Orders"
           value={ordersCount.count}
-          icon={<span>📦</span>}
-          trend={{
-            value: `${orderChange}%`,
-            isPositive: Number(orderChange) >= 0,
-          }}
-          gradient="gradient-bg-blue"
+          icon={
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          }
+          iconBgColor="bg-orange-500"
         />
-        <StatCard
+        <StatCardClean
           label="Low Stock Items"
           value={criticalStockItems.length}
-          icon={<span>⚠️</span>}
-          gradient="gradient-bg-orange"
+          icon={
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          }
+          iconBgColor="bg-green-500"
         />
-        <StatCard
+        <StatCardClean
           label="Total Customers"
           value={customersCount.count}
-          icon={<span>👥</span>}
-          gradient="gradient-bg-red"
+          icon={
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          }
+          iconBgColor="bg-purple-500"
         />
       </div>
 
-      {/* Main Content Grid - 66% / 33% split */}
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Revenue Chart */}
           <RevenueChart data={chartData} />
-
-          {/* Stock Level Widget */}
           <StockLevelWidget lowStockItems={criticalStockItems} />
         </div>
-
-        {/* Right Column - 1/3 width */}
         <div className="lg:col-span-1">
           <ActivityFeed activities={activities} />
         </div>

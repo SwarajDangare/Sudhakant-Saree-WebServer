@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { db, orders, customers, addresses, orderItems } from '@/db';
 import { eq, inArray, notInArray } from 'drizzle-orm';
 import { getPermissions } from '@/lib/permissions';
-import OrdersManagementModern from '@/components/admin/OrdersManagementModern';
+import OrdersManagementClean from '@/components/admin/OrdersManagementClean';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -23,20 +23,17 @@ export default async function OrdersPage() {
   let ordersQuery;
 
   if (permissions.canViewAllOrders) {
-    // SUPER_ADMIN and SHOP_MANAGER can see all orders
     ordersQuery = db
       .select()
       .from(orders)
       .orderBy(orders.createdAt);
   } else if (permissions.canViewActiveOrders) {
-    // SALESMAN can only see active orders (not DELIVERED or CANCELLED)
     ordersQuery = db
       .select()
       .from(orders)
       .where(notInArray(orders.status, ['DELIVERED', 'CANCELLED']))
       .orderBy(orders.createdAt);
   } else {
-    // No permission to view orders
     redirect('/admin/dashboard');
   }
 
@@ -83,23 +80,5 @@ export default async function OrdersPage() {
     };
   });
 
-  return (
-    <div className="space-y-6">
-      {/* Info Box for Salesmen */}
-      {!permissions.canViewAllOrders && (
-        <div className="soft-card p-4 bg-blue-50 border border-blue-200">
-          <p className="text-sm text-blue-800">
-            <strong>Note:</strong> As a salesman, you can only view orders that are currently active
-            (pending, confirmed, processing, or shipped). Completed and cancelled orders are hidden.
-          </p>
-        </div>
-      )}
-
-      {/* Orders Management Modern Component */}
-      <OrdersManagementModern
-        initialOrders={ordersWithDetails}
-        permissions={permissions}
-      />
-    </div>
-  );
+  return <OrdersManagementClean initialOrders={ordersWithDetails} permissions={permissions} />;
 }
