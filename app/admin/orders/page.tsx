@@ -4,8 +4,7 @@ import { redirect } from 'next/navigation';
 import { db, orders, customers, addresses, orderItems } from '@/db';
 import { eq, inArray, notInArray } from 'drizzle-orm';
 import { getPermissions } from '@/lib/permissions';
-import OrdersManagementClient from '@/components/admin/OrdersManagementClient';
-import Link from 'next/link';
+import OrdersManagementModern from '@/components/admin/OrdersManagementModern';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -86,34 +85,9 @@ export default async function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <Link
-        href="/admin/dashboard"
-        className="inline-flex items-center text-gray-600 hover:text-maroon mb-4 transition"
-      >
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Dashboard
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            {permissions.canViewAllOrders ? 'Order Management' : 'Active Orders'}
-          </h1>
-          <p className="text-gray-600 mt-2">
-            {permissions.canViewAllOrders
-              ? 'View and manage all customer orders'
-              : 'View active orders'}
-          </p>
-        </div>
-      </div>
-
       {/* Info Box for Salesmen */}
       {!permissions.canViewAllOrders && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="soft-card p-4 bg-blue-50 border border-blue-200">
           <p className="text-sm text-blue-800">
             <strong>Note:</strong> As a salesman, you can only view orders that are currently active
             (pending, confirmed, processing, or shipped). Completed and cancelled orders are hidden.
@@ -121,8 +95,8 @@ export default async function OrdersPage() {
         </div>
       )}
 
-      {/* Orders Management Client Component */}
-      <OrdersManagementClient
+      {/* Orders Management Modern Component */}
+      <OrdersManagementModern
         initialOrders={ordersWithDetails}
         permissions={permissions}
       />

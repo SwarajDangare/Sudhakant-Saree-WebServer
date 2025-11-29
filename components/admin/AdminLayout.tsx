@@ -26,50 +26,66 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: 'Sections', href: '/admin/sections', icon: '📂', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
     { name: 'Categories', href: '/admin/categories', icon: '📁', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
     { name: 'Customers', href: '/admin/customers', icon: '👥', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-    { name: 'Admin Users', href: '/admin/users', icon: '🔐', allowedRoles: ['SUPER_ADMIN'] },
+    { name: 'Team', href: '/admin/users', icon: '👤', allowedRoles: ['SUPER_ADMIN'] },
   ];
 
   const filteredNavigation = navigation.filter(
     (item) => userRole && item.allowedRoles.includes(userRole)
   );
 
+  const getPageTitle = () => {
+    if (pathname === '/admin/dashboard') return 'Dashboard';
+    if (pathname?.startsWith('/admin/products')) return 'Products';
+    if (pathname?.startsWith('/admin/orders')) return 'Orders';
+    if (pathname?.startsWith('/admin/sections')) return 'Sections';
+    if (pathname?.startsWith('/admin/categories')) return 'Categories';
+    if (pathname?.startsWith('/admin/customers')) return 'Customers';
+    if (pathname?.startsWith('/admin/users')) return 'Team & Permissions';
+    return 'Admin Panel';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 lg:hidden"
+          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
-        ></div>
+        />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Modern Gradient with Soft UI */}
       <aside
-        className={`fixed top-0 left-0 z-30 w-64 h-screen transition-transform ${
+        className={`fixed top-0 left-0 z-50 w-72 h-screen transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 bg-maroon`}
+        } lg:translate-x-0 bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 shadow-2xl`}
       >
         <div className="h-full flex flex-col">
-          {/* Logo */}
+          {/* Logo Section */}
           <div className="p-6 border-b border-white/10">
-            <h1 className="text-2xl font-bold text-silk-white">
-              Sudhakant Sarees
-            </h1>
-            <p className="text-silk-white/60 text-sm mt-1">Admin Panel</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl">
+                🪡
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">
+                  Sudhakant Sarees
+                </h1>
+                <p className="text-blue-100 text-xs font-medium">Admin Panel</p>
+              </div>
+            </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {filteredNavigation.map((item) => {
               const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center px-4 py-3 rounded-md transition ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : 'text-silk-white/80 hover:bg-white/10 hover:text-white'
+                  className={`admin-nav-item ${isActive ? 'active' : ''} ${
+                    isActive ? 'text-white' : 'text-blue-100 hover:text-white'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -80,67 +96,85 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             })}
           </nav>
 
-          {/* User info & logout */}
+          {/* User Profile & Logout */}
           <div className="p-4 border-t border-white/10">
-            <div className="mb-3">
-              <p className="text-silk-white font-medium text-sm">
-                {session?.user?.name}
-              </p>
-              <p className="text-silk-white/60 text-xs">{session?.user?.email}</p>
-              <span className="inline-block mt-1 px-2 py-1 text-xs rounded bg-golden text-deep-maroon font-semibold">
-                {session?.user?.role?.replace('_', ' ')}
-              </span>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold">
+                  {session?.user?.name?.charAt(0) || 'A'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-medium text-sm truncate">
+                    {session?.user?.name}
+                  </p>
+                  <p className="text-blue-100 text-xs truncate">{session?.user?.email}</p>
+                </div>
+              </div>
+              <div className="mt-2">
+                <span className="inline-block px-2.5 py-1 text-xs rounded-lg bg-yellow-400 text-yellow-900 font-semibold">
+                  {session?.user?.role?.replace('_', ' ')}
+                </span>
+              </div>
             </div>
+
             <button
               onClick={() => signOut({ callbackUrl: '/admin/login' })}
-              className="w-full flex items-center justify-center px-4 py-2 bg-white/10 hover:bg-white/20 text-silk-white rounded-md transition text-sm font-medium"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all duration-200 text-sm font-medium backdrop-blur-sm"
             >
-              <span className="mr-2">🚪</span>
-              Sign Out
+              <span>🚪</span>
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <div className="lg:ml-64">
-        {/* Top bar */}
-        <header className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+      <div className="lg:ml-72">
+        {/* Top bar - Clean & Minimal */}
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30">
+          <div className="px-6 lg:px-8 py-4 flex items-center justify-between">
+            {/* Mobile menu button */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              className="lg:hidden p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
-            <h2 className="text-xl font-semibold text-gray-800 hidden sm:block">
-              {pathname === '/admin/dashboard' && 'Dashboard'}
-              {pathname?.startsWith('/admin/products') && 'Product Management'}
-              {pathname?.startsWith('/admin/orders') && 'Order Management'}
-              {pathname?.startsWith('/admin/sections') && 'Section Management'}
-              {pathname?.startsWith('/admin/categories') && 'Category Management'}
-              {pathname?.startsWith('/admin/customers') && 'Customer Management'}
-              {pathname?.startsWith('/admin/users') && 'User Management'}
-            </h2>
+            {/* Page Title */}
+            <div className="flex-1 lg:flex-none">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {getPageTitle()}
+              </h2>
+            </div>
 
-            <div className="flex items-center space-x-4">
+            {/* Right side actions */}
+            <div className="flex items-center gap-3">
+              {/* Notifications */}
+              <button className="p-2 rounded-xl text-gray-600 hover:bg-gray-100 transition-colors relative">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+
+              {/* View Site */}
               <Link
                 href="/"
                 target="_blank"
-                className="text-sm text-gray-600 hover:text-maroon flex items-center"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
               >
-                <span className="mr-1">🌐</span>
-                View Site
+                <span>🌐</span>
+                <span>View Site</span>
               </Link>
             </div>
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="p-4 sm:p-6 lg:p-8">
+        {/* Page content with max-width for better readability */}
+        <main className="p-6 lg:p-8 max-w-[1600px]">
           {children}
         </main>
       </div>
