@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
+    "@react-email/components": "^1.0.1",
+    "@react-email/render": "^2.0.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.0",
     "dotenv": "^17.2.3",
@@ -28,6 +30,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
+    "resend": "^6.5.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {

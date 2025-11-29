@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { customerAuthOptions } from '@/lib/customer-auth';
-import { db, orders, orderItems, carts, cartItems, products, productColors, addresses } from '@/db';
+import { db, orders, orderItems, carts, cartItems, products, productColors, addresses, customers } from '@/db';
 import { eq, desc } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
@@ -191,6 +191,9 @@ export async function POST(request: NextRequest) {
       items: orderItemsData,
       address,
     };
+
+    // Email will be sent when admin updates order status to CONFIRMED
+    // No email sent on initial order placement
 
     return NextResponse.json(completeOrder, { status: 201 });
   } catch (error) {

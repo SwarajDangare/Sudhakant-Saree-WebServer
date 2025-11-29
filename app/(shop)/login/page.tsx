@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -17,6 +17,51 @@ export default function LoginPage() {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [phoneResendCountdown, setPhoneResendCountdown] = useState(0);
+  const [isSendingPhoneOTP, setIsSendingPhoneOTP] = useState(false);
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneOtpError, setPhoneOtpError] = useState('');
+
+  // Countdown timer for phone OTP resend button
+  useEffect(() => {
+    if (phoneResendCountdown > 0) {
+      const timer = setTimeout(() => {
+        setPhoneResendCountdown(phoneResendCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [phoneResendCountdown]);
+
+  const handleSendPhoneOTP = async () => {
+    setIsSendingPhoneOTP(true);
+    setPhoneOtpError('');
+
+    try {
+      const response = await fetch('/api/phone/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle rate limiting with countdown
+        if (response.status === 429 && data.remainingSeconds) {
+          setPhoneResendCountdown(data.remainingSeconds);
+        }
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      // Start countdown for 2 minutes (120 seconds)
+      setPhoneResendCountdown(120);
+      setPhoneOtpSent(true);
+    } catch (err) {
+      setPhoneOtpError(err instanceof Error ? err.message : 'Failed to send OTP');
+    } finally {
+      setIsSendingPhoneOTP(false);
+    }
+  };
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +79,10 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (data.exists) {
-        // Phone number exists, show OTP field
+        // Phone number exists, move to OTP step
         setStep('otp');
+        // Automatically send phone OTP
+        await handleSendPhoneOTP();
       } else {
         // Phone number doesn't exist, redirect to signup
         router.push(`/signup?phone=${encodeURIComponent(phoneNumber)}&callbackUrl=${encodeURIComponent(callbackUrl)}`);
@@ -50,10 +97,24 @@ export default function LoginPage() {
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setPhoneOtpError('');
     setIsLoading(true);
 
     try {
-      // All OTPs are correct for testing
+      // Verify phone OTP first (unless in testing mode)
+      const verifyResponse = await fetch('/api/phone/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber, otp }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData.error || 'Invalid OTP');
+      }
+
+      // OTP verified successfully, proceed to login
       const result = await signIn('phone-login', {
         phoneNumber,
         redirect: false,
@@ -67,7 +128,7 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (err) {
-      setError('An error occurred during login');
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
     } finally {
       setIsLoading(false);
     }
@@ -77,6 +138,8 @@ export default function LoginPage() {
     setStep('phone');
     setOtp('');
     setError('');
+    setPhoneOtpError('');
+    setPhoneOtpSent(false);
   };
 
   return (
@@ -159,6 +222,18 @@ export default function LoginPage() {
               </button>
             </div>
 
+            {phoneOtpError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                {phoneOtpError}
+              </div>
+            )}
+
+            {phoneOtpSent && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+                📱 OTP sent to {phoneNumber}
+              </div>
+            )}
+
             <div>
               <label htmlFor="otp" className="block text-sm font-semibold text-gray-700 mb-2">
                 Enter 6-Digit OTP
@@ -175,9 +250,22 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-maroon focus:border-transparent transition-all text-center text-2xl tracking-widest font-semibold"
                 autoFocus
               />
-              <p className="mt-2 text-xs text-center text-gray-500">
-                For testing: Any 6-digit code will work
-              </p>
+              <div className="mt-3 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleSendPhoneOTP}
+                  disabled={isSendingPhoneOTP || phoneResendCountdown > 0}
+                  className="text-sm text-maroon hover:text-deep-maroon font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSendingPhoneOTP
+                    ? 'Sending OTP...'
+                    : phoneResendCountdown > 0
+                    ? `Resend OTP in ${Math.floor(phoneResendCountdown / 60)}:${String(phoneResendCountdown % 60).padStart(2, '0')}`
+                    : phoneOtpSent
+                    ? 'Resend OTP'
+                    : 'Send OTP'}
+                </button>
+              </div>
             </div>
 
             <button

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, customers, addresses } from '@/db';
 import { eq } from 'drizzle-orm';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { phoneNumber, name, address } = body;
+    const { phoneNumber, name, email, address } = body;
 
     // Validate required fields
     if (!phoneNumber || !name) {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
       .values({
         phoneNumber,
         name,
-        email: null,
+        email: email || null,
       })
       .returning();
 
@@ -54,6 +55,16 @@ export async function POST(request: NextRequest) {
           pincode: address.pincode,
           isDefault: true, // First address is always default
         });
+    }
+
+    // Send welcome email if customer provided an email (don't block signup if email fails)
+    if (newCustomer.email) {
+      try {
+        await sendWelcomeEmail(newCustomer.email, newCustomer.name || 'Valued Customer');
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+        // Don't fail signup if welcome email fails
+      }
     }
 
     return NextResponse.json({

@@ -16,10 +16,23 @@ export default function SignupPage() {
   const [step, setStep] = useState<SignupStep>('details');
   const [phoneNumber, setPhoneNumber] = useState(phoneFromUrl);
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [showEmailSection, setShowEmailSection] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingOTP, setIsSendingOTP] = useState(false);
+  const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [emailSuccess, setEmailSuccess] = useState('');
+  const [resendCountdown, setResendCountdown] = useState(0); // Countdown for resend button (email)
+  const [phoneResendCountdown, setPhoneResendCountdown] = useState(0); // Countdown for phone OTP resend
+  const [isSendingPhoneOTP, setIsSendingPhoneOTP] = useState(false);
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [phoneOtpError, setPhoneOtpError] = useState('');
 
   // Address form fields
   const [addressData, setAddressData] = useState({
@@ -41,12 +54,144 @@ export default function SignupPage() {
     }));
   }, [name, phoneNumber]);
 
+  // Countdown timer for email resend button
+  useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setTimeout(() => {
+        setResendCountdown(resendCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCountdown]);
+
+  // Countdown timer for phone OTP resend button
+  useEffect(() => {
+    if (phoneResendCountdown > 0) {
+      const timer = setTimeout(() => {
+        setPhoneResendCountdown(phoneResendCountdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [phoneResendCountdown]);
+
+  const handleSendEmailOTP = async () => {
+    if (!email.trim() || !name.trim()) {
+      setEmailError('Please enter your name and email first');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
+
+    setIsSendingOTP(true);
+    setEmailError('');
+    setEmailSuccess('');
+
+    try {
+      const response = await fetch('/api/email/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle rate limiting with countdown
+        if (response.status === 429 && data.remainingSeconds) {
+          setResendCountdown(data.remainingSeconds);
+        }
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      // Start countdown for 2 minutes (120 seconds)
+      setResendCountdown(120);
+      setEmailSuccess('OTP sent! Check your email inbox.');
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : 'Failed to send OTP');
+    } finally {
+      setIsSendingOTP(false);
+    }
+  };
+
+  const handleVerifyEmailOTP = async () => {
+    if (!emailOtp.trim() || emailOtp.length !== 6) {
+      setEmailError('Please enter the 6-digit OTP');
+      return;
+    }
+
+    setIsVerifyingOTP(true);
+    setEmailError('');
+    setEmailSuccess('');
+
+    try {
+      const response = await fetch('/api/email/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp: emailOtp }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Invalid OTP');
+      }
+
+      setEmailVerified(true);
+      setEmailSuccess('✅ Email verified successfully!');
+      setEmailOtp('');
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : 'Failed to verify OTP');
+    } finally {
+      setIsVerifyingOTP(false);
+    }
+  };
+
+  const handleSendPhoneOTP = async () => {
+    setIsSendingPhoneOTP(true);
+    setPhoneOtpError('');
+
+    try {
+      const response = await fetch('/api/phone/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle rate limiting with countdown
+        if (response.status === 429 && data.remainingSeconds) {
+          setPhoneResendCountdown(data.remainingSeconds);
+        }
+        throw new Error(data.error || 'Failed to send OTP');
+      }
+
+      // Start countdown for 2 minutes (120 seconds)
+      setPhoneResendCountdown(120);
+      setPhoneOtpSent(true);
+    } catch (err) {
+      setPhoneOtpError(err instanceof Error ? err.message : 'Failed to send OTP');
+    } finally {
+      setIsSendingPhoneOTP(false);
+    }
+  };
+
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
+      // If email is provided but not verified, show error
+      if (email.trim() && !emailVerified) {
+        throw new Error('Please verify your email address before continuing');
+      }
+
       // Check if phone number is already registered
       const checkResponse = await fetch('/api/customers/check-phone', {
         method: 'POST',
@@ -60,8 +205,11 @@ export default function SignupPage() {
         throw new Error('Phone number already registered. Please login instead.');
       }
 
-      // Validation passed, move to OTP step (account will be created after OTP verification)
+      // Validation passed, move to OTP step
       setStep('otp');
+
+      // Automatically send phone OTP when moving to OTP step
+      await handleSendPhoneOTP();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -72,10 +220,24 @@ export default function SignupPage() {
   const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setPhoneOtpError('');
     setIsLoading(true);
 
     try {
-      // All OTPs are correct for testing - so proceed to create account
+      // Verify phone OTP first (unless in testing mode)
+      const verifyResponse = await fetch('/api/phone/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber, otp }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData.error || 'Invalid OTP');
+      }
+
+      // OTP verified successfully, proceed to create account
 
       // Step 1: Create customer account in database
       const signupResponse = await fetch('/api/customers/signup', {
@@ -84,6 +246,7 @@ export default function SignupPage() {
         body: JSON.stringify({
           phoneNumber,
           name,
+          email: emailVerified && email ? email : null,
           address: showAddressForm ? addressData : null,
         }),
       });
@@ -169,6 +332,116 @@ export default function SignupPage() {
                 placeholder="Enter your full name"
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-maroon focus:border-transparent transition-all"
               />
+            </div>
+
+            {/* Optional Email Section */}
+            <div className="border-t border-gray-200 pt-4">
+              <button
+                type="button"
+                onClick={() => setShowEmailSection(!showEmailSection)}
+                className="flex items-center justify-between w-full text-left text-sm font-semibold text-gray-700 hover:text-maroon transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <span>Add Email (Optional)</span>
+                  {emailVerified && (
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                      ✓ Verified
+                    </span>
+                  )}
+                </span>
+                <svg
+                  className={`w-5 h-5 transition-transform ${showEmailSection ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <p className="text-xs text-gray-500 mt-1 ml-1">
+                📧 Get order updates via email
+              </p>
+
+              {showEmailSection && (
+                <div className="mt-4 space-y-3 bg-gray-50 p-4 rounded-lg">
+                  {emailError && (
+                    <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
+                      {emailError}
+                    </div>
+                  )}
+                  {emailSuccess && (
+                    <div className="text-sm text-green-600 bg-green-50 border border-green-200 rounded px-3 py-2">
+                      {emailSuccess}
+                    </div>
+                  )}
+
+                  <div>
+                    <input
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={emailVerified}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-maroon disabled:bg-gray-100"
+                    />
+                  </div>
+
+                  {!emailVerified ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleSendEmailOTP}
+                        disabled={isSendingOTP || !email.trim() || resendCountdown > 0}
+                        className="w-full bg-maroon text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-deep-maroon disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSendingOTP
+                          ? 'Sending OTP...'
+                          : resendCountdown > 0
+                          ? `Resend in ${Math.floor(resendCountdown / 60)}:${String(resendCountdown % 60).padStart(2, '0')}`
+                          : emailSuccess
+                          ? 'Resend Code'
+                          : 'Send Verification Code'}
+                      </button>
+
+                      {emailSuccess && (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Enter 6-digit OTP"
+                            value={emailOtp}
+                            onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            maxLength={6}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-maroon text-center font-mono text-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleVerifyEmailOTP}
+                            disabled={isVerifyingOTP || emailOtp.length !== 6}
+                            className="w-full bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isVerifyingOTP ? 'Verifying...' : 'Verify Email'}
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-md px-3 py-2">
+                      <span className="text-sm text-green-800">✅ Email verified</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmailVerified(false);
+                          setEmailOtp('');
+                          setEmailSuccess('');
+                        }}
+                        className="text-xs text-green-700 hover:text-green-900 underline"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Optional Address Section */}
@@ -258,7 +531,7 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              disabled={isLoading || phoneNumber.length !== 10 || !name.trim()}
+              disabled={isLoading || phoneNumber.length !== 10 || !name.trim() || (email.trim() !== '' && !emailVerified)}
               className="w-full py-3 px-4 bg-maroon text-white rounded-lg font-semibold text-lg hover:bg-deep-maroon focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-maroon disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98]"
             >
               {isLoading ? (
@@ -292,7 +565,22 @@ export default function SignupPage() {
               <p className="text-xs text-gray-500 mb-1">Signing up as</p>
               <p className="text-lg font-semibold text-gray-900">{name}</p>
               <p className="text-sm text-gray-600">{phoneNumber}</p>
+              {emailVerified && email && (
+                <p className="text-sm text-green-600 mt-1">✅ {email}</p>
+              )}
             </div>
+
+            {phoneOtpError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                {phoneOtpError}
+              </div>
+            )}
+
+            {phoneOtpSent && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-sm">
+                📱 OTP sent to {phoneNumber}
+              </div>
+            )}
 
             <div>
               <label htmlFor="otp" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -310,9 +598,22 @@ export default function SignupPage() {
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-maroon focus:border-transparent transition-all text-center text-2xl tracking-widest font-semibold"
                 autoFocus
               />
-              <p className="mt-2 text-xs text-center text-gray-500">
-                For testing: Any 6-digit code will work
-              </p>
+              <div className="mt-3 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleSendPhoneOTP}
+                  disabled={isSendingPhoneOTP || phoneResendCountdown > 0}
+                  className="text-sm text-maroon hover:text-deep-maroon font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSendingPhoneOTP
+                    ? 'Sending OTP...'
+                    : phoneResendCountdown > 0
+                    ? `Resend OTP in ${Math.floor(phoneResendCountdown / 60)}:${String(phoneResendCountdown % 60).padStart(2, '0')}`
+                    : phoneOtpSent
+                    ? 'Resend OTP'
+                    : 'Send OTP'}
+                </button>
+              </div>
             </div>
 
             <button

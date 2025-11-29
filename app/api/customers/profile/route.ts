@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { customerAuthOptions } from '@/lib/customer-auth';
-import { db, customers } from '@/db';
+import { db, customers, orders, addresses, carts } from '@/db';
 import { eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
@@ -98,6 +98,56 @@ export async function PATCH(request: NextRequest) {
     console.error('Error updating customer profile:', error);
     return NextResponse.json(
       { error: 'Failed to update profile' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Delete customer account
+export async function DELETE() {
+  try {
+    const session = await getServerSession(customerAuthOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Check if customer exists
+    const [customer] = await db
+      .select()
+      .from(customers)
+      .where(eq(customers.id, session.user.id))
+      .limit(1);
+
+    if (!customer) {
+      return NextResponse.json(
+        { error: 'Customer not found' },
+        { status: 404 }
+      );
+    }
+
+    // Delete all customer orders (this will cascade delete order items)
+    // Must delete orders first due to foreign key constraints on addresses
+    await db
+      .delete(orders)
+      .where(eq(orders.customerId, session.user.id));
+
+    // Delete customer (addresses and carts will cascade delete automatically)
+    await db
+      .delete(customers)
+      .where(eq(customers.id, session.user.id));
+
+    return NextResponse.json({
+      success: true,
+      message: 'Account deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting customer account:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete account' },
       { status: 500 }
     );
   }
