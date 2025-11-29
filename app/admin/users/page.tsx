@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { db, users } from '@/db';
 import { isSuperAdmin } from '@/lib/permissions';
-import TeamPermissionsMatrix from '@/components/admin/TeamPermissionsMatrix';
+import TeamPermissionsMatrixInteractive from '@/components/admin/TeamPermissionsMatrixInteractive';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -34,5 +34,5 @@ export default async function UsersPage() {
     .from(users)
     .orderBy(users.createdAt);
 
-  return <TeamPermissionsMatrix initialUsers={allUsers} />;
+  return <TeamPermissionsMatrixInteractive initialUsers={allUsers} />;
 }
