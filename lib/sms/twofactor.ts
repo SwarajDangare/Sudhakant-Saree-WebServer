@@ -52,8 +52,9 @@ export async function sendSMSOTP(
       url = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/VOICE/CALL/${phoneNumber}/${otp}`;
     } else {
       // 2Factor SMS API (default)
-      // Uses their template: "Your verification code is XXXX"
-      url = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneNumber}/${otp}/SDHKNT`;
+      // Correct format: /API/V1/{apiKey}/SMS/{phoneNumber}/{otp}
+      // Do NOT add sender ID at the end for SMS
+      url = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneNumber}/${otp}`;
     }
 
     const response = await fetch(url, {
