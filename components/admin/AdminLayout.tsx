@@ -10,37 +10,37 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const userRole = session?.user?.role;
+  const isLoading = status === 'loading';
 
   const navigation = [
     {
       section: 'DISCOVER',
       items: [
         { name: 'Dashboard', href: '/admin/dashboard', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
-        { name: 'Stores', href: '#', icon: '🏪', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+        { name: 'Stores', href: '/', icon: '🏪', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'], external: true },
       ]
     },
     {
       section: 'INVENTORY',
       items: [
         { name: 'Products', href: '/admin/products', icon: '📦', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
-        { name: 'Category', href: '/admin/categories', icon: '📁', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-        { name: 'Suppliers', href: '/admin/sections', icon: '🚚', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-        { name: 'Billing', href: '#', icon: '💳', allowedRoles: ['SUPER_ADMIN'] },
         { name: 'Orders', href: '/admin/orders', icon: '📋', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
+        { name: 'Category', href: '/admin/categories', icon: '📁', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+        { name: 'Sections', href: '/admin/sections', icon: '🚚', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+        { name: 'Customers', href: '/admin/customers', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+        { name: 'Billing', href: '#', icon: '💳', allowedRoles: ['SUPER_ADMIN'] },
         { name: 'Delivery', href: '#', icon: '🚛', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-        { name: 'Report', href: '/admin/customers', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
       ]
     },
     {
       section: 'SETTINGS',
       items: [
         { name: 'Settings', href: '#', icon: '⚙️', allowedRoles: ['SUPER_ADMIN'] },
-        { name: 'Help', href: '#', icon: '❓', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
         { name: 'Team', href: '/admin/users', icon: '👥', allowedRoles: ['SUPER_ADMIN'] },
       ]
     }
@@ -79,9 +79,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {/* Navigation - Sections */}
           <nav className="flex-1 px-4 overflow-y-auto">
             {navigation.map((section, idx) => {
-              const filteredItems = section.items.filter(
-                (item) => userRole && item.allowedRoles.includes(userRole)
-              );
+              // Show all items during loading, filter by role when session is available
+              const filteredItems = isLoading
+                ? section.items
+                : section.items.filter((item) => userRole && item.allowedRoles.includes(userRole));
 
               if (filteredItems.length === 0) return null;
 
@@ -93,10 +94,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <div className="space-y-1">
                     {filteredItems.map((item) => {
                       const isActive = pathname === item.href || (pathname?.startsWith(item.href + '/') && item.href !== '#');
+                      const isExternal = 'external' in item && item.external;
+
                       return (
                         <Link
                           key={item.name}
                           href={item.href}
+                          target={isExternal ? '_blank' : undefined}
+                          rel={isExternal ? 'noopener noreferrer' : undefined}
                           className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
                             isActive
                               ? 'bg-white text-indigo-600'
@@ -106,6 +111,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         >
                           <span className="text-lg">{item.icon}</span>
                           <span>{item.name}</span>
+                          {isExternal && (
+                            <span className="ml-auto text-xs">↗</span>
+                          )}
                         </Link>
                       );
                     })}
