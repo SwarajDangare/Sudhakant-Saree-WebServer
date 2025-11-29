@@ -40,6 +40,10 @@ export async function sendSMSOTP(
     // Get delivery method from parameter or environment variable
     const deliveryMethod = method || (process.env.OTP_DELIVERY_METHOD as DeliveryMethod) || 'SMS';
 
+    console.log('🔔 OTP Delivery Method:', deliveryMethod);
+    console.log('📞 Phone Number:', phoneNumber);
+    console.log('🔢 OTP:', otp);
+
     let url: string;
 
     if (deliveryMethod === 'CALL') {
