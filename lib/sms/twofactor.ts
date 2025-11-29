@@ -1,5 +1,5 @@
 /**
- * 2Factor SMS Integration for Phone OTP
+ * 2Factor Integration for Phone OTP (SMS & Voice Call)
  * Documentation: https://2factor.in/docs
  * Free tier: 10 SMS/day | Paid: ~₹0.15-0.20 per SMS
  */
@@ -16,15 +16,19 @@ interface VerifyOTPResponse {
   Details: string;
 }
 
+type DeliveryMethod = 'SMS' | 'CALL';
+
 /**
- * Send OTP via SMS using 2Factor
+ * Send OTP via SMS or Voice Call using 2Factor
  * @param phoneNumber - 10-digit phone number (without country code)
  * @param otp - 6-digit OTP code
+ * @param method - Delivery method: 'SMS' or 'CALL' (default from env)
  * @returns Promise with response from 2Factor
  */
 export async function sendSMSOTP(
   phoneNumber: string,
-  otp: string
+  otp: string,
+  method?: DeliveryMethod
 ): Promise<{ success: boolean; message: string }> {
   try {
     const apiKey = process.env.TWOFACTOR_API_KEY;
@@ -33,9 +37,20 @@ export async function sendSMSOTP(
       throw new Error('TWOFACTOR_API_KEY not configured');
     }
 
-    // 2Factor OTP Send API
-    // Uses their template: "Your verification code is XXXX"
-    const url = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneNumber}/${otp}/SDHKNT`;
+    // Get delivery method from parameter or environment variable
+    const deliveryMethod = method || (process.env.OTP_DELIVERY_METHOD as DeliveryMethod) || 'SMS';
+
+    let url: string;
+
+    if (deliveryMethod === 'CALL') {
+      // 2Factor Voice Call API
+      // Sends OTP via automated voice call
+      url = `https://2factor.in/API/V1/${apiKey}/ADDON_SERVICES/VOICE/CALL/${phoneNumber}/${otp}`;
+    } else {
+      // 2Factor SMS API (default)
+      // Uses their template: "Your verification code is XXXX"
+      url = `https://2factor.in/API/V1/${apiKey}/SMS/${phoneNumber}/${otp}/SDHKNT`;
+    }
 
     const response = await fetch(url, {
       method: 'GET',
@@ -51,9 +66,10 @@ export async function sendSMSOTP(
 
     // Check response status
     if (data.Status === 'Success') {
+      const deliveryType = deliveryMethod === 'CALL' ? 'voice call' : 'SMS';
       return {
         success: true,
-        message: data.Details || 'OTP sent successfully',
+        message: data.Details || `OTP sent successfully via ${deliveryType}`,
       };
     } else {
       return {
@@ -62,7 +78,7 @@ export async function sendSMSOTP(
       };
     }
   } catch (error) {
-    console.error('Error sending SMS OTP:', error);
+    console.error('Error sending OTP:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Failed to send OTP',
