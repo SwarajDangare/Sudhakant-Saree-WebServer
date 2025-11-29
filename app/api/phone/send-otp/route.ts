@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateOTP, checkRateLimit } from '@/lib/otp/otpStore';
-import { sendSMSOTP } from '@/lib/sms/msg91';
+import { sendSMSOTP } from '@/lib/sms/twofactor';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,11 +58,8 @@ export async function POST(request: NextRequest) {
     // Generate OTP
     const otp = generateOTP(phoneNumber);
 
-    // Add country code for India (+91)
-    const phoneWithCountryCode = `91${phoneNumber}`;
-
-    // Send OTP via MSG91
-    const result = await sendSMSOTP(phoneWithCountryCode, otp);
+    // Send OTP via 2Factor (no country code needed - it's for India by default)
+    const result = await sendSMSOTP(phoneNumber, otp);
 
     if (!result.success) {
       return NextResponse.json(
