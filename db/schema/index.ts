@@ -171,10 +171,31 @@ export const products = pgTable('products', {
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
   discountType: discountTypeEnum('discountType').default('NONE').notNull(),
   discountValue: decimal('discountValue', { precision: 10, scale: 2 }).default('0').notNull(),
-  material: text('material').notNull(),
-  length: text('length').notNull(),
-  occasion: text('occasion').notNull(),
-  careInstructions: text('careInstructions').notNull(),
+
+  // Basic Product Details
+  material: text('material'),
+  fabricComposition: text('fabricComposition'),
+  weight: text('weight'), // GSM or weight info
+  length: text('length'),
+
+  // Saree-Specific Details
+  blousePieceIncluded: boolean('blousePieceIncluded').default(false).notNull(),
+  workType: text('workType'), // e.g., Handloom, Embroidery, Print
+  borderType: text('borderType'), // e.g., Zari Border, Contrast Border
+  palluDetails: text('palluDetails'),
+
+  // Additional Info
+  occasion: text('occasion'),
+  careInstructions: text('careInstructions'),
+  washCare: text('washCare'), // Detailed wash care instructions
+
+  // Inventory & SEO
+  sku: text('sku'), // Product SKU/Code
+  stockQuantity: integer('stockQuantity'), // Stock quantity
+  tags: text('tags'), // Comma-separated tags for search
+  metaDescription: text('metaDescription'), // SEO meta description
+
+  // Status
   featured: boolean('featured').default(false).notNull(),
   active: boolean('active').default(true).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
