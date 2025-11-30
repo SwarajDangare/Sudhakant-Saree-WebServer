@@ -4,82 +4,98 @@ import { permissions, rolePermissions } from './schema';
 import { eq } from 'drizzle-orm';
 
 /**
- * Seed script for permissions system
+ * Seed script for page-based permissions system
+ * This creates permissions based on actual admin pages
  * Run with: npm run db:seed-permissions
  */
 
-const defaultPermissions = [
-  // Dashboard & Analytics
-  { key: 'view_dashboard', name: 'View Dashboard', description: 'Access to main dashboard and analytics', category: 'Dashboard' },
-  { key: 'view_financials', name: 'View Financials', description: 'Access revenue and financial reports', category: 'Dashboard' },
+const adminPagePermissions = [
+  // Dashboard Access
+  { key: 'view_dashboard', name: 'Dashboard - Overview', description: 'Access main dashboard page', category: 'Dashboard' },
+  { key: 'view_business_stats', name: 'Dashboard - Business Statistics', description: 'View revenue, sales, and business metrics on dashboard', category: 'Dashboard' },
 
   // Products Management
-  { key: 'view_products', name: 'View Products', description: 'View product catalog', category: 'Products' },
-  { key: 'create_products', name: 'Create Products', description: 'Add new products', category: 'Products' },
-  { key: 'edit_products', name: 'Edit Products', description: 'Modify existing products', category: 'Products' },
-  { key: 'delete_products', name: 'Delete Products', description: 'Remove products from catalog', category: 'Products' },
+  { key: 'access_products_page', name: 'Products Page', description: 'Access products management page', category: 'Products' },
+  { key: 'create_products', name: 'Products - Create', description: 'Add new products', category: 'Products' },
+  { key: 'edit_products', name: 'Products - Edit', description: 'Modify existing products', category: 'Products' },
+  { key: 'delete_products', name: 'Products - Delete', description: 'Remove products', category: 'Products' },
 
   // Orders Management
-  { key: 'view_orders', name: 'View Orders', description: 'View all orders', category: 'Orders' },
-  { key: 'view_all_orders', name: 'View All Orders', description: 'Access to all orders including completed and cancelled', category: 'Orders' },
-  { key: 'update_orders', name: 'Update Order Status', description: 'Change order status and send notifications', category: 'Orders' },
-  { key: 'delete_orders', name: 'Delete Orders', description: 'Remove orders from system', category: 'Orders' },
+  { key: 'access_orders_page', name: 'Orders Page', description: 'Access orders management page', category: 'Orders' },
+  { key: 'view_order_details', name: 'Orders - View Details', description: 'View complete order information', category: 'Orders' },
+  { key: 'update_order_status', name: 'Orders - Update Status', description: 'Change order status', category: 'Orders' },
+  { key: 'delete_orders', name: 'Orders - Delete', description: 'Remove orders', category: 'Orders' },
 
-  // Categories & Sections
-  { key: 'view_categories', name: 'View Categories', description: 'View product categories', category: 'Catalog' },
-  { key: 'manage_categories', name: 'Manage Categories', description: 'Create and edit product categories', category: 'Catalog' },
-  { key: 'view_sections', name: 'View Sections', description: 'View top-level sections', category: 'Catalog' },
-  { key: 'manage_sections', name: 'Manage Sections', description: 'Create and edit top-level sections', category: 'Catalog' },
+  // Categories Management
+  { key: 'access_categories_page', name: 'Categories Page', description: 'Access categories management page', category: 'Catalog' },
+  { key: 'create_categories', name: 'Categories - Create', description: 'Add new categories', category: 'Catalog' },
+  { key: 'edit_categories', name: 'Categories - Edit', description: 'Modify categories', category: 'Catalog' },
+  { key: 'delete_categories', name: 'Categories - Delete', description: 'Remove categories', category: 'Catalog' },
 
-  // Customer Management
-  { key: 'view_customers', name: 'View Customer Info', description: 'Access customer personal information', category: 'Customers' },
-  { key: 'edit_customers', name: 'Edit Customers', description: 'Modify customer information', category: 'Customers' },
-  { key: 'delete_customers', name: 'Delete Customers', description: 'Remove customer accounts', category: 'Customers' },
+  // Sections Management
+  { key: 'access_sections_page', name: 'Sections Page', description: 'Access sections management page', category: 'Catalog' },
+  { key: 'create_sections', name: 'Sections - Create', description: 'Add new sections', category: 'Catalog' },
+  { key: 'edit_sections', name: 'Sections - Edit', description: 'Modify sections', category: 'Catalog' },
+  { key: 'delete_sections', name: 'Sections - Delete', description: 'Remove sections', category: 'Catalog' },
 
-  // Admin Users & Permissions
-  { key: 'view_users', name: 'View Admin Users', description: 'View list of admin users', category: 'System' },
-  { key: 'manage_users', name: 'Manage Admin Users', description: 'Create, edit, and delete admin users', category: 'System' },
-  { key: 'manage_permissions', name: 'Manage Permissions', description: 'Create, edit, and assign permissions', category: 'System' },
-  { key: 'system_settings', name: 'System Settings', description: 'Access to system configuration', category: 'System' },
+  // Customers Management
+  { key: 'access_customers_page', name: 'Customers Page', description: 'Access customers management page', category: 'Customers' },
+  { key: 'view_customer_details', name: 'Customers - View Details', description: 'View customer personal information', category: 'Customers' },
+  { key: 'edit_customers', name: 'Customers - Edit', description: 'Modify customer information', category: 'Customers' },
+  { key: 'delete_customers', name: 'Customers - Delete', description: 'Remove customers', category: 'Customers' },
+
+  // Team Management (Super Admin Only)
+  { key: 'access_team_page', name: 'Team & Permissions Page', description: 'Access team management page', category: 'System' },
+  { key: 'create_users', name: 'Team - Create Users', description: 'Add new admin users', category: 'System' },
+  { key: 'edit_users', name: 'Team - Edit Users', description: 'Modify admin users', category: 'System' },
+  { key: 'delete_users', name: 'Team - Delete Users', description: 'Remove admin users', category: 'System' },
+  { key: 'manage_permissions', name: 'Permissions - Manage', description: 'Configure role permissions', category: 'System' },
 ];
 
 // Default role permissions configuration
 const defaultRolePermissions = {
   SUPER_ADMIN: [
-    // All permissions enabled for Super Admin
-    'view_dashboard', 'view_financials',
-    'view_products', 'create_products', 'edit_products', 'delete_products',
-    'view_orders', 'view_all_orders', 'update_orders', 'delete_orders',
-    'view_categories', 'manage_categories', 'view_sections', 'manage_sections',
-    'view_customers', 'edit_customers', 'delete_customers',
-    'view_users', 'manage_users', 'manage_permissions', 'system_settings',
+    // Super Admin has ALL permissions
+    'view_dashboard', 'view_business_stats',
+    'access_products_page', 'create_products', 'edit_products', 'delete_products',
+    'access_orders_page', 'view_order_details', 'update_order_status', 'delete_orders',
+    'access_categories_page', 'create_categories', 'edit_categories', 'delete_categories',
+    'access_sections_page', 'create_sections', 'edit_sections', 'delete_sections',
+    'access_customers_page', 'view_customer_details', 'edit_customers', 'delete_customers',
+    'access_team_page', 'create_users', 'edit_users', 'delete_users', 'manage_permissions',
   ],
   SHOP_MANAGER: [
-    // Shop Manager permissions
-    'view_dashboard', 'view_financials',
-    'view_products', 'create_products', 'edit_products',
-    'view_orders', 'view_all_orders', 'update_orders',
-    'view_categories', 'manage_categories', 'view_sections', 'manage_sections',
-    'view_customers', 'edit_customers',
-    'view_users',
+    // Shop Manager - Most permissions except critical system settings
+    'view_dashboard', 'view_business_stats',
+    'access_products_page', 'create_products', 'edit_products', 'delete_products',
+    'access_orders_page', 'view_order_details', 'update_order_status',
+    'access_categories_page', 'create_categories', 'edit_categories', 'delete_categories',
+    'access_sections_page', 'create_sections', 'edit_sections', 'delete_sections',
+    'access_customers_page', 'view_customer_details', 'edit_customers',
   ],
   SALESMAN: [
-    // Salesman permissions (limited)
+    // Salesman - Limited to products and viewing orders
     'view_dashboard',
-    'view_products', 'create_products', 'edit_products',
-    'view_orders',
+    'access_products_page', 'create_products', 'edit_products',
+    'access_orders_page', 'view_order_details',
   ],
 };
 
 async function seedPermissions() {
   try {
-    console.log('🌱 Starting permissions seed...\n');
+    console.log('🌱 Starting page-based permissions seed...\n');
 
-    // 1. Seed Permissions
-    console.log('📝 Creating permissions...');
+    // 1. Delete existing permissions (fresh start)
+    console.log('🗑️  Clearing existing permissions...');
+    await db.delete(rolePermissions);
+    await db.delete(permissions);
+    console.log('✓ Cleared\n');
+
+    // 2. Seed Permissions
+    console.log('📝 Creating page-based permissions...');
     const permissionMap = new Map<string, string>(); // key -> id
 
-    for (const perm of defaultPermissions) {
+    for (const perm of adminPagePermissions) {
       const [inserted] = await db
         .insert(permissions)
         .values({
@@ -89,24 +105,15 @@ async function seedPermissions() {
           category: perm.category,
           active: true,
         })
-        .onConflictDoUpdate({
-          target: permissions.key,
-          set: {
-            name: perm.name,
-            description: perm.description,
-            category: perm.category,
-            updatedAt: new Date(),
-          },
-        })
         .returning();
 
       permissionMap.set(perm.key, inserted.id);
-      console.log(`  ✓ ${perm.name} (${perm.key})`);
+      console.log(`  ✓ ${perm.name}`);
     }
 
-    console.log(`\n✅ Created/Updated ${defaultPermissions.length} permissions\n`);
+    console.log(`\n✅ Created ${adminPagePermissions.length} permissions\n`);
 
-    // 2. Seed Role Permissions
+    // 3. Seed Role Permissions
     console.log('🔐 Configuring role permissions...');
 
     for (const [role, permKeys] of Object.entries(defaultRolePermissions)) {
@@ -119,21 +126,27 @@ async function seedPermissions() {
           continue;
         }
 
-        await db
-          .insert(rolePermissions)
-          .values({
-            role: role as 'SUPER_ADMIN' | 'SHOP_MANAGER' | 'SALESMAN',
-            permissionId,
-            enabled: true,
-          })
-          .onConflictDoNothing();
+        await db.insert(rolePermissions).values({
+          role: role as 'SUPER_ADMIN' | 'SHOP_MANAGER' | 'SALESMAN',
+          permissionId,
+          enabled: true,
+        });
 
         console.log(`    ✓ ${permKey}`);
       }
     }
 
     console.log('\n✅ Role permissions configured successfully!\n');
-    console.log('🎉 Permissions seed completed!\n');
+    console.log('📊 Permission Summary:');
+    console.log(`   - Dashboard: 2 permissions`);
+    console.log(`   - Products: 4 permissions`);
+    console.log(`   - Orders: 4 permissions`);
+    console.log(`   - Catalog: 8 permissions (Categories + Sections)`);
+    console.log(`   - Customers: 4 permissions`);
+    console.log(`   - System: 5 permissions (Team Management)`);
+    console.log(`   - Total: ${adminPagePermissions.length} permissions\n`);
+
+    console.log('🎉 Page-based permissions seed completed!\n');
 
     process.exit(0);
   } catch (error) {
