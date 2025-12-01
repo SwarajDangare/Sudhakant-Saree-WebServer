@@ -114,41 +114,6 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Compact Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/admin/products"
-            className="p-2 hover:bg-gray-100 rounded-lg transition"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </Link>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Edit Product</h2>
-            <p className="text-xs text-gray-500">{product.name}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {product.active ? (
-            <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-              Active
-            </div>
-          ) : (
-            <div className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
-              Inactive
-            </div>
-          )}
-          {product.featured && (
-            <div className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-              Featured
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Product Form */}
       <CompactProductForm sections={allSections} categories={allCategories} initialData={initialData} />
     </div>
   );

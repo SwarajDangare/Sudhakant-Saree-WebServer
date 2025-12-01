@@ -20,6 +20,31 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Hide sidebar on login page
   const isLoginPage = pathname === '/admin/login';
 
+  // Get page title and description based on current route
+  const getPageInfo = () => {
+    const path = pathname || '';
+
+    if (path === '/admin/dashboard') return { title: 'Dashboard', description: 'Overview of your store performance' };
+    if (path === '/admin/products') return { title: 'Products', description: 'Manage your saree catalog' };
+    if (path.startsWith('/admin/products/new')) return { title: 'Add New Product', description: 'Create a new product for your store' };
+    if (path.match(/\/admin\/products\/[^/]+\/edit/)) return { title: 'Edit Product', description: 'Update product details' };
+    if (path === '/admin/orders') return { title: 'Orders', description: 'Manage customer orders' };
+    if (path === '/admin/categories') return { title: 'Categories', description: 'Manage your product categories and sections' };
+    if (path.startsWith('/admin/categories/new')) return { title: 'Add Category', description: 'Create a new category' };
+    if (path.match(/\/admin\/categories\/[^/]+\/edit/)) return { title: 'Edit Category', description: 'Update category details' };
+    if (path === '/admin/sections') return { title: 'Sections', description: 'Manage product sections' };
+    if (path.startsWith('/admin/sections/new')) return { title: 'Add Section', description: 'Create a new section' };
+    if (path.match(/\/admin\/sections\/[^/]+\/edit/)) return { title: 'Edit Section', description: 'Update section details' };
+    if (path === '/admin/customers') return { title: 'Customers', description: 'Manage your customers' };
+    if (path.match(/\/admin\/customers\/[^/]+/)) return { title: 'Customer Details', description: 'View customer information and orders' };
+    if (path === '/admin/users') return { title: 'Team Management', description: 'Manage admin users and permissions' };
+    if (path === '/admin/settings') return { title: 'Settings', description: 'Configure your store settings' };
+
+    return { title: 'Dashboard', description: 'Overview of your store performance' };
+  };
+
+  const pageInfo = getPageInfo();
+
   const navigation = [
     {
       section: 'DISCOVER',
@@ -159,9 +184,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </svg>
             </button>
 
-            {/* Page Title */}
+            {/* Page Title - Dynamic */}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{pageInfo.title}</h1>
+              <p className="text-xs text-gray-500 mt-0.5">{pageInfo.description}</p>
             </div>
 
             {/* Right side actions */}
