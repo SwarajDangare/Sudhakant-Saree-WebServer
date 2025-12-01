@@ -17,6 +17,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const userRole = session?.user?.role;
   const isLoading = status === 'loading';
 
+  // Hide sidebar on login page
+  const isLoginPage = pathname === '/admin/login';
+
   const navigation = [
     {
       section: 'DISCOVER',
@@ -45,6 +48,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       ]
     }
   ];
+
+  // If on login page, just return children without layout
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-white">
