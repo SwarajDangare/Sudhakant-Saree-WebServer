@@ -116,15 +116,13 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
 
   if (error || !customerData) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
-            <p className="text-red-700">{error || 'Customer not found'}</p>
-            <Link href="/admin/customers" className="mt-4 inline-block text-maroon hover:underline">
-              ← Back to Customers
-            </Link>
-          </div>
+      <div className="space-y-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
+          <p className="text-red-700">{error || 'Customer not found'}</p>
+          <Link href="/admin/customers" className="mt-4 inline-block text-maroon hover:underline">
+            ← Back to Customers
+          </Link>
         </div>
       </div>
     );
@@ -134,198 +132,170 @@ export default function CustomerDetailPage({ params }: { params: { id: string } 
   const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Buttons */}
-        <div className="mb-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Link
-              href="/admin/dashboard"
-              className="inline-flex items-center text-gray-600 hover:text-maroon transition"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Dashboard
-            </Link>
-            <span className="text-gray-300">|</span>
-            <Link
-              href="/admin/customers"
-              className="inline-flex items-center text-gray-600 hover:text-maroon transition"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Customers
-            </Link>
+    <div className="space-y-6">
+      {/* Customer Info Card */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Contact Information</h2>
+            <div className="space-y-3">
+              <div>
+                <div className="text-sm text-gray-600">Name</div>
+                <div className="text-lg font-semibold">{customer.name || 'N/A'}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600">Phone Number</div>
+                <div className="text-lg font-mono">{customer.phoneNumber}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600">Email</div>
+                <div className="text-lg">{customer.email || 'Not provided'}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600">Customer ID</div>
+                <div className="text-sm font-mono text-gray-700">{customer.id}</div>
+              </div>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Customer Details</h1>
+          <div>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Statistics</h2>
+            <div className="space-y-3">
+              <div className="bg-maroon text-white rounded-lg p-4">
+                <div className="text-sm opacity-90">Total Orders</div>
+                <div className="text-3xl font-bold">{totalOrders}</div>
+              </div>
+              <div className="bg-green-600 text-white rounded-lg p-4">
+                <div className="text-sm opacity-90">Total Revenue</div>
+                <div className="text-3xl font-bold">₹{totalRevenue.toFixed(2)}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600">Member Since</div>
+                <div className="text-lg font-semibold">
+                  {new Date(customer.createdAt).toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Customer Info Card */}
+      {/* Addresses */}
+      {addresses.length > 0 && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Contact Information</h2>
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm text-gray-600">Name</div>
-                  <div className="text-lg font-semibold">{customer.name || 'N/A'}</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Saved Addresses</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {addresses.map((address) => (
+              <div
+                key={address.id}
+                className={`border rounded-lg p-4 ${
+                  address.isDefault ? 'border-maroon bg-maroon bg-opacity-5' : 'border-gray-200'
+                }`}
+              >
+                {address.isDefault && (
+                  <span className="inline-block bg-maroon text-white text-xs px-2 py-1 rounded mb-2">
+                    Default
+                  </span>
+                )}
+                <div className="font-semibold">{address.name}</div>
+                <div className="text-sm text-gray-600 mt-1">
+                  {address.addressLine1}
+                  {address.addressLine2 && <>, {address.addressLine2}</>}
                 </div>
-                <div>
-                  <div className="text-sm text-gray-600">Phone Number</div>
-                  <div className="text-lg font-mono">{customer.phoneNumber}</div>
+                <div className="text-sm text-gray-600">
+                  {address.city}, {address.state} - {address.pincode}
                 </div>
-                <div>
-                  <div className="text-sm text-gray-600">Email</div>
-                  <div className="text-lg">{customer.email || 'Not provided'}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">Customer ID</div>
-                  <div className="text-sm font-mono text-gray-700">{customer.id}</div>
-                </div>
+                <div className="text-sm text-gray-600 mt-1 font-mono">{address.phoneNumber}</div>
               </div>
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Statistics</h2>
-              <div className="space-y-3">
-                <div className="bg-maroon text-white rounded-lg p-4">
-                  <div className="text-sm opacity-90">Total Orders</div>
-                  <div className="text-3xl font-bold">{totalOrders}</div>
-                </div>
-                <div className="bg-green-600 text-white rounded-lg p-4">
-                  <div className="text-sm opacity-90">Total Revenue</div>
-                  <div className="text-3xl font-bold">₹{totalRevenue.toFixed(2)}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">Member Since</div>
-                  <div className="text-lg font-semibold">
-                    {new Date(customer.createdAt).toLocaleDateString('en-IN', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Addresses */}
-        {addresses.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Saved Addresses</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {addresses.map((address) => (
-                <div
-                  key={address.id}
-                  className={`border rounded-lg p-4 ${
-                    address.isDefault ? 'border-maroon bg-maroon bg-opacity-5' : 'border-gray-200'
-                  }`}
-                >
-                  {address.isDefault && (
-                    <span className="inline-block bg-maroon text-white text-xs px-2 py-1 rounded mb-2">
-                      Default
+      {/* Orders */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Order History</h2>
+        {orders.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">No orders yet</p>
+        ) : (
+          <div className="space-y-6">
+            {orders.map((order) => (
+              <div key={order.id} className="border border-gray-200 rounded-lg p-6">
+                {/* Order Header */}
+                <div className="flex flex-wrap items-center justify-between mb-4 gap-4">
+                  <div>
+                    <div className="text-lg font-bold text-gray-900">
+                      Order #{order.orderNumber}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(order.createdAt).toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
+                      {order.status}
                     </span>
-                  )}
-                  <div className="font-semibold">{address.name}</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {address.addressLine1}
-                    {address.addressLine2 && <>, {address.addressLine2}</>}
+                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-semibold">
+                      {order.paymentMethod}
+                    </span>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    {address.city}, {address.state} - {address.pincode}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1 font-mono">{address.phoneNumber}</div>
                 </div>
-              ))}
-            </div>
+
+                {/* Order Items */}
+                <div className="mb-4">
+                  <div className="text-sm font-semibold text-gray-700 mb-2">Items:</div>
+                  <div className="space-y-2">
+                    {order.items.map((item) => (
+                      <div key={item.id} className="flex justify-between items-center bg-gray-50 rounded p-3">
+                        <div className="flex-1">
+                          <div className="font-medium">{item.productName}</div>
+                          {item.productColor && (
+                            <div className="text-sm text-gray-600">Color: {item.productColor}</div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-gray-600">
+                            ₹{parseFloat(item.price).toFixed(2)} × {item.quantity}
+                          </div>
+                          <div className="font-semibold">₹{parseFloat(item.subtotal).toFixed(2)}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Order Total */}
+                <div className="border-t pt-4">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className="text-gray-600">Subtotal:</span>
+                    <span>₹{parseFloat(order.subtotal).toFixed(2)}</span>
+                  </div>
+                  {parseFloat(order.discount) > 0 && (
+                    <div className="flex justify-between text-sm mb-1 text-green-600">
+                      <span>Discount:</span>
+                      <span>-₹{parseFloat(order.discount).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-lg font-bold mt-2">
+                    <span>Total:</span>
+                    <span className="text-maroon">₹{parseFloat(order.total).toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                {order.notes && (
+                  <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3">
+                    <div className="text-sm font-semibold text-gray-700">Notes:</div>
+                    <div className="text-sm text-gray-600">{order.notes}</div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         )}
-
-        {/* Orders */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Order History</h2>
-          {orders.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No orders yet</p>
-          ) : (
-            <div className="space-y-6">
-              {orders.map((order) => (
-                <div key={order.id} className="border border-gray-200 rounded-lg p-6">
-                  {/* Order Header */}
-                  <div className="flex flex-wrap items-center justify-between mb-4 gap-4">
-                    <div>
-                      <div className="text-lg font-bold text-gray-900">
-                        Order #{order.orderNumber}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(order.createdAt).toLocaleString('en-IN')}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                      <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm font-semibold">
-                        {order.paymentMethod}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Order Items */}
-                  <div className="mb-4">
-                    <div className="text-sm font-semibold text-gray-700 mb-2">Items:</div>
-                    <div className="space-y-2">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center bg-gray-50 rounded p-3">
-                          <div className="flex-1">
-                            <div className="font-medium">{item.productName}</div>
-                            {item.productColor && (
-                              <div className="text-sm text-gray-600">Color: {item.productColor}</div>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm text-gray-600">
-                              ₹{parseFloat(item.price).toFixed(2)} × {item.quantity}
-                            </div>
-                            <div className="font-semibold">₹{parseFloat(item.subtotal).toFixed(2)}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Order Total */}
-                  <div className="border-t pt-4">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-600">Subtotal:</span>
-                      <span>₹{parseFloat(order.subtotal).toFixed(2)}</span>
-                    </div>
-                    {parseFloat(order.discount) > 0 && (
-                      <div className="flex justify-between text-sm mb-1 text-green-600">
-                        <span>Discount:</span>
-                        <span>-₹{parseFloat(order.discount).toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-lg font-bold mt-2">
-                      <span>Total:</span>
-                      <span className="text-maroon">₹{parseFloat(order.total).toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {/* Notes */}
-                  {order.notes && (
-                    <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3">
-                      <div className="text-sm font-semibold text-gray-700">Notes:</div>
-                      <div className="text-sm text-gray-600">{order.notes}</div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -57,25 +57,8 @@ export default async function SectionsPage({
 
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <Link
-        href="/admin/dashboard"
-        className="inline-flex items-center text-gray-600 hover:text-maroon mb-4 transition"
-      >
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Dashboard
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sections</h1>
-          <p className="text-gray-600 mt-1">
-            Manage your top-level product sections
-          </p>
-        </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
         <Link
           href="/admin/sections/new"
           className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
