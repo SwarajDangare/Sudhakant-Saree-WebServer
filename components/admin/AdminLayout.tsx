@@ -10,93 +10,160 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const userRole = session?.user?.role;
-  const isSuperAdmin = userRole === 'SUPER_ADMIN';
-  const isShopManager = userRole === 'SHOP_MANAGER';
-  const isSalesman = userRole === 'SALESMAN';
+  const isLoading = status === 'loading';
+
+  // Hide sidebar on login page
+  const isLoginPage = pathname === '/admin/login';
+
+  // Get page title and description based on current route
+  const getPageInfo = () => {
+    const path = pathname || '';
+
+    if (path === '/admin/dashboard') return { title: 'Dashboard', description: 'Overview of your store performance' };
+    if (path === '/admin/products') return { title: 'Products', description: 'Manage your saree catalog' };
+    if (path.startsWith('/admin/products/new')) return { title: 'Add New Product', description: 'Create a new product for your store' };
+    if (path.match(/\/admin\/products\/[^/]+\/edit/)) return { title: 'Edit Product', description: 'Update product details' };
+    if (path === '/admin/orders') return { title: 'Orders', description: 'Manage customer orders' };
+    if (path === '/admin/categories') return { title: 'Categories', description: 'Manage your product categories and sections' };
+    if (path.startsWith('/admin/categories/new')) return { title: 'Add Category', description: 'Create a new category' };
+    if (path.match(/\/admin\/categories\/[^/]+\/edit/)) return { title: 'Edit Category', description: 'Update category details' };
+    if (path === '/admin/sections') return { title: 'Sections', description: 'Manage product sections' };
+    if (path.startsWith('/admin/sections/new')) return { title: 'Add Section', description: 'Create a new section' };
+    if (path.match(/\/admin\/sections\/[^/]+\/edit/)) return { title: 'Edit Section', description: 'Update section details' };
+    if (path === '/admin/customers') return { title: 'Customers', description: 'Manage your customers' };
+    if (path.match(/\/admin\/customers\/[^/]+/)) return { title: 'Customer Details', description: 'View customer information and orders' };
+    if (path === '/admin/users') return { title: 'Team Management', description: 'Manage admin users and permissions' };
+    if (path === '/admin/settings') return { title: 'Settings', description: 'Configure your store settings' };
+
+    return { title: 'Dashboard', description: 'Overview of your store performance' };
+  };
+
+  const pageInfo = getPageInfo();
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
-    { name: 'Products', href: '/admin/products', icon: '🛍️', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
-    { name: 'Orders', href: '/admin/orders', icon: '📦', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
-    { name: 'Sections', href: '/admin/sections', icon: '📂', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-    { name: 'Categories', href: '/admin/categories', icon: '📁', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-    { name: 'Customers', href: '/admin/customers', icon: '👥', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-    { name: 'Admin Users', href: '/admin/users', icon: '🔐', allowedRoles: ['SUPER_ADMIN'] },
+    {
+      section: 'DISCOVER',
+      items: [
+        { name: 'Dashboard', href: '/admin/dashboard', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
+        { name: 'Stores', href: '/', icon: '🏪', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'], external: true },
+      ]
+    },
+    {
+      section: 'INVENTORY',
+      items: [
+        { name: 'Products', href: '/admin/products', icon: '📦', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
+        { name: 'Orders', href: '/admin/orders', icon: '📋', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
+        { name: 'Category', href: '/admin/categories', icon: '📁', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+        { name: 'Sections', href: '/admin/sections', icon: '🚚', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+        { name: 'Customers', href: '/admin/customers', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+        { name: 'Billing', href: '#', icon: '💳', allowedRoles: ['SUPER_ADMIN'] },
+        { name: 'Delivery', href: '#', icon: '🚛', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+      ]
+    },
+    {
+      section: 'SETTINGS',
+      items: [
+        { name: 'Settings', href: '#', icon: '⚙️', allowedRoles: ['SUPER_ADMIN'] },
+        { name: 'Team', href: '/admin/users', icon: '👥', allowedRoles: ['SUPER_ADMIN'] },
+      ]
+    }
   ];
 
-  const filteredNavigation = navigation.filter(
-    (item) => userRole && item.allowedRoles.includes(userRole)
-  );
+  // If on login page, just return children without layout
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 lg:hidden"
+          className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
-        ></div>
+        />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - ThreadCraft Style with Purple Gradient */}
       <aside
-        className={`fixed top-0 left-0 z-30 w-64 h-screen transition-transform ${
+        className={`fixed top-0 left-0 z-50 w-64 h-screen transition-transform duration-300 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 bg-maroon`}
+        } lg:translate-x-0`}
+        style={{
+          background: 'linear-gradient(180deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%)',
+        }}
       >
         <div className="h-full flex flex-col">
-          {/* Logo */}
-          <div className="p-6 border-b border-white/10">
-            <h1 className="text-2xl font-bold text-silk-white">
+          {/* Logo Section */}
+          <div className="px-6 py-6 flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+              <span className="text-white text-xl">🪡</span>
+            </div>
+            <h1 className="text-white font-bold text-lg">
               Sudhakant Sarees
             </h1>
-            <p className="text-silk-white/60 text-sm mt-1">Admin Panel</p>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {filteredNavigation.map((item) => {
-              const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+          {/* Navigation - Sections */}
+          <nav className="flex-1 px-4 overflow-y-auto">
+            {navigation.map((section, idx) => {
+              // Show all items during loading, filter by role when session is available
+              const filteredItems = isLoading
+                ? section.items
+                : section.items.filter((item) => userRole && item.allowedRoles.includes(userRole));
+
+              if (filteredItems.length === 0) return null;
+
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center px-4 py-3 rounded-md transition ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : 'text-silk-white/80 hover:bg-white/10 hover:text-white'
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="text-xl mr-3">{item.icon}</span>
-                  <span className="font-medium">{item.name}</span>
-                </Link>
+                <div key={idx} className="mb-6">
+                  <h3 className="px-4 text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">
+                    {section.section}
+                  </h3>
+                  <div className="space-y-1">
+                    {filteredItems.map((item) => {
+                      const isActive = pathname === item.href || (pathname?.startsWith(item.href + '/') && item.href !== '#');
+                      const isExternal = 'external' in item && item.external;
+
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          target={isExternal ? '_blank' : undefined}
+                          rel={isExternal ? 'noopener noreferrer' : undefined}
+                          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                            isActive
+                              ? 'bg-white text-indigo-600'
+                              : 'text-white/80 hover:bg-white/10 hover:text-white'
+                          }`}
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <span className="text-lg">{item.icon}</span>
+                          <span>{item.name}</span>
+                          {isExternal && (
+                            <span className="ml-auto text-xs">↗</span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
               );
             })}
           </nav>
 
-          {/* User info & logout */}
+          {/* User Section at Bottom */}
           <div className="p-4 border-t border-white/10">
-            <div className="mb-3">
-              <p className="text-silk-white font-medium text-sm">
-                {session?.user?.name}
-              </p>
-              <p className="text-silk-white/60 text-xs">{session?.user?.email}</p>
-              <span className="inline-block mt-1 px-2 py-1 text-xs rounded bg-golden text-deep-maroon font-semibold">
-                {session?.user?.role?.replace('_', ' ')}
-              </span>
-            </div>
             <button
               onClick={() => signOut({ callbackUrl: '/admin/login' })}
-              className="w-full flex items-center justify-center px-4 py-2 bg-white/10 hover:bg-white/20 text-silk-white rounded-md transition text-sm font-medium"
+              className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-all"
             >
-              <span className="mr-2">🚪</span>
-              Sign Out
+              <span className="text-lg">🚪</span>
+              <span>Logout</span>
             </button>
           </div>
         </div>
@@ -105,42 +172,67 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main content */}
       <div className="lg:ml-64">
         {/* Top bar */}
-        <header className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <header className="bg-white border-b border-gray-100 sticky top-0 z-30">
+          <div className="px-4 lg:px-6 py-3 flex items-center justify-between">
+            {/* Mobile menu button */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"
+              className="lg:hidden p-1.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
-            <h2 className="text-xl font-semibold text-gray-800 hidden sm:block">
-              {pathname === '/admin/dashboard' && 'Dashboard'}
-              {pathname?.startsWith('/admin/products') && 'Product Management'}
-              {pathname?.startsWith('/admin/orders') && 'Order Management'}
-              {pathname?.startsWith('/admin/sections') && 'Section Management'}
-              {pathname?.startsWith('/admin/categories') && 'Category Management'}
-              {pathname?.startsWith('/admin/customers') && 'Customer Management'}
-              {pathname?.startsWith('/admin/users') && 'User Management'}
-            </h2>
+            {/* Page Title - Dynamic */}
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">{pageInfo.title}</h1>
+              <p className="text-xs text-gray-500 mt-0.5">{pageInfo.description}</p>
+            </div>
 
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/"
-                target="_blank"
-                className="text-sm text-gray-600 hover:text-maroon flex items-center"
-              >
-                <span className="mr-1">🌐</span>
-                View Site
-              </Link>
+            {/* Right side actions */}
+            <div className="flex items-center gap-2">
+              {/* Search */}
+              <div className="hidden md:flex relative">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search item, order, etc"
+                  className="pl-8 pr-3 py-1.5 w-48 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Notifications */}
+              <button className="p-1.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors relative">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+
+              {/* User Avatar with Dropdown */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                  {session?.user?.name?.charAt(0) || 'A'}
+                </div>
+                <div className="hidden md:flex flex-col">
+                  <span className="text-xs font-semibold text-gray-900">{session?.user?.name || 'Admin'}</span>
+                  <span className="text-[10px] text-gray-500">
+                    {session?.user?.role?.replace('_', ' ') || 'Super Admin'}
+                  </span>
+                </div>
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="p-4 sm:p-6 lg:p-8">
+        <main className="p-4 lg:p-5 bg-gray-50/30">
           {children}
         </main>
       </div>

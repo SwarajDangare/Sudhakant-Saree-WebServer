@@ -13,6 +13,7 @@
     "db:migrate": "tsx db/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx db/seed.ts",
+    "db:seed-permissions": "tsx db/seed-permissions.ts",
     "db:hash-password": "tsx db/generate-password.ts"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
     "@react-email/render": "^2.0.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.0",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.7",
     "next": "^14.2.33",
@@ -30,6 +32,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
+    "react-window": "^2.2.3",
+    "react-window-infinite-loader": "^2.0.0",
+    "recharts": "^3.5.1",
     "resend": "^6.5.2",
     "zod": "^3.22.4"
   },

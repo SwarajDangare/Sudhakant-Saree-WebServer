@@ -4,7 +4,7 @@ import { redirect, notFound } from 'next/navigation';
 import { db, products, categories, sections, productColors, colorImages } from '@/db';
 import { eq, asc } from 'drizzle-orm';
 import Link from 'next/link';
-import ProductForm from '@/components/admin/ProductForm';
+import CompactProductForm from '@/components/admin/CompactProductForm';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -93,35 +93,28 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     discountValue: String(product.discountValue || 0),
     categoryId: product.categoryId,
     material: product.material || '',
+    fabricComposition: product.fabricComposition || '',
+    weight: product.weight || '',
     length: product.length || '',
+    blousePieceIncluded: product.blousePieceIncluded || false,
+    workType: product.workType || '',
+    borderType: product.borderType || '',
+    palluDetails: product.palluDetails || '',
     occasion: product.occasion || '',
     careInstructions: product.careInstructions || '',
+    washCare: product.washCare || '',
+    sku: product.sku || '',
+    stockQuantity: product.stockQuantity ? String(product.stockQuantity) : '',
+    tags: product.tags || '',
+    metaDescription: product.metaDescription || '',
     active: product.active,
     featured: product.featured,
     colors: colorsWithImages,
   };
 
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Link
-        href="/admin/products"
-        className="inline-flex items-center text-gray-600 hover:text-maroon mb-4 transition"
-      >
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Products
-      </Link>
-
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Edit Product</h1>
-        <p className="text-gray-600 mt-1">Update the details for {product.name}</p>
-      </div>
-
-      {/* Product Form */}
-      <ProductForm sections={allSections} categories={allCategories} initialData={initialData} />
+    <div className="max-w-7xl mx-auto">
+      <CompactProductForm sections={allSections} categories={allCategories} initialData={initialData} />
     </div>
   );
 }
