@@ -12,13 +12,13 @@ interface RevenueChartProps {
 
 export default function RevenueChart({ data }: RevenueChartProps) {
   return (
-    <div className="soft-card p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-bold text-gray-900">Sales Analytics</h3>
-        <p className="text-sm text-gray-500 mt-1">Revenue trend over the last 30 days</p>
+    <div className="soft-card p-4">
+      <div className="mb-3">
+        <h3 className="text-base font-bold text-gray-900">Sales Analytics</h3>
+        <p className="text-xs text-gray-500 mt-0.5">Revenue trend over the last 30 days</p>
       </div>
 
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={240}>
         <AreaChart data={data}>
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -56,22 +56,22 @@ export default function RevenueChart({ data }: RevenueChartProps) {
         </AreaChart>
       </ResponsiveContainer>
 
-      <div className="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+      <div className="mt-3 grid grid-cols-3 gap-2 pt-3 border-t border-gray-100">
         <div>
-          <p className="text-xs text-gray-500">Total Revenue</p>
-          <p className="text-lg font-bold text-gray-900">
+          <p className="text-[10px] text-gray-500">Total Revenue</p>
+          <p className="text-sm font-bold text-gray-900">
             ₹{data.reduce((sum, item) => sum + item.revenue, 0).toLocaleString('en-IN')}
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-500">Total Orders</p>
-          <p className="text-lg font-bold text-gray-900">
+          <p className="text-[10px] text-gray-500">Total Orders</p>
+          <p className="text-sm font-bold text-gray-900">
             {data.reduce((sum, item) => sum + item.orders, 0)}
           </p>
         </div>
         <div>
-          <p className="text-xs text-gray-500">Avg Order Value</p>
-          <p className="text-lg font-bold text-gray-900">
+          <p className="text-[10px] text-gray-500">Avg Order Value</p>
+          <p className="text-sm font-bold text-gray-900">
             ₹{Math.round(
               data.reduce((sum, item) => sum + item.revenue, 0) /
               data.reduce((sum, item) => sum + item.orders, 0)

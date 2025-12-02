@@ -239,52 +239,52 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Team Members Section */}
-      <div className="soft-card p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="soft-card p-4">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">Team Members</h3>
-            <p className="text-sm text-gray-500 mt-1">
+            <h3 className="text-base font-bold text-gray-900">Team Members</h3>
+            <p className="text-xs text-gray-500 mt-0.5">
               Manage Shop Managers and Salesmen
             </p>
           </div>
           <button
             onClick={() => setShowAddUserModal(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
+            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-xs"
           >
             + Add Team Member
           </button>
         </div>
 
         {managedUsers.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-xl">
-            <p className="text-gray-500 text-lg">No team members yet</p>
-            <p className="text-gray-400 text-sm mt-2">Click "Add Team Member" to create your first user</p>
+          <div className="text-center py-8 bg-gray-50 rounded-lg">
+            <p className="text-gray-500 text-sm">No team members yet</p>
+            <p className="text-gray-400 text-xs mt-1">Click "Add Team Member" to create your first user</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {managedUsers.map((user) => (
-              <div key={user.id} className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+              <div key={user.id} className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
                     {user.name?.charAt(0) || user.email.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{user.name || 'No Name'}</p>
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    <p className="font-semibold text-gray-900 truncate text-sm">{user.name || 'No Name'}</p>
+                    <p className="text-[10px] text-gray-500 truncate">{user.email}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`soft-pill text-xs ${
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`soft-pill text-[10px] ${
                     user.role === 'SHOP_MANAGER' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
                   }`}>
                     {user.role === 'SHOP_MANAGER' ? 'Shop Manager' : 'Salesman'}
                   </span>
                   <button
                     onClick={() => handleToggleUserStatus(user.id, user.active)}
-                    className={`text-xs font-medium ${
+                    className={`text-[10px] font-medium ${
                       user.active ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
@@ -292,16 +292,16 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
                   </button>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <button
                     onClick={() => handleEditUser(user)}
-                    className="flex-1 px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
+                    className="flex-1 px-2 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-xs"
                   >
                     ✏️ Edit
                   </button>
                   <button
                     onClick={() => handleDeleteUser(user.id, user.name || user.email)}
-                    className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+                    className="px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-xs"
                   >
                     🗑️
                   </button>
@@ -314,17 +314,17 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
 
       {/* Save Status */}
       {saveMessage && (
-        <div className={`soft-card p-4 flex items-center justify-between ${
+        <div className={`soft-card p-3 flex items-center justify-between ${
           saveMessage.includes('✓') ? 'bg-green-50 border-green-200' :
           saveMessage.includes('❌') ? 'bg-red-50 border-red-200' :
           'bg-yellow-50 border-yellow-200'
         } border`}>
-          <p className="text-sm font-medium">{saveMessage}</p>
+          <p className="text-xs font-medium">{saveMessage}</p>
           {saveMessage === 'Unsaved changes' && (
             <button
               onClick={handleSavePermissions}
               disabled={saving}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm disabled:opacity-50"
+              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-xs disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Permissions'}
             </button>
@@ -334,18 +334,18 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
 
       {/* Permissions Table */}
       <div className="soft-card overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-4 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Admin Page Permissions</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="text-base font-bold text-gray-900">Admin Page Permissions</h3>
+              <p className="text-xs text-gray-500 mt-0.5">
                 Control which admin pages Shop Managers and Salesmen can access
               </p>
             </div>
             <button
               onClick={handleSavePermissions}
               disabled={saving || !saveMessage}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-xs disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Saving...' : 'Save Permissions'}
             </button>
@@ -356,18 +356,18 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
           <table className="w-full">
             <thead className="bg-gradient-to-r from-indigo-50 to-purple-50 sticky top-0">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-700">
+                <th className="px-4 py-2.5 text-left text-xs font-bold text-gray-700">
                   Admin Page / Permission
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-bold text-blue-700">
+                <th className="px-4 py-2.5 text-center text-xs font-bold text-blue-700">
                   <div className="flex flex-col items-center">
-                    <span className="text-2xl mb-1">🛍️</span>
+                    <span className="text-lg mb-0.5">🛍️</span>
                     <span>Shop Manager</span>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-center text-sm font-bold text-green-700">
+                <th className="px-4 py-2.5 text-center text-xs font-bold text-green-700">
                   <div className="flex flex-col items-center">
-                    <span className="text-2xl mb-1">💼</span>
+                    <span className="text-lg mb-0.5">💼</span>
                     <span>Salesman</span>
                   </div>
                 </th>
@@ -377,8 +377,8 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
               {Object.entries(permissionsByCategory).map(([category, perms], catIndex) => (
                 <>
                   <tr key={`category-${category}`} className="bg-gray-100">
-                    <td colSpan={3} className="px-6 py-3">
-                      <h4 className="font-bold text-gray-900 text-base">{category}</h4>
+                    <td colSpan={3} className="px-4 py-2">
+                      <h4 className="font-bold text-gray-900 text-sm">{category}</h4>
                     </td>
                   </tr>
                   {perms.map((permission, permIndex) => (
@@ -388,33 +388,33 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
                         permIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                       }`}
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-2.5">
                         <div>
-                          <p className="font-semibold text-gray-900">{permission.name}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{permission.description}</p>
+                          <p className="font-semibold text-gray-900 text-xs">{permission.name}</p>
+                          <p className="text-[10px] text-gray-500 mt-0.5">{permission.description}</p>
                         </div>
                       </td>
 
                       {/* Shop Manager Checkbox */}
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-2.5 text-center">
                         <div className="flex justify-center">
                           <input
                             type="checkbox"
                             checked={rolePermissions['SHOP_MANAGER']?.[permission.id] || false}
                             onChange={() => handleTogglePermission('SHOP_MANAGER', permission.id)}
-                            className="w-6 h-6 rounded border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all"
+                            className="w-5 h-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all"
                           />
                         </div>
                       </td>
 
                       {/* Salesman Checkbox */}
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-2.5 text-center">
                         <div className="flex justify-center">
                           <input
                             type="checkbox"
                             checked={rolePermissions['SALESMAN']?.[permission.id] || false}
                             onChange={() => handleTogglePermission('SALESMAN', permission.id)}
-                            className="w-6 h-6 rounded border-2 border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 cursor-pointer transition-all"
+                            className="w-5 h-5 rounded border-2 border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 cursor-pointer transition-all"
                           />
                         </div>
                       </td>
@@ -430,12 +430,12 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
       {/* Add User Modal */}
       {showAddUserModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl soft-shadow max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Add New Team Member</h3>
+          <div className="bg-white rounded-xl soft-shadow max-w-md w-full p-4">
+            <h3 className="text-base font-bold text-gray-900 mb-4">Add New Team Member</h3>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Full Name *
                 </label>
                 <input
@@ -443,12 +443,12 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
                   placeholder="John Doe"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Email Address *
                 </label>
                 <input
@@ -456,12 +456,12 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
                   placeholder="john@example.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Password *
                 </label>
                 <input
@@ -469,18 +469,18 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
                   value={newUserData.password}
                   onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
                   placeholder="••••••••"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Role *
                 </label>
                 <select
                   value={newUserData.role}
                   onChange={(e) => setNewUserData({ ...newUserData, role: e.target.value as 'SHOP_MANAGER' | 'SALESMAN' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="SHOP_MANAGER">Shop Manager</option>
                   <option value="SALESMAN">Salesman</option>
@@ -488,19 +488,19 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-2 mt-4">
               <button
                 onClick={() => {
                   setShowAddUserModal(false);
                   setNewUserData({ name: '', email: '', password: '', role: 'SALESMAN' });
                 }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                className="flex-1 px-3 py-1.5 text-sm bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateUser}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                className="flex-1 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
               >
                 Create User
               </button>
@@ -512,38 +512,38 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
       {/* Edit User Modal */}
       {showEditUserModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl soft-shadow max-w-md w-full p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">
+          <div className="bg-white rounded-xl soft-shadow max-w-md w-full p-4">
+            <h3 className="text-base font-bold text-gray-900 mb-4">
               Edit User: {selectedUser.name}
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Full Name *
                 </label>
                 <input
                   type="text"
                   value={editUserData.name}
                   onChange={(e) => setEditUserData({ ...editUserData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Email Address *
                 </label>
                 <input
                   type="email"
                   value={editUserData.email}
                   onChange={(e) => setEditUserData({ ...editUserData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   New Password (leave blank to keep current)
                 </label>
                 <input
@@ -551,18 +551,18 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
                   value={editUserData.password}
                   onChange={(e) => setEditUserData({ ...editUserData, password: e.target.value })}
                   placeholder="••••••••"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-gray-700 mb-1">
                   Role *
                 </label>
                 <select
                   value={editUserData.role}
                   onChange={(e) => setEditUserData({ ...editUserData, role: e.target.value as 'SHOP_MANAGER' | 'SALESMAN' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="SHOP_MANAGER">Shop Manager</option>
                   <option value="SALESMAN">Salesman</option>
@@ -570,19 +570,19 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-2 mt-4">
               <button
                 onClick={() => {
                   setShowEditUserModal(false);
                   setSelectedUser(null);
                 }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                className="flex-1 px-3 py-1.5 text-sm bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdateUser}
-                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                className="flex-1 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
               >
                 Update User
               </button>

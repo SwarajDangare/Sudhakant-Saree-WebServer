@@ -32,40 +32,40 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
   };
 
   return (
-    <div className="soft-card p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-bold text-gray-900">Recent Activity</h3>
-        <p className="text-sm text-gray-500 mt-1">Latest updates from your store</p>
+    <div className="soft-card p-4">
+      <div className="mb-3">
+        <h3 className="text-base font-bold text-gray-900">Recent Activity</h3>
+        <p className="text-xs text-gray-500 mt-0.5">Latest updates from your store</p>
       </div>
 
-      <div className="space-y-4 max-h-[400px] overflow-y-auto">
+      <div className="space-y-2 max-h-[300px] overflow-y-auto">
         {activities.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
-            <div className="text-4xl mb-2">📭</div>
-            <p className="text-sm">No recent activity</p>
+          <div className="text-center py-6 text-gray-400">
+            <div className="text-2xl mb-1">📭</div>
+            <p className="text-xs">No recent activity</p>
           </div>
         ) : (
           activities.map((activity) => (
             <div
               key={activity.id}
-              className="flex gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors"
+              className="flex gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors"
             >
               {/* Icon */}
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getActivityColor(
+                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${getActivityColor(
                   activity.type
                 )}`}
               >
-                <span className="text-lg">{activity.icon}</span>
+                <span className="text-sm">{activity.icon}</span>
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                <p className="text-xs font-medium text-gray-900">{activity.title}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5 line-clamp-2">
                   {activity.description}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-[10px] text-gray-400 mt-0.5">
                   {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
                 </p>
               </div>

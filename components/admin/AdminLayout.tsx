@@ -173,57 +173,57 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="lg:ml-64">
         {/* Top bar */}
         <header className="bg-white border-b border-gray-100 sticky top-0 z-30">
-          <div className="px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="px-4 lg:px-6 py-3 flex items-center justify-between">
             {/* Mobile menu button */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              className="lg:hidden p-1.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
             {/* Page Title - Dynamic */}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{pageInfo.title}</h1>
+              <h1 className="text-xl font-bold text-gray-900">{pageInfo.title}</h1>
               <p className="text-xs text-gray-500 mt-0.5">{pageInfo.description}</p>
             </div>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               {/* Search */}
               <div className="hidden md:flex relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
                   type="text"
                   placeholder="Search item, order, etc"
-                  className="pl-10 pr-4 py-2 w-64 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="pl-8 pr-3 py-1.5 w-48 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
               </div>
 
               {/* Notifications */}
-              <button className="p-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors relative">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="p-1.5 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors relative">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
 
               {/* User Avatar with Dropdown */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
                   {session?.user?.name?.charAt(0) || 'A'}
                 </div>
                 <div className="hidden md:flex flex-col">
-                  <span className="text-sm font-semibold text-gray-900">{session?.user?.name || 'Admin'}</span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs font-semibold text-gray-900">{session?.user?.name || 'Admin'}</span>
+                  <span className="text-[10px] text-gray-500">
                     {session?.user?.role?.replace('_', ' ') || 'Super Admin'}
                   </span>
                 </div>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -232,7 +232,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="p-6 lg:p-8 bg-gray-50/30">
+        <main className="p-4 lg:p-5 bg-gray-50/30">
           {children}
         </main>
       </div>
