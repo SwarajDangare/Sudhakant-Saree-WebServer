@@ -38,6 +38,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     if (path === '/admin/customers') return { title: 'Customers', description: 'Manage your customers' };
     if (path.match(/\/admin\/customers\/[^/]+/)) return { title: 'Customer Details', description: 'View customer information and orders' };
     if (path === '/admin/users') return { title: 'Team Management', description: 'Manage admin users and permissions' };
+    if (path === '/admin/permissions') return { title: 'Permission Management', description: 'Configure role-based access control' };
     if (path === '/admin/settings') return { title: 'Settings', description: 'Configure your store settings' };
 
     return { title: 'Dashboard', description: 'Overview of your store performance' };
@@ -70,6 +71,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       items: [
         { name: 'Settings', href: '#', icon: '⚙️', allowedRoles: ['SUPER_ADMIN'] },
         { name: 'Team', href: '/admin/users', icon: '👥', allowedRoles: ['SUPER_ADMIN'] },
+        { name: 'Permissions', href: '/admin/permissions', icon: '🔐', allowedRoles: ['SUPER_ADMIN'] },
       ]
     }
   ];

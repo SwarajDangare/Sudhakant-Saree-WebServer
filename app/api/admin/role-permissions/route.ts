@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/db';
 import { permissions, rolePermissions } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { clearPermissionCache } from '@/lib/permissions';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -134,6 +135,9 @@ export async function PUT(request: NextRequest) {
         }
       }
     }
+
+    // Clear permission cache so changes take effect immediately
+    clearPermissionCache();
 
     return NextResponse.json(
       { message: 'Role permissions updated successfully' },
