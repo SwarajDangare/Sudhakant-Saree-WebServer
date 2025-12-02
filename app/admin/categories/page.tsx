@@ -5,6 +5,7 @@ import { db, categories, sections } from '@/db';
 import { eq, desc, like, or, and } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteCategoryButton from '@/components/admin/DeleteCategoryButton';
+import { getPermissions, type UserRole } from '@/lib/permissions';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -26,14 +27,13 @@ export default async function CategoriesPage({
     redirect('/admin/login');
   }
 
-  const userRole = session.user.role;
+  // Get permissions for the user's role
+  const permissions = getPermissions(session.user.role as UserRole);
 
-  // Check if user has permission to manage categories (SUPER_ADMIN or SHOP_MANAGER)
-  if (userRole !== 'SUPER_ADMIN' && userRole !== 'SHOP_MANAGER') {
+  // Check if user has permission to view/manage categories
+  if (!permissions.canAddCategories && !permissions.canEditCategories && !permissions.canDeleteCategories) {
     redirect('/admin/dashboard');
   }
-
-  const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
   // Build query conditions
   const conditions = [];
@@ -83,15 +83,17 @@ export default async function CategoriesPage({
   return (
     <div className="space-y-6">
       {/* Action Button */}
-      <div className="flex justify-end">
-        <Link
-          href="/admin/categories/new"
-          className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
-        >
-          <span className="text-xl">+</span>
-          Add Category
-        </Link>
-      </div>
+      {permissions.canAddCategories && (
+        <div className="flex justify-end">
+          <Link
+            href="/admin/categories/new"
+            className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
+          >
+            <span className="text-xl">+</span>
+            Add Category
+          </Link>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -251,13 +253,17 @@ export default async function CategoriesPage({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/categories/${category.id}/edit`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Edit
-                        </Link>
-                        <span className="text-gray-300">|</span>
+                        {permissions.canEditCategories && (
+                          <>
+                            <Link
+                              href={`/admin/categories/${category.id}/edit`}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Edit
+                            </Link>
+                            <span className="text-gray-300">|</span>
+                          </>
+                        )}
                         <Link
                           href={`/products/${category.slug}`}
                           target="_blank"
@@ -265,7 +271,7 @@ export default async function CategoriesPage({
                         >
                           View
                         </Link>
-                        {isSuperAdmin && (
+                        {permissions.canDeleteCategories && (
                           <>
                             <span className="text-gray-300">|</span>
                             <DeleteCategoryButton
