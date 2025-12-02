@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { db, users, permissions, rolePermissions } from '@/db';
 import { isSuperAdmin } from '@/lib/permissions';
 import TeamManagementSimple from '@/components/admin/TeamManagementSimple';
-import PermissionMatrixManager from '@/components/admin/PermissionMatrixManager';
+import PermissionMatrixManager, { type RolePermissionMatrix } from '@/components/admin/PermissionMatrixManager';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -46,7 +46,7 @@ export default async function UsersPage() {
     .from(rolePermissions);
 
   // Build the matrix
-  const matrix: Record<string, Record<string, boolean>> = {
+  const matrix: RolePermissionMatrix = {
     SUPER_ADMIN: {},
     SHOP_MANAGER: {},
     SALESMAN: {},

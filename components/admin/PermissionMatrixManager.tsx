@@ -11,7 +11,7 @@ interface Permission {
   active: boolean;
 }
 
-interface RolePermissionMatrix {
+export interface RolePermissionMatrix {
   SUPER_ADMIN: Record<string, boolean>;
   SHOP_MANAGER: Record<string, boolean>;
   SALESMAN: Record<string, boolean>;
