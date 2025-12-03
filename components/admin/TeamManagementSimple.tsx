@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface User {
   id: string;
@@ -12,25 +12,12 @@ interface User {
   updatedAt: Date;
 }
 
-interface Permission {
-  id: string;
-  name: string;
-  key: string;
-  description: string;
-  category: string;
-  active: boolean;
-}
-
 interface TeamManagementSimpleProps {
   initialUsers: User[];
 }
 
 export default function TeamManagementSimple({ initialUsers }: TeamManagementSimpleProps) {
   const [users, setUsers] = useState<User[]>(initialUsers);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [rolePermissions, setRolePermissions] = useState<Record<string, Record<string, boolean>>>({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   // Modal states
@@ -52,27 +39,6 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
     password: '',
     role: 'SALESMAN' as 'SHOP_MANAGER' | 'SALESMAN',
   });
-
-  useEffect(() => {
-    fetchPermissions();
-  }, []);
-
-  const fetchPermissions = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/admin/role-permissions');
-      if (!response.ok) throw new Error('Failed to fetch permissions');
-
-      const data = await response.json();
-      setPermissions(data.permissions);
-      setRolePermissions(data.rolePermissions);
-    } catch (error) {
-      console.error('Error fetching permissions:', error);
-      setSaveMessage('Error loading permissions');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCreateUser = async () => {
     if (!newUserData.name || !newUserData.email || !newUserData.password) {
@@ -163,40 +129,6 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
     }
   };
 
-  const handleTogglePermission = (role: 'SHOP_MANAGER' | 'SALESMAN', permissionId: string) => {
-    setRolePermissions(prev => ({
-      ...prev,
-      [role]: {
-        ...prev[role],
-        [permissionId]: !prev[role][permissionId],
-      },
-    }));
-    setSaveMessage('Unsaved changes');
-  };
-
-  const handleSavePermissions = async () => {
-    setSaving(true);
-    setSaveMessage('Saving permissions...');
-
-    try {
-      const response = await fetch('/api/admin/role-permissions', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rolePermissions }),
-      });
-
-      if (!response.ok) throw new Error('Failed to save permissions');
-
-      setSaveMessage('✓ Permissions saved successfully!');
-      setTimeout(() => setSaveMessage(null), 3000);
-    } catch (error) {
-      setSaveMessage('❌ Error saving permissions');
-      setTimeout(() => setSaveMessage(null), 3000);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleToggleUserStatus = async (userId: string, currentActive: boolean) => {
     try {
       setUsers(prev => prev.map(user =>
@@ -218,25 +150,8 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
     }
   };
 
-  const permissionsByCategory = permissions.reduce((acc, perm) => {
-    if (!acc[perm.category]) acc[perm.category] = [];
-    acc[perm.category].push(perm);
-    return acc;
-  }, {} as Record<string, Permission[]>);
-
   // Filter out super admin from users list
   const managedUsers = users.filter(u => u.role !== 'SUPER_ADMIN');
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="inline-block w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-600">Loading team management...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -314,118 +229,14 @@ export default function TeamManagementSimple({ initialUsers }: TeamManagementSim
 
       {/* Save Status */}
       {saveMessage && (
-        <div className={`soft-card p-3 flex items-center justify-between ${
+        <div className={`soft-card p-3 ${
           saveMessage.includes('✓') ? 'bg-green-50 border-green-200' :
           saveMessage.includes('❌') ? 'bg-red-50 border-red-200' :
           'bg-yellow-50 border-yellow-200'
         } border`}>
           <p className="text-xs font-medium">{saveMessage}</p>
-          {saveMessage === 'Unsaved changes' && (
-            <button
-              onClick={handleSavePermissions}
-              disabled={saving}
-              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-xs disabled:opacity-50"
-            >
-              {saving ? 'Saving...' : 'Save Permissions'}
-            </button>
-          )}
         </div>
       )}
-
-      {/* Permissions Table */}
-      <div className="soft-card overflow-hidden">
-        <div className="p-4 border-b border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-gray-900">Admin Page Permissions</h3>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Control which admin pages Shop Managers and Salesmen can access
-              </p>
-            </div>
-            <button
-              onClick={handleSavePermissions}
-              disabled={saving || !saveMessage}
-              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? 'Saving...' : 'Save Permissions'}
-            </button>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gradient-to-r from-indigo-50 to-purple-50 sticky top-0">
-              <tr>
-                <th className="px-4 py-2.5 text-left text-xs font-bold text-gray-700">
-                  Admin Page / Permission
-                </th>
-                <th className="px-4 py-2.5 text-center text-xs font-bold text-blue-700">
-                  <div className="flex flex-col items-center">
-                    <span className="text-lg mb-0.5">🛍️</span>
-                    <span>Shop Manager</span>
-                  </div>
-                </th>
-                <th className="px-4 py-2.5 text-center text-xs font-bold text-green-700">
-                  <div className="flex flex-col items-center">
-                    <span className="text-lg mb-0.5">💼</span>
-                    <span>Salesman</span>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(permissionsByCategory).map(([category, perms], catIndex) => (
-                <>
-                  <tr key={`category-${category}`} className="bg-gray-100">
-                    <td colSpan={3} className="px-4 py-2">
-                      <h4 className="font-bold text-gray-900 text-sm">{category}</h4>
-                    </td>
-                  </tr>
-                  {perms.map((permission, permIndex) => (
-                    <tr
-                      key={permission.id}
-                      className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                        permIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                      }`}
-                    >
-                      <td className="px-4 py-2.5">
-                        <div>
-                          <p className="font-semibold text-gray-900 text-xs">{permission.name}</p>
-                          <p className="text-[10px] text-gray-500 mt-0.5">{permission.description}</p>
-                        </div>
-                      </td>
-
-                      {/* Shop Manager Checkbox */}
-                      <td className="px-4 py-2.5 text-center">
-                        <div className="flex justify-center">
-                          <input
-                            type="checkbox"
-                            checked={rolePermissions['SHOP_MANAGER']?.[permission.id] || false}
-                            onChange={() => handleTogglePermission('SHOP_MANAGER', permission.id)}
-                            className="w-5 h-5 rounded border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all"
-                          />
-                        </div>
-                      </td>
-
-                      {/* Salesman Checkbox */}
-                      <td className="px-4 py-2.5 text-center">
-                        <div className="flex justify-center">
-                          <input
-                            type="checkbox"
-                            checked={rolePermissions['SALESMAN']?.[permission.id] || false}
-                            onChange={() => handleTogglePermission('SALESMAN', permission.id)}
-                            className="w-5 h-5 rounded border-2 border-gray-300 text-green-600 focus:ring-2 focus:ring-green-500 cursor-pointer transition-all"
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
       {/* Add User Modal */}
       {showAddUserModal && (

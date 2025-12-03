@@ -203,14 +203,17 @@ export default function PermissionMatrixManager({ initialPermissions, initialMat
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {Object.entries(groupedPermissions).map(([category, perms]) => (
-                <tr key={category} className="bg-gray-50">
-                  <td colSpan={4} className="px-6 py-3">
-                    <div className="flex items-center gap-2 font-semibold text-gray-900">
-                      <span className="text-2xl">{getCategoryIcon(category)}</span>
-                      <span className="text-sm uppercase tracking-wide">{category}</span>
-                    </div>
-                  </td>
-                  {/* Hidden cells for proper alignment */}
+                <>
+                  {/* Category Header Row */}
+                  <tr key={category} className="bg-gray-50">
+                    <td colSpan={4} className="px-6 py-3">
+                      <div className="flex items-center gap-2 font-semibold text-gray-900">
+                        <span className="text-2xl">{getCategoryIcon(category)}</span>
+                        <span className="text-sm uppercase tracking-wide">{category}</span>
+                      </div>
+                    </td>
+                  </tr>
+                  {/* Permission Rows */}
                   {perms.map((perm) => (
                     <tr key={perm.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 sticky left-0 bg-white">
@@ -268,7 +271,7 @@ export default function PermissionMatrixManager({ initialPermissions, initialMat
                       </td>
                     </tr>
                   ))}
-                </tr>
+                </>
               ))}
             </tbody>
           </table>
