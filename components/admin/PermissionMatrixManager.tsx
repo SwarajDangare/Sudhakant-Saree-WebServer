@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 interface Permission {
   id: string;
@@ -248,77 +248,224 @@ export default function PermissionMatrixManager({ initialPermissions, initialMat
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {Object.entries(groupedPermissions).map(([category, perms]) => (
-                <>
-                  {/* Category Header Row */}
-                  <tr key={category} className="bg-gray-50">
-                    <td colSpan={4} className="px-6 py-3">
-                      <div className="flex items-center gap-2 font-semibold text-gray-900">
-                        <span className="text-2xl">{getCategoryIcon(category)}</span>
-                        <span className="text-sm uppercase tracking-wide">{category}</span>
-                      </div>
-                    </td>
-                  </tr>
-                  {/* Permission Rows */}
-                  {perms.map((perm) => (
-                    <tr key={perm.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 sticky left-0 bg-white">
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
-                            {isPageAccessPermission(perm.key) && (
-                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">
-                                PAGE ACCESS
-                              </span>
-                            )}
-                            <span className="font-medium text-gray-900 text-sm">
-                              {perm.name}
-                            </span>
-                          </div>
-                          <span className="text-xs text-gray-500 mt-1">
-                            {perm.description}
-                          </span>
+              {Object.entries(groupedPermissions).map(([category, perms]) => {
+                // Separate page access permissions from CRUD permissions
+                const pageAccessPerms = perms.filter(p => isPageAccessPermission(p.key));
+                const otherPerms = perms.filter(p => !isPageAccessPermission(p.key));
+
+                // Group CRUD permissions by their parent page access
+                const groupedByParent: Record<string, Permission[]> = {};
+                otherPerms.forEach(perm => {
+                  // Find parent permission
+                  let parentKey = null;
+                  for (const [pageKey, subKeys] of Object.entries(permissionHierarchy)) {
+                    if (subKeys.includes(perm.key)) {
+                      parentKey = pageKey;
+                      break;
+                    }
+                  }
+                  if (parentKey) {
+                    if (!groupedByParent[parentKey]) {
+                      groupedByParent[parentKey] = [];
+                    }
+                    groupedByParent[parentKey].push(perm);
+                  }
+                });
+
+                return (
+                  <React.Fragment key={category}>
+                    {/* Category Header Row */}
+                    <tr className="bg-gray-100">
+                      <td colSpan={4} className="px-6 py-3">
+                        <div className="flex items-center gap-2 font-bold text-gray-900">
+                          <span className="text-2xl">{getCategoryIcon(category)}</span>
+                          <span className="text-sm uppercase tracking-wide">{category}</span>
                         </div>
                       </td>
-
-                      {/* Super Admin Checkbox */}
-                      <td className="px-6 py-4 text-center">
-                        <input
-                          type="checkbox"
-                          checked={matrix.SUPER_ADMIN[perm.id] || false}
-                          onChange={() =>
-                            handleToggle('SUPER_ADMIN', perm.id, matrix.SUPER_ADMIN[perm.id])
-                          }
-                          className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
-                        />
-                      </td>
-
-                      {/* Shop Manager Checkbox */}
-                      <td className="px-6 py-4 text-center">
-                        <input
-                          type="checkbox"
-                          checked={matrix.SHOP_MANAGER[perm.id] || false}
-                          onChange={() =>
-                            handleToggle('SHOP_MANAGER', perm.id, matrix.SHOP_MANAGER[perm.id])
-                          }
-                          className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                        />
-                      </td>
-
-                      {/* Salesman Checkbox */}
-                      <td className="px-6 py-4 text-center">
-                        <input
-                          type="checkbox"
-                          checked={matrix.SALESMAN[perm.id] || false}
-                          onChange={() =>
-                            handleToggle('SALESMAN', perm.id, matrix.SALESMAN[perm.id])
-                          }
-                          className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
-                        />
-                      </td>
                     </tr>
-                  ))}
-                </>
-              ))}
+
+                    {/* Page Access Permissions (Parents) with their children */}
+                    {pageAccessPerms.map((pageAccessPerm) => {
+                      const children = groupedByParent[pageAccessPerm.key] || [];
+
+                      return (
+                        <React.Fragment key={pageAccessPerm.id}>
+                          {/* Page Access Permission Row (Parent) */}
+                          <tr className="bg-blue-50/30 hover:bg-blue-50/50">
+                            <td className="px-6 py-3 sticky left-0 bg-blue-50/30">
+                              <div className="flex items-center gap-2">
+                                <span className="text-blue-600">📁</span>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-2">
+                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-bold rounded">
+                                      PAGE ACCESS
+                                    </span>
+                                    <span className="font-bold text-gray-900 text-sm">
+                                      {pageAccessPerm.name}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-gray-600 mt-1">
+                                    {pageAccessPerm.description}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Super Admin Checkbox */}
+                            <td className="px-6 py-3 text-center bg-blue-50/30">
+                              <input
+                                type="checkbox"
+                                checked={matrix.SUPER_ADMIN[pageAccessPerm.id] || false}
+                                onChange={() =>
+                                  handleToggle('SUPER_ADMIN', pageAccessPerm.id, matrix.SUPER_ADMIN[pageAccessPerm.id])
+                                }
+                                className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                              />
+                            </td>
+
+                            {/* Shop Manager Checkbox */}
+                            <td className="px-6 py-3 text-center bg-blue-50/30">
+                              <input
+                                type="checkbox"
+                                checked={matrix.SHOP_MANAGER[pageAccessPerm.id] || false}
+                                onChange={() =>
+                                  handleToggle('SHOP_MANAGER', pageAccessPerm.id, matrix.SHOP_MANAGER[pageAccessPerm.id])
+                                }
+                                className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                              />
+                            </td>
+
+                            {/* Salesman Checkbox */}
+                            <td className="px-6 py-3 text-center bg-blue-50/30">
+                              <input
+                                type="checkbox"
+                                checked={matrix.SALESMAN[pageAccessPerm.id] || false}
+                                onChange={() =>
+                                  handleToggle('SALESMAN', pageAccessPerm.id, matrix.SALESMAN[pageAccessPerm.id])
+                                }
+                                className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+                              />
+                            </td>
+                          </tr>
+
+                          {/* Child CRUD Permissions (Indented) */}
+                          {children.map((childPerm) => (
+                            <tr key={childPerm.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-2 sticky left-0 bg-white">
+                                <div className="flex items-center gap-2 pl-8">
+                                  <span className="text-gray-400">└─</span>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-gray-700 text-sm">
+                                      {childPerm.name}
+                                    </span>
+                                    <span className="text-xs text-gray-500 mt-0.5">
+                                      {childPerm.description}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Super Admin Checkbox */}
+                              <td className="px-6 py-2 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={matrix.SUPER_ADMIN[childPerm.id] || false}
+                                  onChange={() =>
+                                    handleToggle('SUPER_ADMIN', childPerm.id, matrix.SUPER_ADMIN[childPerm.id])
+                                  }
+                                  className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                                />
+                              </td>
+
+                              {/* Shop Manager Checkbox */}
+                              <td className="px-6 py-2 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={matrix.SHOP_MANAGER[childPerm.id] || false}
+                                  onChange={() =>
+                                    handleToggle('SHOP_MANAGER', childPerm.id, matrix.SHOP_MANAGER[childPerm.id])
+                                  }
+                                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                />
+                              </td>
+
+                              {/* Salesman Checkbox */}
+                              <td className="px-6 py-2 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={matrix.SALESMAN[childPerm.id] || false}
+                                  onChange={() =>
+                                    handleToggle('SALESMAN', childPerm.id, matrix.SALESMAN[childPerm.id])
+                                  }
+                                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      );
+                    })}
+
+                    {/* Orphan permissions (those without a parent) */}
+                    {otherPerms.filter(p => {
+                      let hasParent = false;
+                      for (const [pageKey, subKeys] of Object.entries(permissionHierarchy)) {
+                        if (subKeys.includes(p.key)) {
+                          hasParent = true;
+                          break;
+                        }
+                      }
+                      return !hasParent;
+                    }).map((orphanPerm) => (
+                      <tr key={orphanPerm.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-3 sticky left-0 bg-white">
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900 text-sm">
+                              {orphanPerm.name}
+                            </span>
+                            <span className="text-xs text-gray-500 mt-1">
+                              {orphanPerm.description}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={matrix.SUPER_ADMIN[orphanPerm.id] || false}
+                            onChange={() =>
+                              handleToggle('SUPER_ADMIN', orphanPerm.id, matrix.SUPER_ADMIN[orphanPerm.id])
+                            }
+                            className="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                          />
+                        </td>
+
+                        <td className="px-6 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={matrix.SHOP_MANAGER[orphanPerm.id] || false}
+                            onChange={() =>
+                              handleToggle('SHOP_MANAGER', orphanPerm.id, matrix.SHOP_MANAGER[orphanPerm.id])
+                            }
+                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                          />
+                        </td>
+
+                        <td className="px-6 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={matrix.SALESMAN[orphanPerm.id] || false}
+                            onChange={() =>
+                              handleToggle('SALESMAN', orphanPerm.id, matrix.SALESMAN[orphanPerm.id])
+                            }
+                            className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 cursor-pointer"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
