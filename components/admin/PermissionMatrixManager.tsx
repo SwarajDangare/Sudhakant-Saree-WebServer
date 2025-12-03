@@ -37,18 +37,64 @@ export default function PermissionMatrixManager({ initialPermissions, initialMat
     return acc;
   }, {} as Record<string, Permission[]>);
 
+  // Hierarchical permission mapping
+  const permissionHierarchy: Record<string, string[]> = {
+    'access_products_page': ['create_products', 'edit_products', 'delete_products'],
+    'access_orders_page': ['view_order_details', 'update_order_status', 'delete_orders'],
+    'access_categories_page': ['create_categories', 'edit_categories', 'delete_categories'],
+    'access_sections_page': ['create_sections', 'edit_sections', 'delete_sections'],
+    'access_customers_page': ['view_customer_details', 'edit_customers', 'delete_customers'],
+    'access_team_page': ['create_users', 'edit_users', 'delete_users', 'manage_permissions'],
+  };
+
+  // Find permission ID by key
+  const findPermissionIdByKey = (key: string): string | null => {
+    const perm = permissions.find(p => p.key === key);
+    return perm ? perm.id : null;
+  };
+
   const handleToggle = (
     role: keyof RolePermissionMatrix,
     permissionId: string,
     currentValue: boolean
   ) => {
-    setMatrix((prev) => ({
-      ...prev,
-      [role]: {
-        ...prev[role],
-        [permissionId]: !currentValue,
-      },
-    }));
+    const permission = permissions.find(p => p.id === permissionId);
+    if (!permission) return;
+
+    const newValue = !currentValue;
+
+    setMatrix((prev) => {
+      const newMatrix = {
+        ...prev,
+        [role]: {
+          ...prev[role],
+          [permissionId]: newValue,
+        },
+      };
+
+      // Apply hierarchical logic
+      // If this is a page access permission being turned OFF, turn off all sub-permissions
+      if (permissionHierarchy[permission.key] && !newValue) {
+        permissionHierarchy[permission.key].forEach(subKey => {
+          const subPermId = findPermissionIdByKey(subKey);
+          if (subPermId) {
+            newMatrix[role][subPermId] = false;
+          }
+        });
+      }
+
+      // If this is a sub-permission being turned ON, turn on the parent page access
+      for (const [pageKey, subKeys] of Object.entries(permissionHierarchy)) {
+        if (subKeys.includes(permission.key) && newValue) {
+          const pagePermId = findPermissionIdByKey(pageKey);
+          if (pagePermId) {
+            newMatrix[role][pagePermId] = true;
+          }
+        }
+      }
+
+      return newMatrix;
+    });
     setHasChanges(true);
   };
 

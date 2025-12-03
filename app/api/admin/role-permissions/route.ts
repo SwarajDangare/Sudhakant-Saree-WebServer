@@ -92,48 +92,29 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Update role permissions
+    // Prepare batch operations
     const roles = ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] as const;
+    type UserRole = typeof roles[number];
+    const updates: Array<{role: UserRole, permissionId: string, enabled: boolean}> = [];
 
     for (const role of roles) {
       if (!matrix[role]) continue;
 
       for (const [permissionId, enabled] of Object.entries(matrix[role])) {
-        // Check if role permission exists
-        const existing = await db
-          .select()
-          .from(rolePermissions)
-          .where(
-            and(
-              eq(rolePermissions.role, role),
-              eq(rolePermissions.permissionId, permissionId as string)
-            )
-          )
-          .limit(1);
-
-        if (existing.length > 0) {
-          // Update existing
-          await db
-            .update(rolePermissions)
-            .set({
-              enabled: enabled as boolean,
-              updatedAt: new Date(),
-            })
-            .where(
-              and(
-                eq(rolePermissions.role, role),
-                eq(rolePermissions.permissionId, permissionId as string)
-              )
-            );
-        } else {
-          // Insert new
-          await db.insert(rolePermissions).values({
-            role,
-            permissionId: permissionId as string,
-            enabled: enabled as boolean,
-          });
-        }
+        updates.push({
+          role: role as UserRole,
+          permissionId: permissionId as string,
+          enabled: enabled as boolean,
+        });
       }
+    }
+
+    // Delete all existing role permissions
+    await db.delete(rolePermissions).execute();
+
+    // Batch insert all new permissions
+    if (updates.length > 0) {
+      await db.insert(rolePermissions).values(updates);
     }
 
     // Clear permission cache so changes take effect immediately
