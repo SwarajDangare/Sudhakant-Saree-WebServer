@@ -30,6 +30,38 @@ export const emailOtps = pgTable('email_otps', {
   createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
+// Permissions System (Dynamic)
+export const permissions = pgTable('permissions', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text('name').notNull(), // Display name (e.g., "Manage Products")
+  key: text('key').notNull().unique(), // Unique identifier (e.g., "manage_products")
+  description: text('description').notNull(),
+  category: text('category').notNull(), // Group permissions (e.g., "Products", "Orders", "System")
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Role Permissions Matrix (Many-to-Many with enabled status)
+export const rolePermissions = pgTable('role_permissions', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  role: roleEnum('role').notNull(),
+  permissionId: text('permissionId').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  enabled: boolean('enabled').default(false).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// User-Specific Permissions (Override role permissions for individual users)
+export const userPermissions = pgTable('user_permissions', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  permissionId: text('permissionId').notNull().references(() => permissions.id, { onDelete: 'cascade' }),
+  enabled: boolean('enabled').default(false).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
 // Customer Management (Phone-based authentication)
 export const customers = pgTable('customers', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -139,10 +171,31 @@ export const products = pgTable('products', {
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
   discountType: discountTypeEnum('discountType').default('NONE').notNull(),
   discountValue: decimal('discountValue', { precision: 10, scale: 2 }).default('0').notNull(),
-  material: text('material').notNull(),
-  length: text('length').notNull(),
-  occasion: text('occasion').notNull(),
-  careInstructions: text('careInstructions').notNull(),
+
+  // Basic Product Details
+  material: text('material'),
+  fabricComposition: text('fabricComposition'),
+  weight: text('weight'), // GSM or weight info
+  length: text('length'),
+
+  // Saree-Specific Details
+  blousePieceIncluded: boolean('blousePieceIncluded').default(false).notNull(),
+  workType: text('workType'), // e.g., Handloom, Embroidery, Print
+  borderType: text('borderType'), // e.g., Zari Border, Contrast Border
+  palluDetails: text('palluDetails'),
+
+  // Additional Info
+  occasion: text('occasion'),
+  careInstructions: text('careInstructions'),
+  washCare: text('washCare'), // Detailed wash care instructions
+
+  // Inventory & SEO
+  sku: text('sku'), // Product SKU/Code
+  stockQuantity: integer('stockQuantity'), // Stock quantity
+  tags: text('tags'), // Comma-separated tags for search
+  metaDescription: text('metaDescription'), // SEO meta description
+
+  // Status
   featured: boolean('featured').default(false).notNull(),
   active: boolean('active').default(true).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
@@ -292,4 +345,32 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
     fields: [orderItems.productColorId],
     references: [productColors.id],
   }),
+}));
+
+// Permissions Relations
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions),
+  userPermissions: many(userPermissions),
+}));
+
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+  permission: one(permissions, {
+    fields: [rolePermissions.permissionId],
+    references: [permissions.id],
+  }),
+}));
+
+export const userPermissionsRelations = relations(userPermissions, ({ one }) => ({
+  user: one(users, {
+    fields: [userPermissions.userId],
+    references: [users.id],
+  }),
+  permission: one(permissions, {
+    fields: [userPermissions.permissionId],
+    references: [permissions.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  userPermissions: many(userPermissions),
 }));

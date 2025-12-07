@@ -1,10 +1,10 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { db, users } from '@/db';
+import { db, users, permissions, rolePermissions } from '@/db';
 import { isSuperAdmin } from '@/lib/permissions';
-import UserManagementClient from '@/components/admin/UserManagementClient';
-import Link from 'next/link';
+import TeamManagementSimple from '@/components/admin/TeamManagementSimple';
+import PermissionMatrixManager, { type RolePermissionMatrix } from '@/components/admin/PermissionMatrixManager';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -35,41 +35,50 @@ export default async function UsersPage() {
     .from(users)
     .orderBy(users.createdAt);
 
+  // Fetch all permissions with their role mappings
+  const allPermissions = await db
+    .select()
+    .from(permissions)
+    .orderBy(permissions.category, permissions.name);
+
+  const allRolePermissions = await db
+    .select()
+    .from(rolePermissions);
+
+  // Build the matrix
+  const matrix: RolePermissionMatrix = {
+    SUPER_ADMIN: {},
+    SHOP_MANAGER: {},
+    SALESMAN: {},
+  };
+
+  // Initialize all permissions to false
+  allPermissions.forEach(perm => {
+    matrix.SUPER_ADMIN[perm.id] = false;
+    matrix.SHOP_MANAGER[perm.id] = false;
+    matrix.SALESMAN[perm.id] = false;
+  });
+
+  // Set enabled permissions to true
+  allRolePermissions.forEach(rp => {
+    if (matrix[rp.role]) {
+      matrix[rp.role][rp.permissionId] = rp.enabled;
+    }
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Back Button */}
-      <Link
-        href="/admin/dashboard"
-        className="inline-flex items-center text-gray-600 hover:text-maroon mb-4 transition"
-      >
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Dashboard
-      </Link>
+    <div className="space-y-8">
+      {/* User Management Section */}
+      <TeamManagementSimple initialUsers={allUsers} />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Users</h1>
-          <p className="text-gray-600 mt-2">
-            Manage admin users and their roles
-          </p>
-        </div>
-      </div>
+      {/* Divider */}
+      <div className="border-t border-gray-200 my-8"></div>
 
-      {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">User Roles:</h3>
-        <ul className="space-y-1 text-sm text-blue-800">
-          <li><strong>Super Admin:</strong> Complete access to all features. Can manage admin users.</li>
-          <li><strong>Shop Manager:</strong> Can manage products, add categories, view and update all orders.</li>
-          <li><strong>Salesman:</strong> Can add/edit products and view active orders only.</li>
-        </ul>
-      </div>
-
-      {/* User Management Client Component */}
-      <UserManagementClient initialUsers={allUsers} />
+      {/* Permission Management Section */}
+      <PermissionMatrixManager
+        initialPermissions={allPermissions}
+        initialMatrix={matrix}
+      />
     </div>
   );
 }

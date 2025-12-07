@@ -175,6 +175,77 @@ export async function PUT(
 }
 
 /**
+ * PATCH /api/admin/users/[id]
+ * Partially update a user (SUPER_ADMIN only) - for quick updates like status toggle
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user.role) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!isSuperAdmin(session.user.role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { active } = body;
+
+    // Check if user exists
+    const [existingUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, params.id))
+      .limit(1);
+
+    if (!existingUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Prevent deactivating the super admin
+    if (existingUser.role === 'SUPER_ADMIN' && existingUser.email === 'swarajdangare2016@gmail.com') {
+      if (active === false) {
+        return NextResponse.json(
+          { error: 'Cannot deactivate the super admin' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Update user
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        ...(typeof active === 'boolean' && { active }),
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, params.id))
+      .returning({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        active: users.active,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      });
+
+    return NextResponse.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return NextResponse.json(
+      { error: 'Failed to update user' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * DELETE /api/admin/users/[id]
  * Delete a user (SUPER_ADMIN only)
  */

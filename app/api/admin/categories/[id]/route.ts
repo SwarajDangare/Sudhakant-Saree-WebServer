@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db, categories } from '@/db';
 import { eq } from 'drizzle-orm';
+import { requirePermission, requireAnyPermission, getPermissionErrorMessage } from '@/lib/permission-guards';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +15,14 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has permission to view categories
+    const permissionError = requireAnyPermission(
+      session,
+      ['canAddCategories', 'canEditCategories', 'canDeleteCategories'],
+      'You do not have permission to access categories.'
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     const [category] = await db
@@ -48,8 +55,14 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has permission to edit categories
+    const permissionError = requirePermission(
+      session,
+      'canEditCategories',
+      getPermissionErrorMessage('canEditCategories')
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     const body = await request.json();
@@ -112,8 +125,14 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has permission to delete categories
+    const permissionError = requirePermission(
+      session,
+      'canDeleteCategories',
+      getPermissionErrorMessage('canDeleteCategories')
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     // Delete the category

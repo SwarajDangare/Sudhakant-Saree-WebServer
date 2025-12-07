@@ -113,3 +113,204 @@ body {
 .ornament-divider::after {
   right: 0;
 }
+
+/* ============================================
+   SOFT UI STYLES FOR ADMIN DASHBOARD
+   ============================================ */
+
+/* Soft Shadow - Reference Image Style */
+.soft-shadow {
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.soft-shadow-sm {
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.soft-shadow-lg {
+  box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Soft Card - Clean White Style */
+.soft-card {
+  @apply bg-white rounded-xl;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.soft-card:hover {
+  box-shadow: 0px 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Soft Pill Badge */
+.soft-pill {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-full text-xs font-semibold;
+}
+
+/* Status Badges - Reference Image Style (No borders) */
+.badge-success {
+  @apply bg-green-50 text-green-600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge-warning {
+  @apply bg-orange-50 text-orange-600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge-danger {
+  @apply bg-red-50 text-red-600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge-info {
+  @apply bg-blue-50 text-blue-600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge-purple {
+  @apply bg-purple-50 text-purple-600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Admin Sidebar Navigation */
+.admin-nav-item {
+  @apply flex items-center px-4 py-3 rounded-xl transition-all duration-200;
+}
+
+.admin-nav-item:hover {
+  @apply bg-white/10 backdrop-blur-sm;
+}
+
+.admin-nav-item.active {
+  @apply bg-white/20 shadow-lg;
+}
+
+/* Soft Input Fields */
+.soft-input {
+  @apply w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50
+         focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50
+         transition-all duration-200 outline-none;
+}
+
+/* Soft Button */
+.soft-btn {
+  @apply px-6 py-2.5 rounded-xl font-medium transition-all duration-200
+         shadow-md hover:shadow-lg active:scale-95;
+}
+
+.soft-btn-primary {
+  @apply soft-btn bg-gradient-to-r from-blue-500 to-blue-600 text-white
+         hover:from-blue-600 hover:to-blue-700;
+}
+
+.soft-btn-secondary {
+  @apply soft-btn bg-gray-100 text-gray-700 hover:bg-gray-200;
+}
+
+/* Stat Card with Icon */
+.stat-card-icon {
+  @apply w-14 h-14 rounded-2xl flex items-center justify-center text-2xl;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+}
+
+/* Clean Table Styles - Reference Image (NO GRID LINES) */
+.clean-table {
+  @apply w-full;
+}
+
+.clean-table thead {
+  background-color: transparent;
+}
+
+.clean-table th {
+  @apply px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wide;
+  font-weight: 500;
+  border-bottom: none;
+}
+
+.clean-table tbody tr {
+  @apply hover:bg-gray-50/50 transition-colors duration-150;
+  border-bottom: none !important;
+}
+
+.clean-table tbody tr:last-child {
+  @apply border-b-0;
+}
+
+.clean-table td {
+  @apply px-6 py-5 text-sm;
+  color: #1a1a1a;
+  border-bottom: none;
+}
+
+/* Product Cell Styling */
+.product-cell-flex {
+  @apply flex items-center gap-3;
+}
+
+.product-thumbnail {
+  @apply w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden bg-gray-100;
+}
+
+.product-details-stack {
+  @apply flex flex-col;
+}
+
+.product-name {
+  @apply font-semibold text-gray-900 text-sm;
+}
+
+.product-meta {
+  @apply text-xs text-gray-400 mt-0.5;
+}
+
+/* Gradient Background */
+.gradient-bg-blue {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-bg-green {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.gradient-bg-orange {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.gradient-bg-red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Loading Skeleton */
+.skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+/* Checkbox - Custom Styled */
+.custom-checkbox {
+  @apply w-5 h-5 rounded border-2 border-gray-300
+         checked:bg-green-500 checked:border-green-500
+         focus:ring-2 focus:ring-green-200 cursor-pointer
+         transition-all duration-200;
+}
+
+/* Filter Bar */
+.filter-bar {
+  @apply flex items-center gap-3 p-4 bg-gray-50/50 rounded-xl border border-gray-100;
+}

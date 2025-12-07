@@ -5,6 +5,7 @@ import { db, sections } from '@/db';
 import { desc, like, or, and, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteSectionButton from '@/components/admin/DeleteSectionButton';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -25,8 +26,11 @@ export default async function SectionsPage({
     redirect('/admin/login');
   }
 
-  // Check if user is super admin or shop manager
-  if (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'SHOP_MANAGER') {
+  // Get user permissions
+  const permissions = await getServerPermissions();
+
+  // Check if user has access to sections page
+  if (!permissions.canAccessSectionsPage) {
     redirect('/admin/dashboard');
   }
 
@@ -57,33 +61,18 @@ export default async function SectionsPage({
 
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <Link
-        href="/admin/dashboard"
-        className="inline-flex items-center text-gray-600 hover:text-maroon mb-4 transition"
-      >
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Dashboard
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sections</h1>
-          <p className="text-gray-600 mt-1">
-            Manage your top-level product sections
-          </p>
+      {/* Action Button */}
+      {permissions.canCreateSections && (
+        <div className="flex justify-end">
+          <Link
+            href="/admin/sections/new"
+            className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
+          >
+            <span className="text-xl">+</span>
+            Add Section
+          </Link>
         </div>
-        <Link
-          href="/admin/sections/new"
-          className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
-        >
-          <span className="text-xl">+</span>
-          Add Section
-        </Link>
-      </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -215,24 +204,32 @@ export default async function SectionsPage({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/sections/${section.id}/edit`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Edit
-                        </Link>
-                        <span className="text-gray-300">|</span>
+                        {permissions.canEditSections && (
+                          <>
+                            <Link
+                              href={`/admin/sections/${section.id}/edit`}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Edit
+                            </Link>
+                            <span className="text-gray-300">|</span>
+                          </>
+                        )}
                         <Link
                           href={`/admin/categories?section=${section.id}`}
                           className="text-green-600 hover:text-green-900"
                         >
                           Categories
                         </Link>
-                        <span className="text-gray-300">|</span>
-                        <DeleteSectionButton
-                          sectionId={section.id}
-                          sectionName={section.name}
-                        />
+                        {permissions.canDeleteSections && (
+                          <>
+                            <span className="text-gray-300">|</span>
+                            <DeleteSectionButton
+                              sectionId={section.id}
+                              sectionName={section.name}
+                            />
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

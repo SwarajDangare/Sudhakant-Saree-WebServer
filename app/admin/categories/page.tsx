@@ -5,6 +5,7 @@ import { db, categories, sections } from '@/db';
 import { eq, desc, like, or, and } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteCategoryButton from '@/components/admin/DeleteCategoryButton';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -26,14 +27,13 @@ export default async function CategoriesPage({
     redirect('/admin/login');
   }
 
-  const userRole = session.user.role;
+  // Get user permissions
+  const permissions = await getServerPermissions();
 
-  // Check if user has permission to manage categories (SUPER_ADMIN or SHOP_MANAGER)
-  if (userRole !== 'SUPER_ADMIN' && userRole !== 'SHOP_MANAGER') {
+  // Check if user has access to categories page
+  if (!permissions.canAccessCategoriesPage) {
     redirect('/admin/dashboard');
   }
-
-  const isSuperAdmin = userRole === 'SUPER_ADMIN';
 
   // Build query conditions
   const conditions = [];
@@ -82,35 +82,18 @@ export default async function CategoriesPage({
 
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <Link
-        href="/admin/dashboard"
-        className="inline-flex items-center text-gray-600 hover:text-maroon mb-4 transition"
-      >
-        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to Dashboard
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-          <p className="text-gray-600 mt-1">
-            {isSuperAdmin
-              ? 'Manage your product categories and sections'
-              : 'Manage product categories (add categories to existing sections)'}
-          </p>
+      {/* Action Button */}
+      {permissions.canCreateCategories && (
+        <div className="flex justify-end">
+          <Link
+            href="/admin/categories/new"
+            className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
+          >
+            <span className="text-xl">+</span>
+            Add Category
+          </Link>
         </div>
-        <Link
-          href="/admin/categories/new"
-          className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
-        >
-          <span className="text-xl">+</span>
-          Add Category
-        </Link>
-      </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -270,13 +253,17 @@ export default async function CategoriesPage({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/categories/${category.id}/edit`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Edit
-                        </Link>
-                        <span className="text-gray-300">|</span>
+                        {permissions.canEditCategories && (
+                          <>
+                            <Link
+                              href={`/admin/categories/${category.id}/edit`}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Edit
+                            </Link>
+                            <span className="text-gray-300">|</span>
+                          </>
+                        )}
                         <Link
                           href={`/products/${category.slug}`}
                           target="_blank"
@@ -284,7 +271,7 @@ export default async function CategoriesPage({
                         >
                           View
                         </Link>
-                        {isSuperAdmin && (
+                        {permissions.canDeleteCategories && (
                           <>
                             <span className="text-gray-300">|</span>
                             <DeleteCategoryButton
