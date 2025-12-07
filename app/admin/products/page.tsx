@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { db, products, categories, sections, productColors, productImages } from '@/db';
 import { eq, desc, like, or, and, gte, lte, sql } from 'drizzle-orm';
 import ModernProductsClient from '@/components/admin/ModernProductsClient';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 // Make this page dynamic
 export const dynamic = 'force-dynamic';
@@ -28,6 +29,14 @@ export default async function ProductsPage({
 
   if (!session) {
     redirect('/admin/login');
+  }
+
+  // Get user permissions
+  const permissions = await getServerPermissions();
+
+  // Check if user has access to products page
+  if (!permissions.canAccessProductsPage) {
+    redirect('/admin/dashboard');
   }
 
   // Build query conditions
@@ -152,6 +161,11 @@ export default async function ProductsPage({
       materials={materials}
       stats={stats}
       searchParams={searchParams}
+      permissions={{
+        canCreate: permissions.canCreateProducts,
+        canEdit: permissions.canEditProducts,
+        canDelete: permissions.canDeleteProducts,
+      }}
     />
   );
 }

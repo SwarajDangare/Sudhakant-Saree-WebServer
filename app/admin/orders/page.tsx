@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { db, orders, customers, addresses, orderItems } from '@/db';
 import { eq, inArray, notInArray } from 'drizzle-orm';
-import { getPermissions } from '@/lib/permissions';
+import { getServerPermissions } from '@/lib/server-permissions';
 import OrdersManagementClean from '@/components/admin/OrdersManagementClean';
 
 // Make this page dynamic - don't pre-render at build time
@@ -16,26 +16,19 @@ export default async function OrdersPage() {
     redirect('/admin/login');
   }
 
-  const userRole = session.user.role;
-  const permissions = getPermissions(userRole);
+  // Get user permissions
+  const permissions = await getServerPermissions();
 
-  // Determine which orders to fetch based on role
-  let ordersQuery;
-
-  if (permissions.canViewAllOrders) {
-    ordersQuery = db
-      .select()
-      .from(orders)
-      .orderBy(orders.createdAt);
-  } else if (permissions.canViewActiveOrders) {
-    ordersQuery = db
-      .select()
-      .from(orders)
-      .where(notInArray(orders.status, ['DELIVERED', 'CANCELLED']))
-      .orderBy(orders.createdAt);
-  } else {
+  // Check if user has access to orders page
+  if (!permissions.canAccessOrdersPage) {
     redirect('/admin/dashboard');
   }
+
+  // Fetch all orders (access is already verified)
+  const ordersQuery = db
+    .select()
+    .from(orders)
+    .orderBy(orders.createdAt);
 
   const allOrders = await ordersQuery;
 
@@ -80,5 +73,14 @@ export default async function OrdersPage() {
     };
   });
 
-  return <OrdersManagementClean initialOrders={ordersWithDetails} permissions={permissions} />;
+  return (
+    <OrdersManagementClean
+      initialOrders={ordersWithDetails}
+      permissions={{
+        canViewDetails: permissions.canViewOrderDetails,
+        canUpdateStatus: permissions.canUpdateOrderStatus,
+        canDelete: permissions.canDeleteOrders,
+      }}
+    />
+  );
 }

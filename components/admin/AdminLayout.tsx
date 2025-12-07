@@ -4,18 +4,28 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
+}
+
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: string;
+  permission: string | null;
+  external?: boolean;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { permissions, isLoading: permissionsLoading } = usePermissions();
 
   const userRole = session?.user?.role;
-  const isLoading = status === 'loading';
+  const isLoading = status === 'loading' || permissionsLoading;
 
   // Hide sidebar on login page
   const isLoginPage = pathname === '/admin/login';
@@ -37,7 +47,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     if (path.match(/\/admin\/sections\/[^/]+\/edit/)) return { title: 'Edit Section', description: 'Update section details' };
     if (path === '/admin/customers') return { title: 'Customers', description: 'Manage your customers' };
     if (path.match(/\/admin\/customers\/[^/]+/)) return { title: 'Customer Details', description: 'View customer information and orders' };
-    if (path === '/admin/users') return { title: 'Team Management', description: 'Manage admin users and permissions' };
+    if (path === '/admin/users') return { title: 'Team & Permission Management', description: 'Manage admin users and configure role permissions' };
     if (path === '/admin/settings') return { title: 'Settings', description: 'Configure your store settings' };
 
     return { title: 'Dashboard', description: 'Overview of your store performance' };
@@ -49,27 +59,27 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     {
       section: 'DISCOVER',
       items: [
-        { name: 'Dashboard', href: '/admin/dashboard', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
-        { name: 'Stores', href: '/', icon: '🏪', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'], external: true },
+        { name: 'Dashboard', href: '/admin/dashboard', icon: '📊', permission: 'canAccessDashboard' },
+        { name: 'Stores', href: '/', icon: '🏪', permission: 'canAccessDashboard', external: true },
       ]
     },
     {
       section: 'INVENTORY',
       items: [
-        { name: 'Products', href: '/admin/products', icon: '📦', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
-        { name: 'Orders', href: '/admin/orders', icon: '📋', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER', 'SALESMAN'] },
-        { name: 'Category', href: '/admin/categories', icon: '📁', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-        { name: 'Sections', href: '/admin/sections', icon: '🚚', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-        { name: 'Customers', href: '/admin/customers', icon: '📊', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
-        { name: 'Billing', href: '#', icon: '💳', allowedRoles: ['SUPER_ADMIN'] },
-        { name: 'Delivery', href: '#', icon: '🚛', allowedRoles: ['SUPER_ADMIN', 'SHOP_MANAGER'] },
+        { name: 'Products', href: '/admin/products', icon: '📦', permission: 'canAccessProductsPage' },
+        { name: 'Orders', href: '/admin/orders', icon: '📋', permission: 'canAccessOrdersPage' },
+        { name: 'Category', href: '/admin/categories', icon: '📁', permission: 'canAccessCategoriesPage' },
+        { name: 'Sections', href: '/admin/sections', icon: '🚚', permission: 'canAccessSectionsPage' },
+        { name: 'Customers', href: '/admin/customers', icon: '📊', permission: 'canAccessCustomersPage' },
+        { name: 'Billing', href: '#', icon: '💳', permission: null },
+        { name: 'Delivery', href: '#', icon: '🚛', permission: null },
       ]
     },
     {
       section: 'SETTINGS',
       items: [
-        { name: 'Settings', href: '#', icon: '⚙️', allowedRoles: ['SUPER_ADMIN'] },
-        { name: 'Team', href: '/admin/users', icon: '👥', allowedRoles: ['SUPER_ADMIN'] },
+        { name: 'Settings', href: '#', icon: '⚙️', permission: null },
+        { name: 'Team & Permissions', href: '/admin/users', icon: '👥', permission: 'canAccessTeamPage' },
       ]
     }
   ];
@@ -112,10 +122,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {/* Navigation - Sections */}
           <nav className="flex-1 px-4 overflow-y-auto">
             {navigation.map((section, idx) => {
-              // Show all items during loading, filter by role when session is available
-              const filteredItems = isLoading
+              // Show all items during loading, filter by permissions when available
+              const filteredItems = isLoading || !permissions
                 ? section.items
-                : section.items.filter((item) => userRole && item.allowedRoles.includes(userRole));
+                : section.items.filter((item) => {
+                    // If no permission requirement (null), check if super admin
+                    if (item.permission === null) {
+                      return userRole === 'SUPER_ADMIN';
+                    }
+                    // Check if user has the required permission
+                    return permissions[item.permission as keyof typeof permissions] === true;
+                  });
 
               if (filteredItems.length === 0) return null;
 
@@ -125,9 +142,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     {section.section}
                   </h3>
                   <div className="space-y-1">
-                    {filteredItems.map((item) => {
+                    {filteredItems.map((item: NavigationItem) => {
                       const isActive = pathname === item.href || (pathname?.startsWith(item.href + '/') && item.href !== '#');
-                      const isExternal = 'external' in item && item.external;
+                      const isExternal = item.external === true;
 
                       return (
                         <Link

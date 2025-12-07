@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db, categories } from '@/db';
+import { requirePermission, requireAnyPermission, getPermissionErrorMessage } from '@/lib/permission-guards';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,8 +11,14 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has permission to view/edit categories
+    const permissionError = requireAnyPermission(
+      session,
+      ['canAddCategories', 'canEditCategories', 'canDeleteCategories'],
+      'You do not have permission to access categories.'
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     const allCategories = await db.select().from(categories);
@@ -33,9 +40,14 @@ export async function POST(request: NextRequest) {
 
     console.log('POST /api/admin/categories - Session:', session?.user);
 
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
-      console.error('Unauthorized access attempt:', session?.user);
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has permission to add categories
+    const permissionError = requirePermission(
+      session,
+      'canAddCategories',
+      getPermissionErrorMessage('canAddCategories')
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     const body = await request.json();

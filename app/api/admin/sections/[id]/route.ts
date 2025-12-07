@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db, sections } from '@/db';
 import { eq } from 'drizzle-orm';
+import { requirePermission, requireAnyPermission, getPermissionErrorMessage } from '@/lib/permission-guards';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +15,14 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has permission to view sections
+    const permissionError = requireAnyPermission(
+      session,
+      ['canAddSections', 'canEditSections', 'canDeleteSections'],
+      'You do not have permission to access sections.'
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     const [section] = await db
@@ -46,8 +53,14 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has permission to edit sections
+    const permissionError = requirePermission(
+      session,
+      'canEditSections',
+      getPermissionErrorMessage('canEditSections')
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     const body = await request.json();
@@ -110,8 +123,14 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'SUPER_ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Check if user has permission to delete sections
+    const permissionError = requirePermission(
+      session,
+      'canDeleteSections',
+      getPermissionErrorMessage('canDeleteSections')
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     console.log('Deleting section:', params.id);

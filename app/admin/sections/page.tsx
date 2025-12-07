@@ -5,6 +5,7 @@ import { db, sections } from '@/db';
 import { desc, like, or, and, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteSectionButton from '@/components/admin/DeleteSectionButton';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -25,8 +26,11 @@ export default async function SectionsPage({
     redirect('/admin/login');
   }
 
-  // Check if user is super admin or shop manager
-  if (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'SHOP_MANAGER') {
+  // Get user permissions
+  const permissions = await getServerPermissions();
+
+  // Check if user has access to sections page
+  if (!permissions.canAccessSectionsPage) {
     redirect('/admin/dashboard');
   }
 
@@ -58,15 +62,17 @@ export default async function SectionsPage({
   return (
     <div className="space-y-6">
       {/* Action Button */}
-      <div className="flex justify-end">
-        <Link
-          href="/admin/sections/new"
-          className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
-        >
-          <span className="text-xl">+</span>
-          Add Section
-        </Link>
-      </div>
+      {permissions.canCreateSections && (
+        <div className="flex justify-end">
+          <Link
+            href="/admin/sections/new"
+            className="bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition flex items-center gap-2"
+          >
+            <span className="text-xl">+</span>
+            Add Section
+          </Link>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -198,24 +204,32 @@ export default async function SectionsPage({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/sections/${section.id}/edit`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Edit
-                        </Link>
-                        <span className="text-gray-300">|</span>
+                        {permissions.canEditSections && (
+                          <>
+                            <Link
+                              href={`/admin/sections/${section.id}/edit`}
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Edit
+                            </Link>
+                            <span className="text-gray-300">|</span>
+                          </>
+                        )}
                         <Link
                           href={`/admin/categories?section=${section.id}`}
                           className="text-green-600 hover:text-green-900"
                         >
                           Categories
                         </Link>
-                        <span className="text-gray-300">|</span>
-                        <DeleteSectionButton
-                          sectionId={section.id}
-                          sectionName={section.name}
-                        />
+                        {permissions.canDeleteSections && (
+                          <>
+                            <span className="text-gray-300">|</span>
+                            <DeleteSectionButton
+                              sectionId={section.id}
+                              sectionName={section.name}
+                            />
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
