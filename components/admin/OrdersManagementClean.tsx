@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Permission } from '@/lib/permissions';
 import Image from 'next/image';
 
 interface OrderItem {
@@ -50,7 +49,11 @@ interface Order {
 
 interface OrdersManagementCleanProps {
   initialOrders: Order[];
-  permissions: Permission;
+  permissions: {
+    canViewDetails: boolean;
+    canUpdateStatus: boolean;
+    canDelete: boolean;
+  };
 }
 
 export default function OrdersManagementClean({
@@ -118,7 +121,7 @@ export default function OrdersManagementClean({
   }, [orders, statusFilter, searchQuery]);
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
-    if (!permissions.canUpdateOrderStatus) {
+    if (!permissions.canUpdateStatus) {
       alert('You do not have permission to update order status');
       return;
     }
@@ -274,7 +277,7 @@ export default function OrdersManagementClean({
             <tr>
               <th>Order ID</th>
               <th>Product</th>
-              {permissions.canViewCustomerInfo && <th>Customer Name</th>}
+              {permissions.canViewDetails && <th>Customer Name</th>}
               <th>Price</th>
               <th>Date</th>
               <th>Status</th>
@@ -319,7 +322,7 @@ export default function OrdersManagementClean({
                   </td>
 
                   {/* Customer Name */}
-                  {permissions.canViewCustomerInfo && (
+                  {permissions.canViewDetails && (
                     <td className="text-gray-900 font-medium">
                       {order.customer?.name || 'Guest'}
                     </td>
@@ -341,7 +344,7 @@ export default function OrdersManagementClean({
 
                   {/* Status Pills */}
                   <td>
-                    {permissions.canUpdateOrderStatus ? (
+                    {permissions.canUpdateStatus ? (
                       <select
                         value={order.status}
                         onChange={(e) => handleStatusUpdate(order.id, e.target.value)}

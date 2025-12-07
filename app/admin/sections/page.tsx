@@ -5,7 +5,7 @@ import { db, sections } from '@/db';
 import { desc, like, or, and, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteSectionButton from '@/components/admin/DeleteSectionButton';
-import { getPermissions, type UserRole } from '@/lib/permissions';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -26,11 +26,11 @@ export default async function SectionsPage({
     redirect('/admin/login');
   }
 
-  // Get permissions for the user's role
-  const permissions = getPermissions(session.user.role as UserRole);
+  // Get user permissions
+  const permissions = await getServerPermissions();
 
-  // Check if user has permission to view/manage sections
-  if (!permissions.canAddSections && !permissions.canEditSections && !permissions.canDeleteSections) {
+  // Check if user has access to sections page
+  if (!permissions.canAccessSectionsPage) {
     redirect('/admin/dashboard');
   }
 
@@ -62,7 +62,7 @@ export default async function SectionsPage({
   return (
     <div className="space-y-6">
       {/* Action Button */}
-      {permissions.canAddSections && (
+      {permissions.canCreateSections && (
         <div className="flex justify-end">
           <Link
             href="/admin/sections/new"

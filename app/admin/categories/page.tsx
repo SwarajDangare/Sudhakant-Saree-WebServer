@@ -5,7 +5,7 @@ import { db, categories, sections } from '@/db';
 import { eq, desc, like, or, and } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteCategoryButton from '@/components/admin/DeleteCategoryButton';
-import { getPermissions, type UserRole } from '@/lib/permissions';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -27,11 +27,11 @@ export default async function CategoriesPage({
     redirect('/admin/login');
   }
 
-  // Get permissions for the user's role
-  const permissions = getPermissions(session.user.role as UserRole);
+  // Get user permissions
+  const permissions = await getServerPermissions();
 
-  // Check if user has permission to view/manage categories
-  if (!permissions.canAddCategories && !permissions.canEditCategories && !permissions.canDeleteCategories) {
+  // Check if user has access to categories page
+  if (!permissions.canAccessCategoriesPage) {
     redirect('/admin/dashboard');
   }
 
@@ -83,7 +83,7 @@ export default async function CategoriesPage({
   return (
     <div className="space-y-6">
       {/* Action Button */}
-      {permissions.canAddCategories && (
+      {permissions.canCreateCategories && (
         <div className="flex justify-end">
           <Link
             href="/admin/categories/new"
