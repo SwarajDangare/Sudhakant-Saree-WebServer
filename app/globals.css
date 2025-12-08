@@ -314,3 +314,74 @@ body {
 .filter-bar {
   @apply flex items-center gap-3 p-4 bg-gray-50/50 rounded-xl border border-gray-100;
 }
+
+/* ============================================
+   HOMEPAGE ANIMATIONS & EFFECTS
+   ============================================ */
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Fade in up animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-in-out;
+}
+
+.animate-fade-in-up-delay {
+  animation: fadeInUp 0.8s ease-in-out 0.3s both;
+}
+
+/* Sale badge pulse animation */
+@keyframes pulse-subtle {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.sale-badge {
+  @apply absolute top-3 left-3 bg-red-600 text-white px-3 py-1 text-xs font-bold rounded z-10;
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Product card hover effect - Laxmipati style */
+.product-card-modern {
+  @apply bg-white rounded-lg overflow-hidden shadow-md transition-all duration-300;
+}
+
+.product-card-modern:hover {
+  @apply shadow-2xl transform -translate-y-1;
+}
+
+/* Decorative section divider */
+.section-divider {
+  @apply flex items-center justify-center my-6;
+}
+
+.section-divider svg {
+  @apply w-20 h-10 text-maroon;
+}
