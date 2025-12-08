@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { db, categories } from '@/db';
+import { db, categories, products, productColors, productImages, colorImages, orderItems } from '@/db';
 import { eq } from 'drizzle-orm';
 import { requirePermission, requireAnyPermission, getPermissionErrorMessage } from '@/lib/permission-guards';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -125,17 +126,63 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
 
-    // Check if user has permission to delete categories
-    const permissionError = requirePermission(
-      session,
-      'canDeleteCategories',
-      getPermissionErrorMessage('canDeleteCategories')
-    );
-    if (permissionError) {
-      return permissionError;
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Delete the category
+    // Check if user has permission to delete categories using new system
+    const permissions = await getServerPermissions();
+    if (!permissions.canDeleteCategories) {
+      return NextResponse.json(
+        { error: 'You do not have permission to delete categories' },
+        { status: 403 }
+      );
+    }
+
+    // Find all products in this category
+    const productsInCategory = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.categoryId, params.id));
+
+    const productIds = productsInCategory.map(p => p.id);
+
+    // Delete in correct order to respect foreign key constraints:
+    // 1. Delete orderItems that reference these products
+    if (productIds.length > 0) {
+      for (const productId of productIds) {
+        await db.delete(orderItems).where(eq(orderItems.productId, productId));
+      }
+
+      // 2. Delete color images for these products
+      for (const productId of productIds) {
+        const colors = await db
+          .select({ id: productColors.id })
+          .from(productColors)
+          .where(eq(productColors.productId, productId));
+
+        for (const color of colors) {
+          await db.delete(colorImages).where(eq(colorImages.productColorId, color.id));
+        }
+      }
+
+      // 3. Delete product colors
+      for (const productId of productIds) {
+        await db.delete(productColors).where(eq(productColors.productId, productId));
+      }
+
+      // 4. Delete product images
+      for (const productId of productIds) {
+        await db.delete(productImages).where(eq(productImages.productId, productId));
+      }
+
+      // 5. Delete products (this will now succeed)
+      for (const productId of productIds) {
+        await db.delete(products).where(eq(products.id, productId));
+      }
+    }
+
+    // 6. Finally, delete the category
     const [deletedCategory] = await db
       .delete(categories)
       .where(eq(categories.id, params.id))
@@ -151,14 +198,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting category:', error);
-
-    // Check for foreign key constraint violation
-    if (error instanceof Error && error.message.includes('foreign key')) {
-      return NextResponse.json(
-        { error: 'Cannot delete category with existing products' },
-        { status: 400 }
-      );
-    }
 
     return NextResponse.json(
       { error: 'Failed to delete category' },

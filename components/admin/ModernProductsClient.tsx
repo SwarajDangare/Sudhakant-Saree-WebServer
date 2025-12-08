@@ -85,6 +85,51 @@ export default function ModernProductsClient({
     }
   };
 
+  const handleDeleteProducts = async () => {
+    if (selectedProducts.length === 0) return;
+
+    const confirmMessage = `Are you sure you want to delete ${selectedProducts.length} product(s)? This action cannot be undone.`;
+    if (!confirm(confirmMessage)) return;
+
+    try {
+      // Delete all selected products
+      await Promise.all(
+        selectedProducts.map(productId =>
+          fetch(`/api/products/${productId}`, { method: 'DELETE' })
+        )
+      );
+
+      // Refresh the page to show updated list
+      router.refresh();
+      setSelectedProducts([]);
+    } catch (error) {
+      console.error('Error deleting products:', error);
+      alert('Failed to delete some products. Please try again.');
+    }
+  };
+
+  const handleDeleteSingleProduct = async (productId: string, productName: string) => {
+    if (!confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+
+      // Refresh the page to show updated list
+      router.refresh();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Failed to delete product. Please try again.');
+    }
+  };
+
   const calculateDiscountedPrice = (product: Product) => {
     const price = Number(product.price);
     if (product.discountType === 'PERCENTAGE' && product.discountValue) {
@@ -234,7 +279,10 @@ export default function ModernProductsClient({
             </div>
 
             {permissions.canDelete && selectedProducts.length > 0 && (
-              <button className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition-all">
+              <button
+                onClick={handleDeleteProducts}
+                className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition-all"
+              >
                 Delete ({selectedProducts.length})
               </button>
             )}
@@ -494,10 +542,19 @@ export default function ModernProductsClient({
                       <Link
                         href={`/product/${product.id}`}
                         target="_blank"
-                        className={`px-2 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-medium hover:bg-gray-200 transition-all ${!permissions.canEdit ? 'flex-1' : ''}`}
+                        className={`px-2 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-medium hover:bg-gray-200 transition-all ${!permissions.canEdit && !permissions.canDelete ? 'flex-1' : ''}`}
                       >
                         View
                       </Link>
+                      {permissions.canDelete && (
+                        <button
+                          onClick={() => handleDeleteSingleProduct(product.id, product.name)}
+                          className="px-2 py-1.5 bg-red-100 text-red-700 rounded text-xs font-medium hover:bg-red-200 transition-all"
+                          title="Delete product"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -632,6 +689,17 @@ export default function ModernProductsClient({
                           >
                             View
                           </Link>
+                          {permissions.canDelete && (
+                            <>
+                              <span className="text-gray-300">|</span>
+                              <button
+                                onClick={() => handleDeleteSingleProduct(product.id, product.name)}
+                                className="text-red-600 hover:text-red-900 font-medium text-sm"
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

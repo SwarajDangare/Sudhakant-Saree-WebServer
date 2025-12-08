@@ -160,6 +160,41 @@ export default function OrdersManagementClean({
     setShowDetailsModal(true);
   };
 
+  const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
+    if (!permissions.canDelete) {
+      alert('You do not have permission to delete orders');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete order ${orderNumber}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete order');
+      }
+
+      // Remove order from state
+      setOrders(orders.filter(order => order.id !== orderId));
+
+      // Close modal if this order was open
+      if (selectedOrder?.id === orderId) {
+        setShowDetailsModal(false);
+        setSelectedOrder(null);
+      }
+
+      alert('Order deleted successfully');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Stats Cards - Compact */}
@@ -367,14 +402,29 @@ export default function OrdersManagementClean({
 
                   {/* Actions */}
                   <td>
-                    <button
-                      onClick={() => openOrderDetails(order)}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                      </svg>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {permissions.canViewDetails && (
+                        <button
+                          onClick={() => openOrderDetails(order)}
+                          className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                          title="View Details"
+                        >
+                          View
+                        </button>
+                      )}
+                      {permissions.canDelete && (
+                        <>
+                          {permissions.canViewDetails && <span className="text-gray-300">|</span>}
+                          <button
+                            onClick={() => handleDeleteOrder(order.id, order.orderNumber)}
+                            className="text-red-600 hover:text-red-800 text-xs font-medium"
+                            title="Delete Order"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
