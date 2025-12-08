@@ -8,7 +8,8 @@ interface Slide {
   id: number;
   title: string;
   subtitle?: string;
-  image: string;
+  description?: string;
+  layout: 'center' | 'split-left' | 'split-right';
   cta?: {
     text: string;
     link: string;
@@ -18,9 +19,10 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    title: 'Elegance Woven in Tradition',
-    subtitle: 'Discover Our Exclusive Saree Collection',
-    image: '/images/hero-1.jpg', // Placeholder - will use gradient if image not found
+    title: 'WEDDING SPECIAL',
+    subtitle: '2025',
+    description: 'Weaves for the Wedding Season',
+    layout: 'split-left',
     cta: {
       text: 'Shop Now',
       link: '/categories',
@@ -28,21 +30,23 @@ const slides: Slide[] = [
   },
   {
     id: 2,
-    title: 'Handcrafted Masterpieces',
-    subtitle: 'Traditional Artistry Meets Modern Style',
-    image: '/images/hero-2.jpg',
+    title: 'FLAT 40% OFF',
+    subtitle: 'BLACK FRIDAY SALE',
+    description: 'on select merchandise',
+    layout: 'center',
     cta: {
-      text: 'Explore Collections',
+      text: 'Shop Now',
       link: '/categories',
     },
   },
   {
     id: 3,
-    title: 'Wedding Special Collection',
-    subtitle: 'Make Your Special Day Memorable',
-    image: '/images/hero-3.jpg',
+    title: 'NEW ARRIVALS',
+    subtitle: 'Latest Collection',
+    description: 'Discover the finest handcrafted sarees',
+    layout: 'split-right',
     cta: {
-      text: 'View Wedding Collection',
+      text: 'Explore Collections',
       link: '/categories',
     },
   },
@@ -83,7 +87,7 @@ export default function HeroSlider() {
   };
 
   return (
-    <section className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden bg-gradient-to-br from-maroon via-indian-red to-saffron">
+    <section className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden bg-white">
       {/* Slides */}
       <div className="relative w-full h-full">
         {slides.map((slide, index) => (
@@ -93,46 +97,98 @@ export default function HeroSlider() {
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            {/* Background Image with Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-maroon/60 via-indian-red/60 to-saffron/60">
-              {/* Pattern overlay */}
-              <div className="absolute inset-0 pattern-bg opacity-20"></div>
+            {slide.layout === 'center' ? (
+              /* Center Layout - Like BLACK FRIDAY SALE */
+              <div className="h-full bg-navy-dark flex items-center justify-center relative">
+                {/* Optional: Side images */}
+                <div className="absolute inset-0 grid grid-cols-3">
+                  <div className="bg-gradient-to-r from-maroon/30 to-transparent"></div>
+                  <div></div>
+                  <div className="bg-gradient-to-l from-maroon/30 to-transparent"></div>
+                </div>
 
-              {/* Decorative elements */}
-              <div className="absolute top-20 right-20 w-64 h-64 bg-golden/10 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-20 left-20 w-80 h-80 bg-saffron/10 rounded-full blur-3xl"></div>
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 h-full flex items-center justify-center">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                {/* Subtitle */}
-                {slide.subtitle && (
-                  <div className="mb-4 animate-fade-in">
-                    <span className="bg-golden text-maroon px-6 py-2 rounded-full text-sm md:text-base font-semibold inline-block">
+                {/* Center Content */}
+                <div className="relative z-10 text-center text-white px-4">
+                  {slide.subtitle && (
+                    <div className="text-lg md:text-xl tracking-widest mb-4 text-golden">
                       {slide.subtitle}
-                    </span>
-                  </div>
-                )}
-
-                {/* Main Title */}
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-lg animate-fade-in-up">
-                  {slide.title}
-                </h1>
-
-                {/* CTA Button */}
-                {slide.cta && (
-                  <div className="animate-fade-in-up-delay">
+                    </div>
+                  )}
+                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-4 tracking-wider">
+                    {slide.title}
+                  </h1>
+                  <div className="w-48 h-0.5 bg-golden mx-auto mb-6"></div>
+                  {slide.description && (
+                    <p className="text-xl md:text-2xl mb-8 text-silk-white">
+                      {slide.description}
+                    </p>
+                  )}
+                  {slide.cta && (
                     <Link
                       href={slide.cta.link}
-                      className="inline-block bg-white text-maroon px-8 py-4 rounded-lg font-semibold text-lg hover:bg-golden hover:text-white transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
+                      className="inline-block bg-white text-maroon px-10 py-4 rounded-full font-semibold text-lg hover:bg-golden hover:text-navy-dark transition-all duration-300 shadow-xl"
                     >
                       {slide.cta.text}
                     </Link>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            ) : (
+              /* Split Layout - Like WEDDING SEASON */
+              <div className="h-full grid md:grid-cols-2">
+                {/* Left Side - Text with Pattern */}
+                <div
+                  className={`bg-maroon text-white flex items-center justify-center p-8 md:p-12 relative overflow-hidden ${
+                    slide.layout === 'split-right' ? 'md:order-2' : ''
+                  }`}
+                >
+                  {/* Pattern Background */}
+                  <div className="absolute inset-0 bg-pattern-maroon opacity-40"></div>
+
+                  {/* Decorative elements */}
+                  <div className="absolute top-10 left-10 w-32 h-32 border-2 border-golden/20 rounded-full"></div>
+                  <div className="absolute bottom-10 right-10 w-40 h-40 border-2 border-golden/20 rounded-full"></div>
+
+                  {/* Content */}
+                  <div className="relative z-10 text-center max-w-md">
+                    {slide.description && (
+                      <p className="text-2xl md:text-3xl mb-6 font-light text-silk-white">
+                        {slide.description}
+                      </p>
+                    )}
+                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                      <span className="block">{slide.title}</span>
+                      {slide.subtitle && (
+                        <span className="block text-golden mt-2">{slide.subtitle}</span>
+                      )}
+                    </h1>
+                    {slide.cta && (
+                      <Link
+                        href={slide.cta.link}
+                        className="inline-block bg-golden text-maroon px-8 py-3 rounded-full font-semibold text-lg hover:bg-silk-white transition-all duration-300 shadow-xl mt-6"
+                      >
+                        {slide.cta.text}
+                      </Link>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Side - Image Placeholder */}
+                <div
+                  className={`bg-gradient-to-br from-cream via-silk-white to-golden/10 hidden md:flex items-center justify-center relative ${
+                    slide.layout === 'split-right' ? 'md:order-1' : ''
+                  }`}
+                >
+                  {/* Placeholder for product images */}
+                  <div className="text-center text-maroon/30">
+                    <svg className="w-48 h-48 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="mt-4 text-sm">Product Image</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
