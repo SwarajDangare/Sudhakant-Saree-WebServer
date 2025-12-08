@@ -9,7 +9,7 @@ interface Slide {
   title: string;
   subtitle?: string;
   description?: string;
-  layout: 'center' | 'split-left' | 'split-right';
+  backgroundImage?: string;
   cta?: {
     text: string;
     link: string;
@@ -19,10 +19,9 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    title: 'WEDDING SPECIAL',
-    subtitle: '2025',
-    description: 'Weaves for the Wedding Season',
-    layout: 'split-left',
+    title: 'Weaves for the Wedding Season',
+    subtitle: 'WEDDING SPECIAL 2025',
+    backgroundImage: '/images/hero-wedding.jpg', // Placeholder
     cta: {
       text: 'Shop Now',
       link: '/categories',
@@ -33,7 +32,7 @@ const slides: Slide[] = [
     title: 'FLAT 40% OFF',
     subtitle: 'BLACK FRIDAY SALE',
     description: 'on select merchandise',
-    layout: 'center',
+    backgroundImage: '/images/hero-sale.jpg', // Placeholder
     cta: {
       text: 'Shop Now',
       link: '/categories',
@@ -41,10 +40,9 @@ const slides: Slide[] = [
   },
   {
     id: 3,
-    title: 'NEW ARRIVALS',
-    subtitle: 'Latest Collection',
-    description: 'Discover the finest handcrafted sarees',
-    layout: 'split-right',
+    title: 'Discover the Finest Handcrafted Sarees',
+    subtitle: 'NEW ARRIVALS',
+    backgroundImage: '/images/hero-new.jpg', // Placeholder
     cta: {
       text: 'Explore Collections',
       link: '/categories',
@@ -87,7 +85,7 @@ export default function HeroSlider() {
   };
 
   return (
-    <section className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden bg-white">
+    <section className="relative w-full h-[70vh] md:h-[80vh] lg:h-[90vh] overflow-hidden">
       {/* Slides */}
       <div className="relative w-full h-full">
         {slides.map((slide, index) => (
@@ -97,98 +95,60 @@ export default function HeroSlider() {
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            {slide.layout === 'center' ? (
-              /* Center Layout - Like BLACK FRIDAY SALE */
-              <div className="h-full bg-navy-dark flex items-center justify-center relative">
-                {/* Optional: Side images */}
-                <div className="absolute inset-0 grid grid-cols-3">
-                  <div className="bg-gradient-to-r from-maroon/30 to-transparent"></div>
-                  <div></div>
-                  <div className="bg-gradient-to-l from-maroon/30 to-transparent"></div>
-                </div>
+            {/* Background Image - Stretched to cover entire slide */}
+            <div className="absolute inset-0">
+              {/* Gradient background as fallback */}
+              <div className="absolute inset-0 bg-gradient-to-br from-maroon/90 via-maroon/70 to-maroon/50">
+                {/* Pattern overlay */}
+                <div className="absolute inset-0 bg-pattern-maroon opacity-20"></div>
+              </div>
 
-                {/* Center Content */}
-                <div className="relative z-10 text-center text-white px-4">
+              {/* Background image placeholder - will be replaced with actual images */}
+              <div className="absolute inset-0 bg-gradient-to-br from-cream via-silk-white to-golden/20"></div>
+            </div>
+
+            {/* Dark Overlay for text readability */}
+            <div className="absolute inset-0 bg-black/30"></div>
+
+            {/* Content Overlay - Centered or Left-aligned */}
+            <div className="relative z-10 h-full flex items-center">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                <div className="max-w-3xl">
+                  {/* Subtitle */}
                   {slide.subtitle && (
-                    <div className="text-lg md:text-xl tracking-widest mb-4 text-golden">
-                      {slide.subtitle}
+                    <div className="mb-4 animate-fade-in">
+                      <span className="text-sm md:text-base tracking-widest text-golden font-semibold">
+                        {slide.subtitle}
+                      </span>
                     </div>
                   )}
-                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-4 tracking-wider">
+
+                  {/* Main Title */}
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight animate-fade-in-up">
                     {slide.title}
                   </h1>
-                  <div className="w-48 h-0.5 bg-golden mx-auto mb-6"></div>
+
+                  {/* Description */}
                   {slide.description && (
-                    <p className="text-xl md:text-2xl mb-8 text-silk-white">
+                    <p className="text-xl md:text-2xl text-silk-white mb-8 animate-fade-in-up">
                       {slide.description}
                     </p>
                   )}
+
+                  {/* CTA Button */}
                   {slide.cta && (
-                    <Link
-                      href={slide.cta.link}
-                      className="inline-block bg-white text-maroon px-10 py-4 rounded-full font-semibold text-lg hover:bg-golden hover:text-navy-dark transition-all duration-300 shadow-xl"
-                    >
-                      {slide.cta.text}
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ) : (
-              /* Split Layout - Like WEDDING SEASON */
-              <div className="h-full grid md:grid-cols-2">
-                {/* Left Side - Text with Pattern */}
-                <div
-                  className={`bg-maroon text-white flex items-center justify-center p-8 md:p-12 relative overflow-hidden ${
-                    slide.layout === 'split-right' ? 'md:order-2' : ''
-                  }`}
-                >
-                  {/* Pattern Background */}
-                  <div className="absolute inset-0 bg-pattern-maroon opacity-40"></div>
-
-                  {/* Decorative elements */}
-                  <div className="absolute top-10 left-10 w-32 h-32 border-2 border-golden/20 rounded-full"></div>
-                  <div className="absolute bottom-10 right-10 w-40 h-40 border-2 border-golden/20 rounded-full"></div>
-
-                  {/* Content */}
-                  <div className="relative z-10 text-center max-w-md">
-                    {slide.description && (
-                      <p className="text-2xl md:text-3xl mb-6 font-light text-silk-white">
-                        {slide.description}
-                      </p>
-                    )}
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                      <span className="block">{slide.title}</span>
-                      {slide.subtitle && (
-                        <span className="block text-golden mt-2">{slide.subtitle}</span>
-                      )}
-                    </h1>
-                    {slide.cta && (
+                    <div className="animate-fade-in-up-delay">
                       <Link
                         href={slide.cta.link}
-                        className="inline-block bg-golden text-maroon px-8 py-3 rounded-full font-semibold text-lg hover:bg-silk-white transition-all duration-300 shadow-xl mt-6"
+                        className="inline-block bg-white text-maroon px-8 py-4 rounded-full font-semibold text-lg hover:bg-golden hover:text-white transition-all duration-300 shadow-xl hover:scale-105"
                       >
                         {slide.cta.text}
                       </Link>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Side - Image Placeholder */}
-                <div
-                  className={`bg-gradient-to-br from-cream via-silk-white to-golden/10 hidden md:flex items-center justify-center relative ${
-                    slide.layout === 'split-right' ? 'md:order-1' : ''
-                  }`}
-                >
-                  {/* Placeholder for product images */}
-                  <div className="text-center text-maroon/30">
-                    <svg className="w-48 h-48 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="mt-4 text-sm">Product Image</p>
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
         ))}
       </div>
