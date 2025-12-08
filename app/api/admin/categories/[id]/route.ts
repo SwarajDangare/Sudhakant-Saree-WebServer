@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { db, categories } from '@/db';
 import { eq } from 'drizzle-orm';
 import { requirePermission, requireAnyPermission, getPermissionErrorMessage } from '@/lib/permission-guards';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -125,14 +126,17 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
 
-    // Check if user has permission to delete categories
-    const permissionError = requirePermission(
-      session,
-      'canDeleteCategories',
-      getPermissionErrorMessage('canDeleteCategories')
-    );
-    if (permissionError) {
-      return permissionError;
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has permission to delete categories using new system
+    const permissions = await getServerPermissions();
+    if (!permissions.canDeleteCategories) {
+      return NextResponse.json(
+        { error: 'You do not have permission to delete categories' },
+        { status: 403 }
+      );
     }
 
     // Delete the category
