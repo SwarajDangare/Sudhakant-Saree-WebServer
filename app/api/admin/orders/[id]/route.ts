@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { getPermissions } from '@/lib/permissions';
 import { sendOrderStatusUpdateEmail, sendOrderConfirmationEmail } from '@/lib/email';
 import { generateOrderUpdateWhatsAppLink } from '@/lib/whatsapp';
+import { getServerPermissions } from '@/lib/server-permissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -168,6 +169,59 @@ export async function PUT(
     console.error('Error updating order:', error);
     return NextResponse.json(
       { error: 'Failed to update order' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/admin/orders/[id]
+ * Delete an order (SUPER_ADMIN and SHOP_MANAGER with permission)
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if user has permission to delete orders
+    const permissions = await getServerPermissions();
+    if (!permissions.canDeleteOrders) {
+      return NextResponse.json(
+        { error: 'You do not have permission to delete orders' },
+        { status: 403 }
+      );
+    }
+
+    // Check if order exists
+    const [existingOrder] = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, params.id))
+      .limit(1);
+
+    if (!existingOrder) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    // Delete order items first (foreign key constraint)
+    await db.delete(orderItems).where(eq(orderItems.orderId, params.id));
+
+    // Delete the order
+    await db.delete(orders).where(eq(orders.id, params.id));
+
+    return NextResponse.json({
+      message: 'Order deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete order' },
       { status: 500 }
     );
   }
