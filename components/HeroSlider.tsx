@@ -73,7 +73,7 @@ export default function HeroSlider() {
   // Loading state
   if (loading) {
     return (
-      <section className="relative w-full h-[70vh] md:h-[80vh] lg:h-[90vh] overflow-hidden bg-gradient-to-br from-maroon/90 via-maroon/70 to-maroon/50 flex items-center justify-center">
+      <section className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-maroon/90 via-maroon/70 to-maroon/50 flex items-center justify-center">
         <div className="text-white text-2xl">Loading...</div>
       </section>
     );
@@ -82,7 +82,7 @@ export default function HeroSlider() {
   // No banners state
   if (banners.length === 0) {
     return (
-      <section className="relative w-full h-[70vh] md:h-[80vh] lg:h-[90vh] overflow-hidden bg-gradient-to-br from-maroon/90 via-maroon/70 to-maroon/50 flex items-center justify-center">
+      <section className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-maroon/90 via-maroon/70 to-maroon/50 flex items-center justify-center">
         <div className="text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">Welcome to Sudhakant Sarees</h1>
           <p className="text-xl">Discover our exquisite collection</p>
@@ -92,7 +92,7 @@ export default function HeroSlider() {
   }
 
   return (
-    <section className="relative w-full h-[70vh] md:h-[80vh] lg:h-[90vh] overflow-hidden">
+    <section className="relative w-full h-screen overflow-hidden">
       {/* Slides */}
       <div className="relative w-full h-full">
         {banners.map((banner, index) => (

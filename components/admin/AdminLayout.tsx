@@ -78,7 +78,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     {
       section: 'SETTINGS',
       items: [
-        { name: 'Settings', href: '#', icon: '⚙️', permission: null },
+        { name: 'Settings', href: '/admin/settings', icon: '⚙️', permission: null },
         { name: 'Team & Permissions', href: '/admin/users', icon: '👥', permission: 'canAccessTeamPage' },
       ]
     }
