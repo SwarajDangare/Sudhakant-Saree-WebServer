@@ -236,6 +236,22 @@ export const colorImages = pgTable('color_images', {
   createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
+// Homepage Settings & Banners
+export const homepageBanners = pgTable('homepage_banners', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  subtitle: text('subtitle'),
+  description: text('description'),
+  imageUrl: text('imageUrl').notNull(), // Cloudinary URL
+  imagePublicId: text('imagePublicId').notNull(), // For deletion
+  linkUrl: text('linkUrl'), // Optional link for CTA
+  linkText: text('linkText'), // CTA button text
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
 // Relations
 export const sectionsRelations = relations(sections, ({ many }) => ({
   categories: many(categories),

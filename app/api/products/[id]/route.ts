@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db, products, productColors, productImages, colorImages } from '@/db';
 import { eq, asc } from 'drizzle-orm';
+import { requirePermission, getPermissionErrorMessage } from '@/lib/permission-guards';
 
 export const dynamic = 'force-dynamic';
 
@@ -197,8 +198,15 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    // Check if user has permission to delete products
+    const permissionError = requirePermission(
+      session,
+      'canDeleteProducts',
+      getPermissionErrorMessage('canDeleteProducts')
+    );
+    if (permissionError) {
+      return permissionError;
     }
 
     // Check if product exists

@@ -39,6 +39,62 @@ export default async function DashboardPage() {
   let criticalStockItems: Array<{ productId: string; productName: string; colorName: string; colorCode: string; stock: number; imageUrl: string | null }> = [];
   let activities: Array<{ id: string; type: 'order'; title: string; description: string; timestamp: Date; icon: string }> = [];
 
+  // Fetch low stock items and recent activity (non-business-critical data, always show)
+  const lowStockItems = await db
+    .select({
+      productId: products.id,
+      productName: products.name,
+      colorName: productColors.color,
+      colorCode: productColors.colorCode,
+      colorId: productColors.id,
+    })
+    .from(productColors)
+    .innerJoin(products, eq(productColors.productId, products.id))
+    .limit(10);
+
+  const lowStockWithImages = await Promise.all(
+    lowStockItems.map(async (item) => {
+      const [image] = await db
+        .select({ url: colorImages.url })
+        .from(colorImages)
+        .where(eq(colorImages.productColorId, item.colorId))
+        .limit(1);
+
+      return {
+        productId: item.productId,
+        productName: item.productName,
+        colorName: item.colorName,
+        colorCode: item.colorCode,
+        stock: Math.floor(Math.random() * 10), // TODO: Implement actual stock tracking
+        imageUrl: image?.url || null,
+      };
+    })
+  );
+
+  criticalStockItems = lowStockWithImages.filter(item => item.stock < 10);
+
+  // Fetch recent activity
+  const recentOrdersForActivity = await db
+    .select({
+      id: orders.id,
+      orderNumber: orders.orderNumber,
+      createdAt: orders.createdAt,
+      status: orders.status,
+      total: orders.total,
+    })
+    .from(orders)
+    .orderBy(desc(orders.createdAt))
+    .limit(5);
+
+  activities = recentOrdersForActivity.map(order => ({
+    id: order.id,
+    type: 'order' as const,
+    title: `New Order #${order.orderNumber}`,
+    description: `Order placed for ₹${Number(order.total).toLocaleString('en-IN')} - Status: ${order.status}`,
+    timestamp: order.createdAt,
+    icon: '📦',
+  }));
+
   if (canViewStats) {
     // Fetch statistics
     [productsCount] = await db.select({ count: count() }).from(products);
@@ -81,76 +137,10 @@ export default async function DashboardPage() {
         orders: orderCount,
       });
     }
-
-    // Get low stock items
-    const lowStockItems = await db
-      .select({
-        productId: products.id,
-        productName: products.name,
-        colorName: productColors.color,
-        colorCode: productColors.colorCode,
-        colorId: productColors.id,
-      })
-      .from(productColors)
-      .innerJoin(products, eq(productColors.productId, products.id))
-      .limit(10);
-
-    const lowStockWithImages = await Promise.all(
-      lowStockItems.map(async (item) => {
-        const [image] = await db
-          .select({ url: colorImages.url })
-          .from(colorImages)
-          .where(eq(colorImages.productColorId, item.colorId))
-          .limit(1);
-
-        return {
-          productId: item.productId,
-          productName: item.productName,
-          colorName: item.colorName,
-          colorCode: item.colorCode,
-          stock: Math.floor(Math.random() * 10),
-          imageUrl: image?.url || null,
-        };
-      })
-    );
-
-    criticalStockItems = lowStockWithImages.filter(item => item.stock < 10);
-
-    // Get recent activity
-    const recentOrdersForActivity = await db
-      .select({
-        id: orders.id,
-        orderNumber: orders.orderNumber,
-        createdAt: orders.createdAt,
-        status: orders.status,
-        total: orders.total,
-      })
-      .from(orders)
-      .orderBy(desc(orders.createdAt))
-      .limit(5);
-
-    activities = recentOrdersForActivity.map(order => ({
-      id: order.id,
-      type: 'order' as const,
-      title: `New Order #${order.orderNumber}`,
-      description: `Order placed for ₹${Number(order.total).toLocaleString('en-IN')} - Status: ${order.status}`,
-      timestamp: order.createdAt,
-      icon: '📦',
-    }));
   }
 
   return (
     <div className="space-y-4">
-      {/* Show welcome message if no stats permission */}
-      {!canViewStats && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Welcome to Sudhakant Sarees Admin</h2>
-          <p className="text-gray-700">
-            You don't have permission to view business statistics. Please contact your administrator if you need access.
-          </p>
-        </div>
-      )}
-
       {/* Top Stats Cards - Only show if permission granted */}
       {canViewStats && (
         <>
@@ -208,6 +198,18 @@ export default async function DashboardPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Show non-business-critical info if no stats permission */}
+      {!canViewStats && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="lg:col-span-1">
+            <StockLevelWidget lowStockItems={criticalStockItems} />
+          </div>
+          <div className="lg:col-span-1">
+            <ActivityFeed activities={activities} />
+          </div>
+        </div>
       )}
     </div>
   );

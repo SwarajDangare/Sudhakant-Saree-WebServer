@@ -1,6 +1,9 @@
-import Hero from '@/components/Hero'
+import HeroSlider from '@/components/HeroSlider'
+import Features from '@/components/Features'
+import ShopByCategory from '@/components/ShopByCategory'
+import BestsellerProducts from '@/components/BestsellerProducts'
+import ShopByOccasion from '@/components/ShopByOccasion'
 import CategorySection from '@/components/CategorySection'
-import FeaturedProducts from '@/components/FeaturedProducts'
 import Link from 'next/link'
 
 // Enable ISR - revalidate every 60 seconds
@@ -12,9 +15,23 @@ export const dynamic = 'force-dynamic';
 export default function Home() {
   return (
     <>
-      <Hero />
+      {/* Hero Slider - Full width banner carousel */}
+      <HeroSlider />
+
+      {/* Features Section - Free shipping, customer service, secure payment */}
+      <Features />
+
+      {/* Shop by Category - Large image cards */}
+      <ShopByCategory />
+
+      {/* Bestseller Products - 4-column grid with sale badges */}
+      <BestsellerProducts />
+
+      {/* Shop by Occasion - Wedding, Festival, Party, Casual */}
+      <ShopByOccasion />
+
+      {/* All Categories - Detailed category listings */}
       <CategorySection />
-      <FeaturedProducts />
 
       {/* Temporary Admin Login Button - Remove before production */}
       <Link

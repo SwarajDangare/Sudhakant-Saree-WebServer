@@ -31,7 +31,7 @@ export default async function CategorySection() {
   );
 
   return (
-    <section className="section-padding bg-silk-white">
+    <section className="section-padding bg-white">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12">
