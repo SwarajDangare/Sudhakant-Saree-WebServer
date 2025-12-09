@@ -1,45 +1,37 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { db, sections, categories } from '@/db';
-import { eq, and } from 'drizzle-orm';
 
-export default async function ShopByCategory() {
-  // Fetch sections with their categories
-  const allSections = await db
-    .select()
-    .from(sections)
-    .where(eq(sections.active, true))
-    .orderBy(sections.order, sections.name)
-    .limit(6); // Show top 6 categories
+// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
+const categories = [
+  {
+    id: 1,
+    name: 'Silk Sarees',
+    slug: 'silk-sarees',
+    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg', // Replace with actual image
+    tagline: 'Timeless Elegance',
+    description: 'Handwoven pure silk sarees',
+  },
+  {
+    id: 2,
+    name: 'Wedding Collection',
+    slug: 'wedding',
+    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg', // Replace with actual image
+    tagline: 'For Your Special Day',
+    description: 'Exquisite bridal sarees',
+  },
+  {
+    id: 3,
+    name: 'Cotton Sarees',
+    slug: 'cotton-sarees',
+    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg', // Replace with actual image
+    tagline: 'Comfort & Style',
+    description: 'Perfect for daily wear',
+  },
+];
 
-  const sectionsWithCategories = await Promise.all(
-    allSections.map(async (section) => {
-      const sectionCategories = await db
-        .select()
-        .from(categories)
-        .where(and(
-          eq(categories.sectionId, section.id),
-          eq(categories.active, true)
-        ))
-        .orderBy(categories.order, categories.name)
-        .limit(1); // Get first category for each section
-
-      return {
-        ...section,
-        category: sectionCategories[0],
-      };
-    })
-  );
-
-  // Filter out sections without categories
-  const validSections = sectionsWithCategories.filter(s => s.category);
-
-  if (validSections.length === 0) {
-    return null;
-  }
-
+export default function ShopByCategory() {
   return (
-    <section className="bg-white py-16">
+    <section className="bg-cream py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12">
@@ -54,6 +46,9 @@ export default async function ShopByCategory() {
           <h2 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
             SHOP BY CATEGORY
           </h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Discover our curated collection of handpicked sarees
+          </p>
 
           {/* Decorative element */}
           <div className="flex items-center justify-center mt-4">
@@ -65,45 +60,74 @@ export default async function ShopByCategory() {
         </div>
 
         {/* Category Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {validSections.slice(0, 3).map((section) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {categories.map((category) => (
             <Link
-              key={section.id}
-              href={`/categories/${section.slug}`}
-              className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300"
+              key={category.id}
+              href={`/categories/${category.slug}`}
+              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
-              {/* Image Container */}
-              <div className="aspect-[4/5] relative bg-gradient-to-br from-maroon/80 via-indian-red/80 to-saffron/80">
-                {/* Pattern overlay */}
-                <div className="absolute inset-0 pattern-bg opacity-20"></div>
+              {/* Image Container with Optimized Next.js Image */}
+              <div className="aspect-[3/4] relative bg-gray-100">
+                <Image
+                  src={category.image}
+                  alt={category.name}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
+                  loading="lazy"
+                />
+
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
 
                 {/* Content overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-maroon/90 via-maroon/40 to-transparent flex items-end justify-center p-6">
-                  {/* Category Name with Decorative Element */}
-                  <div className="text-center">
-                    {/* Decorative icon */}
-                    <div className="flex items-center justify-center mb-3">
-                      <div className="w-12 h-0.5 bg-golden"></div>
-                      <svg className="w-8 h-8 mx-2 text-golden" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2L15 8.5L22 9.3L17 14L18.5 21L12 17.5L5.5 21L7 14L2 9.3L9 8.5L12 2Z" />
-                      </svg>
-                      <div className="w-12 h-0.5 bg-golden"></div>
-                    </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-end p-8">
+                  {/* Tagline */}
+                  <p className="text-golden text-sm font-semibold tracking-widest mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {category.tagline}
+                  </p>
 
-                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                      {section.name}
-                    </h3>
+                  {/* Category Name */}
+                  <h3 className="text-3xl md:text-4xl font-bold text-white mb-3 text-center">
+                    {category.name}
+                  </h3>
 
-                    {/* Decorative underline */}
-                    <div className="w-24 h-1 bg-golden mx-auto"></div>
+                  {/* Description */}
+                  <p className="text-white/90 text-sm mb-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {category.description}
+                  </p>
+
+                  {/* CTA Button */}
+                  <div className="flex items-center gap-2 text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                    <span>EXPLORE</span>
+                    <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
                   </div>
+
+                  {/* Decorative underline */}
+                  <div className="w-16 h-0.5 bg-golden mt-4"></div>
                 </div>
 
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-maroon/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                {/* Hover shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* View All Categories Link */}
+        <div className="text-center mt-12">
+          <Link
+            href="/categories"
+            className="inline-flex items-center gap-2 bg-maroon text-white px-8 py-4 rounded-full font-semibold hover:bg-deep-maroon transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            VIEW ALL CATEGORIES
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </Link>
         </div>
       </div>
     </section>
