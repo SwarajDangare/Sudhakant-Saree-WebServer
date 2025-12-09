@@ -23,6 +23,12 @@ export default function HeroSlider() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Helper function to check if URL is a video
+  const isVideoUrl = (url: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov'];
+    return videoExtensions.some(ext => url.toLowerCase().includes(ext));
+  };
+
   // Fetch banners from API
   useEffect(() => {
     fetch('/api/admin/banners')
@@ -102,15 +108,26 @@ export default function HeroSlider() {
               index === currentSlide ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            {/* Background Image - Actual image from Cloudinary */}
+            {/* Background Media - Image or Video from Cloudinary */}
             <div className="absolute inset-0">
-              <Image
-                src={banner.imageUrl}
-                alt={banner.title}
-                fill
-                className="object-cover"
-                priority={index === 0}
-              />
+              {isVideoUrl(banner.imageUrl) ? (
+                <video
+                  src={banner.imageUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={banner.imageUrl}
+                  alt={banner.title}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                />
+              )}
             </div>
 
             {/* Dark Overlay for text readability */}
