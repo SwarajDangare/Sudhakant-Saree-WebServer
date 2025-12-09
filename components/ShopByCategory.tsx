@@ -31,10 +31,10 @@ const categories = [
 
 export default function ShopByCategory() {
   return (
-    <section className="bg-cream py-20">
+    <section className="bg-cream py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 md:mb-12">
           {/* Decorative element */}
           <div className="flex items-center justify-center mb-4">
             <svg className="w-16 h-8 text-maroon" viewBox="0 0 100 20" fill="currentColor">
@@ -60,15 +60,15 @@ export default function ShopByCategory() {
         </div>
 
         {/* Category Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/categories/${category.slug}`}
-              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+              className="group relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
-              {/* Image Container with Optimized Next.js Image */}
-              <div className="aspect-[3/4] relative bg-gray-100">
+              {/* Image Container with Optimized Next.js Image - Shorter on mobile */}
+              <div className="aspect-[5/4] md:aspect-[3/4] relative bg-gray-100">
                 <Image
                   src={category.image}
                   alt={category.name}
@@ -82,32 +82,32 @@ export default function ShopByCategory() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
 
                 {/* Content overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-end p-8">
-                  {/* Tagline */}
-                  <p className="text-golden text-sm font-semibold tracking-widest mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 flex flex-col items-center justify-end p-4 md:p-8">
+                  {/* Tagline - Hidden on mobile */}
+                  <p className="hidden md:block text-golden text-sm font-semibold tracking-widest mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {category.tagline}
                   </p>
 
-                  {/* Category Name */}
-                  <h3 className="text-3xl md:text-4xl font-bold text-white mb-3 text-center">
+                  {/* Category Name - Smaller on mobile */}
+                  <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 text-center">
                     {category.name}
                   </h3>
 
-                  {/* Description */}
-                  <p className="text-white/90 text-sm mb-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {/* Description - Hidden on mobile */}
+                  <p className="hidden md:block text-white/90 text-sm mb-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {category.description}
                   </p>
 
-                  {/* CTA Button */}
-                  <div className="flex items-center gap-2 text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                  {/* CTA Button - Simplified on mobile */}
+                  <div className="flex items-center gap-2 text-white text-xs md:text-sm font-semibold md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 md:translate-y-2 md:group-hover:translate-y-0">
                     <span>EXPLORE</span>
-                    <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </div>
 
                   {/* Decorative underline */}
-                  <div className="w-16 h-0.5 bg-golden mt-4"></div>
+                  <div className="w-12 md:w-16 h-0.5 bg-golden mt-2 md:mt-4"></div>
                 </div>
 
                 {/* Hover shine effect */}

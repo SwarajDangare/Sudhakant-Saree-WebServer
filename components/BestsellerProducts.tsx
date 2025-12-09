@@ -55,10 +55,10 @@ export default function BestsellerProducts() {
   }
 
   return (
-    <section className="bg-cream py-16">
+    <section className="bg-cream py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-8 md:mb-16">
           <span className="inline-block text-golden text-sm font-semibold tracking-widest uppercase mb-3">
             Customer Favorites
           </span>
@@ -71,16 +71,16 @@ export default function BestsellerProducts() {
         </div>
 
         {/* Products Grid - 4 columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 mb-8 md:mb-12">
           {featuredProducts.map((product) => (
             <Link
               key={product.id}
               href={`/product/${product.id}`}
               className="group"
             >
-              <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-                {/* Product Image */}
-                <div className="relative aspect-[3/4] bg-gray-100 overflow-hidden">
+              <div className="bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                {/* Product Image - Shorter on mobile */}
+                <div className="relative aspect-[4/5] md:aspect-[3/4] bg-gray-100 overflow-hidden">
                   <Image
                     src={product.image}
                     alt={product.name}
@@ -119,21 +119,21 @@ export default function BestsellerProducts() {
                 </div>
 
                 {/* Product Info */}
-                <div className="p-5">
-                  {/* Category */}
-                  <span className="text-xs text-gray-500 uppercase tracking-wider">{product.category}</span>
+                <div className="p-3 md:p-5">
+                  {/* Category - Hidden on mobile */}
+                  <span className="hidden md:inline-block text-xs text-gray-500 uppercase tracking-wider">{product.category}</span>
 
-                  {/* Product Name */}
-                  <h3 className="text-lg font-bold text-gray-900 mt-2 mb-3 group-hover:text-maroon transition-colors line-clamp-2">
+                  {/* Product Name - Smaller on mobile */}
+                  <h3 className="text-sm md:text-lg font-bold text-gray-900 mt-1 md:mt-2 mb-2 md:mb-3 group-hover:text-maroon transition-colors line-clamp-2">
                     {product.name}
                   </h3>
 
-                  {/* Price */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-2xl font-bold text-maroon">
+                  {/* Price - Smaller on mobile */}
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-2 mb-2 md:mb-3">
+                    <span className="text-lg md:text-2xl font-bold text-maroon">
                       ₹{product.price.toLocaleString('en-IN')}
                     </span>
-                    <span className="text-sm text-gray-400 line-through">
+                    <span className="text-xs md:text-sm text-gray-400 line-through">
                       ₹{product.originalPrice.toLocaleString('en-IN')}
                     </span>
                   </div>

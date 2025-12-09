@@ -39,10 +39,10 @@ export default function ShopByOccasion() {
   ];
 
   return (
-    <section className="bg-white py-20">
+    <section className="bg-white py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-8 md:mb-16">
           {/* Decorative element */}
           <div className="flex items-center justify-center mb-4">
             <svg className="w-16 h-8 text-maroon" viewBox="0 0 100 20" fill="currentColor">
@@ -68,15 +68,15 @@ export default function ShopByOccasion() {
         </div>
 
         {/* Occasions Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {occasions.map((occasion) => (
             <Link
               key={occasion.id}
               href={occasion.link}
-              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+              className="group relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
-              {/* Image Container with Next.js Image */}
-              <div className="aspect-[3/4] relative bg-gray-100">
+              {/* Image Container with Next.js Image - Shorter on mobile */}
+              <div className="aspect-[4/3] md:aspect-[3/4] relative bg-gray-100">
                 <Image
                   src={occasion.image}
                   alt={occasion.name}
@@ -90,21 +90,21 @@ export default function ShopByOccasion() {
                 <div className={`absolute inset-0 bg-gradient-to-t ${occasion.gradient} opacity-70 group-hover:opacity-80 transition-opacity duration-300`}></div>
 
                 {/* Content */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center p-2 md:p-0">
                   <div className="text-center transform transition-transform duration-300 group-hover:scale-110">
-                    {/* Icon */}
-                    <div className="text-5xl mb-4">{occasion.icon}</div>
+                    {/* Icon - Smaller on mobile */}
+                    <div className="text-3xl md:text-5xl mb-2 md:mb-4">{occasion.icon}</div>
 
-                    {/* Occasion Name */}
-                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-3 drop-shadow-2xl">
+                    {/* Occasion Name - Smaller on mobile */}
+                    <h3 className="text-xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 drop-shadow-2xl">
                       {occasion.name}
                     </h3>
 
-                    {/* Decorative line */}
-                    <div className="w-20 h-1 bg-white mx-auto mb-4"></div>
+                    {/* Decorative line - Smaller on mobile */}
+                    <div className="w-12 md:w-20 h-0.5 md:h-1 bg-white mx-auto mb-2 md:mb-4"></div>
 
-                    {/* Shop Now text */}
-                    <span className="text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 inline-flex items-center gap-2">
+                    {/* Shop Now text - Hidden on mobile, shown on hover on desktop */}
+                    <span className="hidden md:inline-flex text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center gap-2">
                       Shop Now
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
