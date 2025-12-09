@@ -1,42 +1,48 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
+// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
 export default function ShopByOccasion() {
   const occasions = [
     {
       id: 1,
       name: 'Wedding',
-      image: '/images/occasion-wedding.jpg',
+      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg', // Replace
       link: '/categories?occasion=wedding',
       gradient: 'from-pink-600/80 to-red-600/80',
+      icon: '💍',
     },
     {
       id: 2,
       name: 'Festival',
-      image: '/images/occasion-festival.jpg',
+      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg', // Replace
       link: '/categories?occasion=festival',
       gradient: 'from-purple-600/80 to-indigo-600/80',
+      icon: '🎉',
     },
     {
       id: 3,
       name: 'Party',
-      image: '/images/occasion-party.jpg',
+      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg', // Replace
       link: '/categories?occasion=party',
       gradient: 'from-blue-600/80 to-cyan-600/80',
+      icon: '🥳',
     },
     {
       id: 4,
       name: 'Casual',
-      image: '/images/occasion-casual.jpg',
+      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg', // Replace
       link: '/categories?occasion=casual',
       gradient: 'from-green-600/80 to-teal-600/80',
+      icon: '👗',
     },
   ];
 
   return (
-    <section className="bg-white py-16">
+    <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-16">
           {/* Decorative element */}
           <div className="flex items-center justify-center mb-4">
             <svg className="w-16 h-8 text-maroon" viewBox="0 0 100 20" fill="currentColor">
@@ -46,8 +52,11 @@ export default function ShopByOccasion() {
           </div>
 
           <h2 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
-            SHOP BY OCCASION
+            Shop by Occasion
           </h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Find the perfect saree for every celebration
+          </p>
 
           {/* Decorative element */}
           <div className="flex items-center justify-center mt-4">
@@ -59,37 +68,53 @@ export default function ShopByOccasion() {
         </div>
 
         {/* Occasions Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {occasions.map((occasion) => (
             <Link
               key={occasion.id}
               href={occasion.link}
-              className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
+              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
-              {/* Image Container */}
-              <div className="aspect-[3/4] relative bg-gradient-to-br from-maroon/60 via-indian-red/60 to-saffron/60">
-                {/* Pattern overlay */}
-                <div className="absolute inset-0 pattern-bg opacity-20"></div>
+              {/* Image Container with Next.js Image */}
+              <div className="aspect-[3/4] relative bg-gray-100">
+                <Image
+                  src={occasion.image}
+                  alt={occasion.name}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  loading="lazy"
+                />
 
                 {/* Gradient overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-t ${occasion.gradient} opacity-80 group-hover:opacity-90 transition-opacity`}></div>
+                <div className={`absolute inset-0 bg-gradient-to-t ${occasion.gradient} opacity-70 group-hover:opacity-80 transition-opacity duration-300`}></div>
 
                 {/* Content */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <h3 className="text-3xl font-bold text-white mb-2 drop-shadow-lg">
+                  <div className="text-center transform transition-transform duration-300 group-hover:scale-110">
+                    {/* Icon */}
+                    <div className="text-5xl mb-4">{occasion.icon}</div>
+
+                    {/* Occasion Name */}
+                    <h3 className="text-3xl md:text-4xl font-bold text-white mb-3 drop-shadow-2xl">
                       {occasion.name}
                     </h3>
-                    <div className="w-16 h-1 bg-white mx-auto"></div>
+
+                    {/* Decorative line */}
+                    <div className="w-20 h-1 bg-white mx-auto mb-4"></div>
+
+                    {/* Shop Now text */}
+                    <span className="text-white text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300 inline-flex items-center gap-2">
+                      Shop Now
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </span>
                   </div>
                 </div>
 
-                {/* Hover effect */}
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full">
-                    Shop Now
-                  </span>
-                </div>
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
               </div>
             </Link>
           ))}
