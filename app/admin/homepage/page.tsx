@@ -81,6 +81,62 @@ export default function HomepageManagementPage() {
     }
   };
 
+  const handleToggleSection = async (sectionKey: string, currentStatus: boolean) => {
+    try {
+      const response = await fetch('/api/admin/homepage/sections', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sectionKey,
+          isActive: !currentStatus,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update local state
+        setData((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            sections: {
+              ...prev.sections,
+              [sectionKey]: {
+                ...prev.sections[sectionKey],
+                isActive: !currentStatus,
+              },
+            },
+          };
+        });
+      } else {
+        alert('Failed to update section visibility');
+      }
+    } catch (error) {
+      console.error('Error toggling section:', error);
+      alert('Failed to update section visibility');
+    }
+  };
+
+  const handleEditSection = (sectionKey: string) => {
+    // Redirect to appropriate edit page based on section
+    const editRoutes: Record<string, string> = {
+      hero_slider: '/admin/settings', // Hero slider uses banner management
+      promo_bar: '/admin/homepage/announcements',
+      shop_by_category: '/admin/categories',
+      featured_collections: '/admin/homepage/collections',
+      bestseller_products: '/admin/products?featured=true',
+      mid_page_banner: '/admin/homepage/banner',
+      shop_by_occasion: '/admin/homepage/occasions',
+      new_arrivals: '/admin/products?sort=newest',
+      brand_story: '/admin/homepage/brand-story',
+      instagram_feed: '/admin/homepage/instagram',
+      trust_badges: '/admin/homepage/trust-badges',
+    };
+
+    window.location.href = editRoutes[sectionKey] || '/admin/homepage';
+  };
+
   if (loading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-screen">
@@ -238,14 +294,20 @@ export default function HomepageManagementPage() {
 
               {/* Action Buttons */}
               <div className="flex gap-2">
-                <button className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium">
+                <button
+                  onClick={() => handleEditSection(section.key)}
+                  className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                >
                   Edit Content
                 </button>
-                <button className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
-                  isActive
-                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    : 'bg-green-500 text-white hover:bg-green-600'
-                }`}>
+                <button
+                  onClick={() => handleToggleSection(section.key, isActive)}
+                  className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                    isActive
+                      ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      : 'bg-green-500 text-white hover:bg-green-600'
+                  }`}
+                >
                   {isActive ? 'Hide' : 'Show'}
                 </button>
               </div>
