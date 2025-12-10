@@ -22,6 +22,8 @@ interface HomepageData {
 export default function HomepageManagementPage() {
   const [data, setData] = useState<HomepageData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMessage, setSeedMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   useEffect(() => {
     fetchHomepageData();
@@ -36,6 +38,46 @@ export default function HomepageManagementPage() {
       console.error('Error fetching homepage data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSeedDatabase = async () => {
+    if (!confirm('This will populate your homepage with initial content. Continue?')) {
+      return;
+    }
+
+    setSeeding(true);
+    setSeedMessage(null);
+
+    try {
+      const response = await fetch('/api/admin/seed-homepage', {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSeedMessage({
+          type: 'success',
+          text: result.message || '✅ Homepage seeded successfully!',
+        });
+        // Refresh data after seeding
+        setTimeout(() => {
+          fetchHomepageData();
+        }, 1000);
+      } else {
+        setSeedMessage({
+          type: 'error',
+          text: result.error || 'Failed to seed homepage',
+        });
+      }
+    } catch (error: any) {
+      setSeedMessage({
+        type: 'error',
+        text: error.message || 'Failed to seed homepage',
+      });
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -84,14 +126,47 @@ export default function HomepageManagementPage() {
     { key: 'trust_badges', name: 'Trust Badges', desc: 'Shipping, Payment, etc.', color: 'cyan', count: data.trustBadges.length },
   ];
 
+  const hasNoContent = Object.keys(data.sections).length === 0;
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Homepage Management</h1>
-        <p className="text-gray-600">
-          Manage all sections of your homepage. Toggle visibility, edit content, and reorder sections.
-        </p>
+      {/* Header with Seed Button */}
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Homepage Management</h1>
+          <p className="text-gray-600">
+            Manage all sections of your homepage. Toggle visibility, edit content, and reorder sections.
+          </p>
+        </div>
+        <button
+          onClick={handleSeedDatabase}
+          disabled={seeding}
+          className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {seeding ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <span>Seeding...</span>
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              <span>Seed Initial Content</span>
+            </>
+          )}
+        </button>
       </div>
+
+      {/* Seed Message */}
+      {seedMessage && (
+        <div className={`mb-6 p-4 rounded-lg ${
+          seedMessage.type === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'
+        }`}>
+          <p className="font-medium">{seedMessage.text}</p>
+        </div>
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
