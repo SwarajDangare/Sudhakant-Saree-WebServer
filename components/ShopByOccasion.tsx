@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import SectionHeading from './SectionHeading';
 
 // Mock data for Phase 1 - will be replaced with database fetch in Phase 2
 export default function ShopByOccasion() {
@@ -42,30 +43,10 @@ export default function ShopByOccasion() {
     <section className="bg-white py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-8 md:mb-16">
-          {/* Decorative element */}
-          <div className="flex items-center justify-center mb-4">
-            <svg className="w-16 h-8 text-maroon" viewBox="0 0 100 20" fill="currentColor">
-              <path d="M0 10 Q 25 0, 50 10 T 100 10" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-              <circle cx="50" cy="10" r="3" fill="currentColor"/>
-            </svg>
-          </div>
-
-          <h2 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
-            Shop by Occasion
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Find the perfect saree for every celebration
-          </p>
-
-          {/* Decorative element */}
-          <div className="flex items-center justify-center mt-4">
-            <svg className="w-16 h-8 text-maroon" viewBox="0 0 100 20" fill="currentColor">
-              <path d="M0 10 Q 25 20, 50 10 T 100 10" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-              <circle cx="50" cy="10" r="3" fill="currentColor"/>
-            </svg>
-          </div>
-        </div>
+        <SectionHeading
+          title="Shop by Occasion"
+          description="Find the perfect saree for every celebration"
+        />
 
         {/* Occasions Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">

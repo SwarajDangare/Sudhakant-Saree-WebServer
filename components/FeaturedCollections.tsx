@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import SectionHeading from './SectionHeading';
 
 // Mock data for Phase 1 - will be replaced with database fetch in Phase 2
 const collections = [
@@ -28,17 +29,11 @@ export default function FeaturedCollections() {
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <span className="text-golden text-sm font-semibold tracking-widest uppercase">
-            Curated for You
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-maroon mt-3 mb-4">
-            Featured Collections
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Handpicked selections to make every occasion memorable
-          </p>
-        </div>
+        <SectionHeading
+          subtitle="Curated for You"
+          title="Featured Collections"
+          description="Handpicked selections to make every occasion memorable"
+        />
 
         {/* Collections Grid - 2 Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

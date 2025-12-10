@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import AddToCartButton from './AddToCartButton';
+import SectionHeading from './SectionHeading';
 
 // Mock data for Phase 1 - will be replaced with database fetch in Phase 2
 const products = [
@@ -43,17 +44,11 @@ export default function NewArrivals() {
     <section className="bg-cream py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <span className="inline-block text-golden text-sm font-semibold tracking-widest uppercase mb-3">
-            Just Arrived
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
-            New Arrivals
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Be the first to discover our latest collection
-          </p>
-        </div>
+        <SectionHeading
+          subtitle="Just Arrived"
+          title="New Arrivals"
+          description="Be the first to discover our latest collection"
+        />
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
