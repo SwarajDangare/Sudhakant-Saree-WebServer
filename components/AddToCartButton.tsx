@@ -1,7 +1,7 @@
 'use client';
 
 interface AddToCartButtonProps {
-  productId: number;
+  productId: string; // Changed to string to support UUID from database
   productName: string;
 }
 

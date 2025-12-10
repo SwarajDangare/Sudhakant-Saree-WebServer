@@ -22,6 +22,19 @@ interface BrandStoryProps {
 export default function BrandStory({ story, stats }: BrandStoryProps) {
   if (!story) return null;
 
+  // Get grid class based on number of stats (Tailwind JIT requires full class names)
+  const getStatsGridClass = (count: number) => {
+    const gridClasses: Record<number, string> = {
+      1: 'grid-cols-1',
+      2: 'grid-cols-2',
+      3: 'grid-cols-3',
+      4: 'grid-cols-4',
+      5: 'grid-cols-5',
+      6: 'grid-cols-6',
+    };
+    return gridClasses[count] || 'grid-cols-3';
+  };
+
   return (
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,7 +62,7 @@ export default function BrandStory({ story, stats }: BrandStoryProps) {
             {/* Stats Card */}
             {stats && stats.length > 0 && (
               <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-11/12 bg-white rounded-2xl shadow-2xl p-6 hidden md:block">
-                <div className={`grid grid-cols-${stats.length} gap-4`}>
+                <div className={`grid ${getStatsGridClass(stats.length)} gap-4`}>
                   {stats.map((stat) => (
                     <div key={stat.id} className="text-center">
                       <div className="text-3xl font-bold text-maroon mb-1">{stat.value}</div>
@@ -84,7 +97,7 @@ export default function BrandStory({ story, stats }: BrandStoryProps) {
 
             {/* Stats for Mobile */}
             {stats && stats.length > 0 && (
-              <div className={`grid grid-cols-${stats.length} gap-4 mb-8 md:hidden`}>
+              <div className={`grid ${getStatsGridClass(stats.length)} gap-4 mb-8 md:hidden`}>
                 {stats.map((stat) => (
                   <div key={stat.id} className="text-center">
                     <div className="text-2xl font-bold text-maroon mb-1">{stat.value}</div>

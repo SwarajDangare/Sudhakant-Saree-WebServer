@@ -42,10 +42,23 @@ export default function Features({ badges }: FeaturesProps) {
     return null;
   }
 
+  // Get grid class based on number of badges (Tailwind JIT requires full class names)
+  const getGridClass = (count: number) => {
+    const gridClasses: Record<number, string> = {
+      1: 'grid-cols-1',
+      2: 'grid-cols-2',
+      3: 'grid-cols-2 lg:grid-cols-3',
+      4: 'grid-cols-2 lg:grid-cols-4',
+      5: 'grid-cols-2 lg:grid-cols-5',
+      6: 'grid-cols-2 lg:grid-cols-6',
+    };
+    return gridClasses[count] || 'grid-cols-2 lg:grid-cols-4';
+  };
+
   return (
     <section className="bg-white border-y border-gray-100 py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`grid grid-cols-2 lg:grid-cols-${badges.length} gap-6 md:gap-8`}>
+        <div className={`grid ${getGridClass(badges.length)} gap-6 md:gap-8`}>
           {badges.map((badge) => (
             <div key={badge.id} className="text-center group">
               {/* Icon with animation */}
