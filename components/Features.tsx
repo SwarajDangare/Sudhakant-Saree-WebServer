@@ -1,3 +1,4 @@
+// Mock data for Phase 1 - will be replaced with database in Phase 2
 export default function Features() {
   const features = [
     {
@@ -7,16 +8,16 @@ export default function Features() {
         </svg>
       ),
       title: 'FREE SHIPPING',
-      description: 'Free worldwide shipping and returns - customs and duties taxes included',
+      description: 'Free shipping on orders above ₹999 across India',
     },
     {
       icon: (
         <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
         </svg>
       ),
-      title: 'CUSTOMER SERVICE',
-      description: 'We are available from monday to friday to answer your questions.',
+      title: 'SECURE PAYMENT',
+      description: '100% secure payment with COD & online options',
     },
     {
       icon: (
@@ -24,29 +25,38 @@ export default function Features() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       ),
-      title: 'SECURE PAYMENT',
-      description: 'Your payment information is processed securely.',
+      title: '100% AUTHENTIC',
+      description: 'Original handloom sarees with quality guarantee',
+    },
+    {
+      icon: (
+        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      ),
+      title: 'EASY RETURNS',
+      description: '7-day easy return & exchange policy',
     },
   ];
 
   return (
-    <section className="bg-white border-y border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <section className="bg-white border-y border-gray-100 py-12 md:py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {features.map((feature, index) => (
-            <div key={index} className="text-center">
-              {/* Icon */}
-              <div className="flex justify-center mb-4 text-maroon">
+            <div key={index} className="text-center group">
+              {/* Icon with animation */}
+              <div className="flex justify-center mb-4 text-maroon transition-transform duration-300 group-hover:scale-110">
                 {feature.icon}
               </div>
 
               {/* Title */}
-              <h3 className="text-sm font-bold text-gray-900 mb-2 tracking-wide">
+              <h3 className="text-xs md:text-sm font-bold text-gray-900 mb-2 tracking-wide">
                 {feature.title}
               </h3>
 
-              {/* Description */}
-              <p className="text-sm text-gray-600 leading-relaxed">
+              {/* Description - Hidden on mobile */}
+              <p className="hidden md:block text-sm text-gray-600 leading-relaxed">
                 {feature.description}
               </p>
             </div>
