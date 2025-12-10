@@ -10,14 +10,20 @@ import InstagramFeed from '@/components/InstagramFeed'
 import Features from '@/components/Features'
 import Link from 'next/link'
 
-// Enable ISR - revalidate every 10 seconds (will be revalidated on-demand after admin changes)
-export const revalidate = 10;
+// Force dynamic rendering to avoid build-time prerendering errors
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getHomepageData() {
   try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    // Use absolute URL only in production, use direct import in build
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000';
+
     const response = await fetch(`${baseUrl}/api/homepage/all`, {
       cache: 'no-store', // Always get fresh data
+      next: { revalidate: 0 }
     });
 
     if (!response.ok) {
