@@ -1,9 +1,13 @@
 import HeroSlider from '@/components/HeroSlider'
-import Features from '@/components/Features'
 import ShopByCategory from '@/components/ShopByCategory'
+import FeaturedCollections from '@/components/FeaturedCollections'
 import BestsellerProducts from '@/components/BestsellerProducts'
+import MidPageBanner from '@/components/MidPageBanner'
 import ShopByOccasion from '@/components/ShopByOccasion'
-import CategorySection from '@/components/CategorySection'
+import NewArrivals from '@/components/NewArrivals'
+import BrandStory from '@/components/BrandStory'
+import InstagramFeed from '@/components/InstagramFeed'
+import Features from '@/components/Features'
 import Link from 'next/link'
 
 // Enable ISR - revalidate every 60 seconds
@@ -15,23 +19,35 @@ export const dynamic = 'force-dynamic';
 export default function Home() {
   return (
     <>
-      {/* Hero Slider - Full width banner carousel */}
+      {/* Hero Slider - Full width banner carousel with video support */}
       <HeroSlider />
 
-      {/* Features Section - Free shipping, customer service, secure payment */}
-      <Features />
-
-      {/* Shop by Category - Large image cards */}
+      {/* Shop by Category - 3 category cards with images */}
       <ShopByCategory />
+
+      {/* Featured Collections - 2-column curated collections */}
+      <FeaturedCollections />
 
       {/* Bestseller Products - 4-column grid with sale badges */}
       <BestsellerProducts />
 
+      {/* Mid-Page Banner - Full width promotional banner */}
+      <MidPageBanner />
+
       {/* Shop by Occasion - Wedding, Festival, Party, Casual */}
       <ShopByOccasion />
 
-      {/* All Categories - Detailed category listings */}
-      <CategorySection />
+      {/* New Arrivals - Latest products grid */}
+      <NewArrivals />
+
+      {/* Brand Story - Heritage and values section */}
+      <BrandStory />
+
+      {/* Instagram Feed - Social media integration */}
+      <InstagramFeed />
+
+      {/* Trust Badges - Free shipping, secure payment, authentic products, easy returns */}
+      <Features />
 
       {/* Temporary Admin Login Button - Remove before production */}
       <Link
