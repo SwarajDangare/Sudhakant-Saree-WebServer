@@ -158,6 +158,13 @@ export const categories = pgTable('categories', {
   description: text('description'),
   order: integer('order').default(0).notNull(),
   active: boolean('active').default(true).notNull(),
+
+  // Homepage Features (Phase 2)
+  featuredOnHome: boolean('featuredOnHome').default(false).notNull(),
+  homeDisplayOrder: integer('homeDisplayOrder'),
+  homeTagline: text('homeTagline'), // "Timeless Elegance"
+  homeDescription: text('homeDescription'), // "Handwoven pure silk sarees"
+
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
@@ -198,6 +205,13 @@ export const products = pgTable('products', {
   // Status
   featured: boolean('featured').default(false).notNull(),
   active: boolean('active').default(true).notNull(),
+
+  // Homepage Features (Phase 2)
+  isBestseller: boolean('isBestseller').default(false).notNull(),
+  bestsellerRank: integer('bestsellerRank'),
+  isNewArrival: boolean('isNewArrival').default(false).notNull(),
+  newArrivalUntil: timestamp('newArrivalUntil'), // Auto-expire after X days
+
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
@@ -248,6 +262,150 @@ export const homepageBanners = pgTable('homepage_banners', {
   linkText: text('linkText'), // CTA button text
   displayOrder: integer('displayOrder').default(0).notNull(),
   active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Homepage Sections Control (Phase 2)
+export const homepageSections = pgTable('homepage_sections', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  sectionKey: text('sectionKey').notNull().unique(), // 'hero_slider', 'promo_bar', etc.
+  sectionName: text('sectionName').notNull(), // Display name
+  isActive: boolean('isActive').default(true).notNull(),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  description: text('description'), // For admin reference
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Announcements / Promo Bar (Phase 2)
+export const announcements = pgTable('announcements', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  text: text('text').notNull(),
+  highlightText: text('highlightText'), // Optional highlighted portion
+  linkUrl: text('linkUrl'),
+  linkText: text('linkText'),
+  backgroundColor: text('backgroundColor').default('#8B1538'), // Maroon
+  textColor: text('textColor').default('#FFFFFF'),
+  isActive: boolean('isActive').default(true).notNull(),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  startDate: timestamp('startDate'),
+  endDate: timestamp('endDate'),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Featured Collections (Phase 2)
+export const collections = pgTable('collections', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
+  tagline: text('tagline'), // "Bridal Elegance"
+  description: text('description'),
+  imageUrl: text('imageUrl').notNull(),
+  imagePublicId: text('imagePublicId').notNull(), // Cloudinary
+  linkUrl: text('linkUrl').notNull(), // Where to redirect
+  productsCount: integer('productsCount').default(0),
+  isFeatured: boolean('isFeatured').default(false),
+  isActive: boolean('isActive').default(true).notNull(),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Shop by Occasion (Phase 2)
+export const occasions = pgTable('occasions', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text('name').notNull(),
+  slug: text('slug').notNull().unique(),
+  icon: text('icon').notNull(), // Emoji or icon code
+  imageUrl: text('imageUrl').notNull(),
+  imagePublicId: text('imagePublicId').notNull(),
+  gradientFrom: text('gradientFrom').default('from-pink-600/80'),
+  gradientTo: text('gradientTo').default('to-red-600/80'),
+  linkUrl: text('linkUrl').notNull(),
+  isActive: boolean('isActive').default(true).notNull(),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Mid-Page Banner (Phase 2)
+export const midPageBanner = pgTable('mid_page_banner', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  subtitle: text('subtitle'),
+  description: text('description'),
+  imageUrl: text('imageUrl').notNull(),
+  imagePublicId: text('imagePublicId').notNull(),
+  linkUrl: text('linkUrl'),
+  linkText: text('linkText').default('Shop Now'),
+  backgroundColor: text('backgroundColor'),
+  textColor: text('textColor').default('#FFFFFF'),
+  isActive: boolean('isActive').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Brand Story (Phase 2)
+export const brandStory = pgTable('brand_story', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  heading: text('heading').notNull(),
+  subtitle: text('subtitle'), // "About Us"
+  description: text('description').notNull(),
+  imageUrl: text('imageUrl').notNull(),
+  imagePublicId: text('imagePublicId').notNull(),
+  buttonText: text('buttonText').default('Our Story'),
+  buttonLink: text('buttonLink').default('/about'),
+  isActive: boolean('isActive').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Brand Story Stats (Phase 2)
+export const brandStoryStats = pgTable('brand_story_stats', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  brandStoryId: text('brandStoryId').notNull().references(() => brandStory.id, { onDelete: 'cascade' }),
+  label: text('label').notNull(), // "Years of Heritage"
+  value: text('value').notNull(), // "50+"
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+
+// Instagram Posts (Phase 2)
+export const instagramPosts = pgTable('instagram_posts', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  imageUrl: text('imageUrl').notNull(),
+  imagePublicId: text('imagePublicId').notNull(),
+  postUrl: text('postUrl').notNull(), // Instagram post link
+  caption: text('caption'),
+  likes: integer('likes').default(0),
+  isActive: boolean('isActive').default(true).notNull(),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  postedAt: timestamp('postedAt'),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Instagram Settings (Phase 2)
+export const instagramSettings = pgTable('instagram_settings', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  instagramHandle: text('instagramHandle').default('@sudhakantsarees'),
+  profileUrl: text('profileUrl'),
+  autoSync: boolean('autoSync').default(false), // Future: Auto-fetch from Instagram API
+  maxPosts: integer('maxPosts').default(6),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Trust Badges / Features (Phase 2)
+export const trustBadges = pgTable('trust_badges', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(), // "FREE SHIPPING"
+  description: text('description').notNull(),
+  iconType: text('iconType').notNull(), // 'shipping', 'payment', 'authentic', 'returns', 'custom'
+  iconSvg: text('iconSvg'), // Custom SVG code if iconType is 'custom'
+  isActive: boolean('isActive').default(true).notNull(),
+  displayOrder: integer('displayOrder').default(0).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
@@ -389,4 +547,16 @@ export const userPermissionsRelations = relations(userPermissions, ({ one }) => 
 
 export const usersRelations = relations(users, ({ many }) => ({
   userPermissions: many(userPermissions),
+}));
+
+// Homepage Relations (Phase 2)
+export const brandStoryRelations = relations(brandStory, ({ many }) => ({
+  stats: many(brandStoryStats),
+}));
+
+export const brandStoryStatsRelations = relations(brandStoryStats, ({ one }) => ({
+  brandStory: one(brandStory, {
+    fields: [brandStoryStats.brandStoryId],
+    references: [brandStory.id],
+  }),
 }));

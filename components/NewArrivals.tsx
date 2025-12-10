@@ -3,43 +3,30 @@ import Image from 'next/image';
 import AddToCartButton from './AddToCartButton';
 import SectionHeading from './SectionHeading';
 
-// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
-const products = [
-  {
-    id: 1,
-    name: 'Banarasi Silk Saree',
-    price: 8999,
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg', // Replace
-    isNew: true,
-    badge: 'NEW',
-  },
-  {
-    id: 2,
-    name: 'Kanjivaram Silk Saree',
-    price: 12999,
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg', // Replace
-    isNew: true,
-    badge: 'NEW',
-  },
-  {
-    id: 3,
-    name: 'Designer Georgette Saree',
-    price: 4999,
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg', // Replace
-    isNew: true,
-    badge: 'NEW',
-  },
-  {
-    id: 4,
-    name: 'Patola Silk Saree',
-    price: 15999,
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg', // Replace
-    isNew: true,
-    badge: 'NEW',
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  price: string; // Decimal from database
+  discountType?: string | null;
+  discountValue?: string | null;
+}
 
-export default function NewArrivals() {
+interface NewArrivalsProps {
+  products: Product[];
+}
+
+export default function NewArrivals({ products }: NewArrivalsProps) {
+  if (!products || products.length === 0) {
+    return null;
+  }
+
+  // Placeholder images for products (will be replaced with actual images from database later)
+  const placeholderImages = [
+    'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg',
+    'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg',
+    'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg',
+    'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg',
+  ];
   return (
     <section className="bg-cream py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -52,7 +39,7 @@ export default function NewArrivals() {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
+          {products.map((product, index) => (
             <Link
               key={product.id}
               href={`/product/${product.id}`}
@@ -62,7 +49,7 @@ export default function NewArrivals() {
                 {/* Image Container */}
                 <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
                   <Image
-                    src={product.image}
+                    src={placeholderImages[index % placeholderImages.length]}
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -71,11 +58,9 @@ export default function NewArrivals() {
                   />
 
                   {/* Badge */}
-                  {product.badge && (
-                    <div className="absolute top-4 left-4 bg-maroon text-white px-4 py-2 text-xs font-bold tracking-wider rounded-full shadow-lg">
-                      {product.badge}
-                    </div>
-                  )}
+                  <div className="absolute top-4 left-4 bg-maroon text-white px-4 py-2 text-xs font-bold tracking-wider rounded-full shadow-lg">
+                    NEW
+                  </div>
 
                   {/* Quick View Overlay */}
                   <div className="absolute inset-0 bg-maroon/0 group-hover:bg-maroon/20 transition-all duration-300 flex items-center justify-center">
@@ -100,7 +85,7 @@ export default function NewArrivals() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-2xl font-bold text-maroon">
-                        ₹{product.price.toLocaleString('en-IN')}
+                        ₹{parseFloat(product.price).toLocaleString('en-IN')}
                       </p>
                     </div>
 

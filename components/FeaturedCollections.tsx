@@ -2,29 +2,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SectionHeading from './SectionHeading';
 
-// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
-const collections = [
-  {
-    id: 1,
-    name: 'Wedding Special',
-    tagline: 'Bridal Elegance',
-    description: 'Exquisite sarees for your special day',
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg', // Replace with actual image
-    link: '/collections/wedding-special',
-    productsCount: 48,
-  },
-  {
-    id: 2,
-    name: 'Festive Favorites',
-    tagline: 'Celebrate in Style',
-    description: 'Perfect for all your celebrations',
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg', // Replace with actual image
-    link: '/collections/festive',
-    productsCount: 36,
-  },
-];
+interface Collection {
+  id: string;
+  name: string;
+  slug: string;
+  tagline?: string | null;
+  description?: string | null;
+  imageUrl: string;
+  linkUrl: string;
+  productsCount: number;
+}
 
-export default function FeaturedCollections() {
+interface FeaturedCollectionsProps {
+  collections: Collection[];
+}
+
+export default function FeaturedCollections({ collections }: FeaturedCollectionsProps) {
+  if (!collections || collections.length === 0) {
+    return null;
+  }
   return (
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -40,13 +36,13 @@ export default function FeaturedCollections() {
           {collections.map((collection, index) => (
             <Link
               key={collection.id}
-              href={collection.link}
+              href={collection.linkUrl}
               className="group relative overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
             >
               {/* Image Container */}
               <div className="aspect-[16/10] relative bg-gray-100">
                 <Image
-                  src={collection.image}
+                  src={collection.imageUrl}
                   alt={collection.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"

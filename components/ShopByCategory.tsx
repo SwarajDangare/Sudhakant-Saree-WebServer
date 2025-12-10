@@ -2,35 +2,30 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SectionHeading from './SectionHeading';
 
-// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
-const categories = [
-  {
-    id: 1,
-    name: 'Silk Sarees',
-    slug: 'silk-sarees',
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg', // Replace with actual image
-    tagline: 'Timeless Elegance',
-    description: 'Handwoven pure silk sarees',
-  },
-  {
-    id: 2,
-    name: 'Wedding Collection',
-    slug: 'wedding',
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg', // Replace with actual image
-    tagline: 'For Your Special Day',
-    description: 'Exquisite bridal sarees',
-  },
-  {
-    id: 3,
-    name: 'Cotton Sarees',
-    slug: 'cotton-sarees',
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg', // Replace with actual image
-    tagline: 'Comfort & Style',
-    description: 'Perfect for daily wear',
-  },
-];
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  homeTagline?: string | null;
+  homeDescription?: string | null;
+}
 
-export default function ShopByCategory() {
+interface ShopByCategoryProps {
+  categories: Category[];
+}
+
+export default function ShopByCategory({ categories }: ShopByCategoryProps) {
+  if (!categories || categories.length === 0) {
+    return null; // Don't render if no categories
+  }
+
+  // Placeholder images for categories (will be replaced with actual images from Cloudinary later)
+  const placeholderImages = [
+    'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg',
+    'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg',
+    'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg',
+  ];
+
   return (
     <section className="bg-cream py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,7 +37,7 @@ export default function ShopByCategory() {
 
         {/* Category Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <Link
               key={category.id}
               href={`/categories/${category.slug}`}
@@ -51,7 +46,7 @@ export default function ShopByCategory() {
               {/* Image Container with Optimized Next.js Image - Shorter on mobile */}
               <div className="aspect-[5/4] md:aspect-[3/4] relative bg-gray-100">
                 <Image
-                  src={category.image}
+                  src={placeholderImages[index % placeholderImages.length]}
                   alt={category.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -65,9 +60,11 @@ export default function ShopByCategory() {
                 {/* Content overlay */}
                 <div className="absolute inset-0 flex flex-col items-center justify-end p-4 md:p-8">
                   {/* Tagline - Hidden on mobile */}
-                  <p className="hidden md:block text-golden text-sm font-semibold tracking-widest mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {category.tagline}
-                  </p>
+                  {category.homeTagline && (
+                    <p className="hidden md:block text-golden text-sm font-semibold tracking-widest mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {category.homeTagline}
+                    </p>
+                  )}
 
                   {/* Category Name - Smaller on mobile */}
                   <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 md:mb-3 text-center">
@@ -75,9 +72,11 @@ export default function ShopByCategory() {
                   </h3>
 
                   {/* Description - Hidden on mobile */}
-                  <p className="hidden md:block text-white/90 text-sm mb-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {category.description}
-                  </p>
+                  {category.homeDescription && (
+                    <p className="hidden md:block text-white/90 text-sm mb-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      {category.homeDescription}
+                    </p>
+                  )}
 
                   {/* CTA Button - Simplified on mobile */}
                   <div className="flex items-center gap-2 text-white text-xs md:text-sm font-semibold md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 md:translate-y-2 md:group-hover:translate-y-0">

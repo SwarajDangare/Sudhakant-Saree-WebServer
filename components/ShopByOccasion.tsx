@@ -2,42 +2,25 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SectionHeading from './SectionHeading';
 
-// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
-export default function ShopByOccasion() {
-  const occasions = [
-    {
-      id: 1,
-      name: 'Wedding',
-      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg', // Replace
-      link: '/categories?occasion=wedding',
-      gradient: 'from-pink-600/80 to-red-600/80',
-      icon: '💍',
-    },
-    {
-      id: 2,
-      name: 'Festival',
-      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg', // Replace
-      link: '/categories?occasion=festival',
-      gradient: 'from-purple-600/80 to-indigo-600/80',
-      icon: '🎉',
-    },
-    {
-      id: 3,
-      name: 'Party',
-      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg', // Replace
-      link: '/categories?occasion=party',
-      gradient: 'from-blue-600/80 to-cyan-600/80',
-      icon: '🥳',
-    },
-    {
-      id: 4,
-      name: 'Casual',
-      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg', // Replace
-      link: '/categories?occasion=casual',
-      gradient: 'from-green-600/80 to-teal-600/80',
-      icon: '👗',
-    },
-  ];
+interface Occasion {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  imageUrl: string;
+  gradientFrom: string;
+  gradientTo: string;
+  linkUrl: string;
+}
+
+interface ShopByOccasionProps {
+  occasions: Occasion[];
+}
+
+export default function ShopByOccasion({ occasions }: ShopByOccasionProps) {
+  if (!occasions || occasions.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-white py-12 md:py-20">
@@ -53,13 +36,13 @@ export default function ShopByOccasion() {
           {occasions.map((occasion) => (
             <Link
               key={occasion.id}
-              href={occasion.link}
+              href={occasion.linkUrl}
               className="group relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
               {/* Image Container with Next.js Image - Shorter on mobile */}
               <div className="aspect-[4/3] md:aspect-[3/4] relative bg-gray-100">
                 <Image
-                  src={occasion.image}
+                  src={occasion.imageUrl}
                   alt={occasion.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -68,7 +51,12 @@ export default function ShopByOccasion() {
                 />
 
                 {/* Gradient overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-t ${occasion.gradient} opacity-70 group-hover:opacity-80 transition-opacity duration-300`}></div>
+                <div
+                  className="absolute inset-0 bg-gradient-to-t opacity-70 group-hover:opacity-80 transition-opacity duration-300"
+                  style={{
+                    backgroundImage: `linear-gradient(to top, ${occasion.gradientFrom}, ${occasion.gradientTo})`
+                  }}
+                ></div>
 
                 {/* Content */}
                 <div className="absolute inset-0 flex items-center justify-center p-2 md:p-0">

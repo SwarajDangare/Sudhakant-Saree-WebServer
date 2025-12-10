@@ -10,44 +10,94 @@ import InstagramFeed from '@/components/InstagramFeed'
 import Features from '@/components/Features'
 import Link from 'next/link'
 
-// Enable ISR - revalidate every 60 seconds
-export const revalidate = 60;
+// Enable ISR - revalidate every 10 seconds (will be revalidated on-demand after admin changes)
+export const revalidate = 10;
 
-// Make page dynamic - fetch data on each request
-export const dynamic = 'force-dynamic';
+async function getHomepageData() {
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/homepage/all`, {
+      cache: 'no-store', // Always get fresh data
+    });
 
-export default function Home() {
+    if (!response.ok) {
+      throw new Error('Failed to fetch homepage data');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching homepage data:', error);
+    // Return empty data structure as fallback
+    return {
+      sections: {},
+      announcements: [],
+      collections: [],
+      categories: [],
+      bestsellers: [],
+      newArrivals: [],
+      midPageBanner: null,
+      occasions: [],
+      brandStory: null,
+      brandStoryStats: [],
+      instagramFeed: [],
+      instagramHandle: '@sudhakantsarees',
+      trustBadges: [],
+    };
+  }
+}
+
+export default async function Home() {
+  const data = await getHomepageData();
+
   return (
     <>
       {/* Hero Slider - Full width banner carousel with video support */}
-      <HeroSlider />
+      {data.sections.hero_slider?.isActive !== false && <HeroSlider />}
 
       {/* Shop by Category - 3 category cards with images */}
-      <ShopByCategory />
+      {data.sections.shop_by_category?.isActive !== false && data.categories.length > 0 && (
+        <ShopByCategory categories={data.categories} />
+      )}
 
       {/* Featured Collections - 2-column curated collections */}
-      <FeaturedCollections />
+      {data.sections.featured_collections?.isActive !== false && data.collections.length > 0 && (
+        <FeaturedCollections collections={data.collections} />
+      )}
 
       {/* Bestseller Products - 4-column grid with sale badges */}
-      <BestsellerProducts />
+      {data.sections.bestseller_products?.isActive !== false && data.bestsellers.length > 0 && (
+        <BestsellerProducts products={data.bestsellers} />
+      )}
 
       {/* Mid-Page Banner - Full width promotional banner */}
-      <MidPageBanner />
+      {data.sections.mid_page_banner?.isActive !== false && data.midPageBanner && (
+        <MidPageBanner banner={data.midPageBanner} />
+      )}
 
       {/* Shop by Occasion - Wedding, Festival, Party, Casual */}
-      <ShopByOccasion />
+      {data.sections.shop_by_occasion?.isActive !== false && data.occasions.length > 0 && (
+        <ShopByOccasion occasions={data.occasions} />
+      )}
 
       {/* New Arrivals - Latest products grid */}
-      <NewArrivals />
+      {data.sections.new_arrivals?.isActive !== false && data.newArrivals.length > 0 && (
+        <NewArrivals products={data.newArrivals} />
+      )}
 
       {/* Brand Story - Heritage and values section */}
-      <BrandStory />
+      {data.sections.brand_story?.isActive !== false && data.brandStory && (
+        <BrandStory story={data.brandStory} stats={data.brandStoryStats} />
+      )}
 
       {/* Instagram Feed - Social media integration */}
-      <InstagramFeed />
+      {data.sections.instagram_feed?.isActive !== false && data.instagramFeed.length > 0 && (
+        <InstagramFeed posts={data.instagramFeed} handle={data.instagramHandle} />
+      )}
 
       {/* Trust Badges - Free shipping, secure payment, authentic products, easy returns */}
-      <Features />
+      {data.sections.trust_badges?.isActive !== false && data.trustBadges.length > 0 && (
+        <Features badges={data.trustBadges} />
+      )}
 
       {/* Temporary Admin Login Button - Remove before production */}
       <Link

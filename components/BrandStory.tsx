@@ -1,24 +1,26 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
-const brandStory = {
-  id: 1,
-  heading: 'Weaving Traditions, Creating Memories',
-  description: 'For over three generations, Sudhakant Sarees has been the epitome of authentic Indian craftsmanship. Each saree in our collection tells a story of dedication, artistry, and timeless elegance. We work directly with master weavers across India to bring you the finest handloom and silk sarees, ensuring that every piece is a work of art that honors our rich cultural heritage.',
-  image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg', // Replace with actual image
-  buttonText: 'Our Story',
-  buttonLink: '/about',
-  active: true,
-  stats: [
-    { label: 'Years of Heritage', value: '50+' },
-    { label: 'Master Artisans', value: '200+' },
-    { label: 'Happy Customers', value: '10K+' },
-  ],
-};
+interface BrandStoryProps {
+  story: {
+    id: string;
+    heading: string;
+    subtitle?: string | null;
+    description: string;
+    imageUrl: string;
+    buttonText: string;
+    buttonLink: string;
+  };
+  stats: Array<{
+    id: string;
+    label: string;
+    value: string;
+    displayOrder: number;
+  }>;
+}
 
-export default function BrandStory() {
-  if (!brandStory.active) return null;
+export default function BrandStory({ story, stats }: BrandStoryProps) {
+  if (!story) return null;
 
   return (
     <section className="bg-white py-20">
@@ -28,8 +30,8 @@ export default function BrandStory() {
           <div className="relative order-2 lg:order-1">
             <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl">
               <Image
-                src={brandStory.image}
-                alt={brandStory.heading}
+                src={story.imageUrl}
+                alt={story.heading}
                 fill
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -45,46 +47,52 @@ export default function BrandStory() {
             <div className="absolute -top-6 -left-6 w-48 h-48 bg-maroon/10 rounded-full blur-3xl -z-10"></div>
 
             {/* Stats Card */}
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-11/12 bg-white rounded-2xl shadow-2xl p-6 hidden md:block">
-              <div className="grid grid-cols-3 gap-4">
-                {brandStory.stats.map((stat, index) => (
-                  <div key={index} className="text-center">
-                    <div className="text-3xl font-bold text-maroon mb-1">{stat.value}</div>
-                    <div className="text-xs text-gray-600 font-medium">{stat.label}</div>
-                  </div>
-                ))}
+            {stats && stats.length > 0 && (
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-11/12 bg-white rounded-2xl shadow-2xl p-6 hidden md:block">
+                <div className={`grid grid-cols-${stats.length} gap-4`}>
+                  {stats.map((stat) => (
+                    <div key={stat.id} className="text-center">
+                      <div className="text-3xl font-bold text-maroon mb-1">{stat.value}</div>
+                      <div className="text-xs text-gray-600 font-medium">{stat.label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Content Side */}
           <div className="order-1 lg:order-2">
             {/* Section Label */}
-            <span className="inline-block text-golden text-sm font-semibold tracking-widest uppercase mb-4">
-              About Us
-            </span>
+            {story.subtitle && (
+              <span className="inline-block text-golden text-sm font-semibold tracking-widest uppercase mb-4">
+                {story.subtitle}
+              </span>
+            )}
 
             {/* Heading */}
             <h2 className="text-4xl md:text-5xl font-bold text-maroon mb-6 leading-tight">
-              {brandStory.heading}
+              {story.heading}
             </h2>
 
             {/* Description */}
             <div className="prose prose-lg max-w-none mb-8">
               <p className="text-gray-700 leading-relaxed">
-                {brandStory.description}
+                {story.description}
               </p>
             </div>
 
             {/* Stats for Mobile */}
-            <div className="grid grid-cols-3 gap-4 mb-8 md:hidden">
-              {brandStory.stats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="text-2xl font-bold text-maroon mb-1">{stat.value}</div>
-                  <div className="text-xs text-gray-600 font-medium">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+            {stats && stats.length > 0 && (
+              <div className={`grid grid-cols-${stats.length} gap-4 mb-8 md:hidden`}>
+                {stats.map((stat) => (
+                  <div key={stat.id} className="text-center">
+                    <div className="text-2xl font-bold text-maroon mb-1">{stat.value}</div>
+                    <div className="text-xs text-gray-600 font-medium">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Features List */}
             <div className="space-y-4 mb-8">
@@ -107,10 +115,10 @@ export default function BrandStory() {
 
             {/* CTA Button */}
             <Link
-              href={brandStory.buttonLink}
+              href={story.buttonLink}
               className="inline-flex items-center gap-3 bg-maroon text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-deep-maroon transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 group"
             >
-              <span>{brandStory.buttonText}</span>
+              <span>{story.buttonText}</span>
               <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
