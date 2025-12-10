@@ -17,7 +17,7 @@ export async function GET() {
       .leftJoin(categories, eq(featuredCategories.categoryId, categories.id))
       .orderBy(featuredCategories.displayOrder);
 
-    const allCategories = await db.select().from(categories).where(eq(categories.isActive, true));
+    const allCategories = await db.select().from(categories).where(eq(categories.active, true));
 
     return NextResponse.json({ featured, allCategories });
   } catch (error: any) {
