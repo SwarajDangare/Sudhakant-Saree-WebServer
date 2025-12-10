@@ -17,20 +17,24 @@ import {
 
 export async function POST() {
   try {
-    // 1. Seed Homepage Sections Control
-    await db.insert(homepageSections).values([
-      { id: crypto.randomUUID(), sectionKey: 'hero_slider', sectionName: 'Hero Slider', displayOrder: 1, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'promo_bar', sectionName: 'Announcement Bar', displayOrder: 2, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'shop_by_category', sectionName: 'Shop by Category', displayOrder: 3, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'featured_collections', sectionName: 'Featured Collections', displayOrder: 4, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'bestseller_products', sectionName: 'Bestseller Products', displayOrder: 5, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'mid_page_banner', sectionName: 'Mid-Page Banner', displayOrder: 6, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'shop_by_occasion', sectionName: 'Shop by Occasion', displayOrder: 7, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'new_arrivals', sectionName: 'New Arrivals', displayOrder: 8, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'brand_story', sectionName: 'Brand Story', displayOrder: 9, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'instagram_feed', sectionName: 'Instagram Feed', displayOrder: 10, isActive: true, description: null },
-      { id: crypto.randomUUID(), sectionKey: 'trust_badges', sectionName: 'Trust Badges', displayOrder: 11, isActive: true, description: null },
-    ]);
+    // 1. Seed Homepage Sections Control (check if already exists)
+    const existingSections = await db.select().from(homepageSections);
+
+    if (existingSections.length === 0) {
+      await db.insert(homepageSections).values([
+        { id: crypto.randomUUID(), sectionKey: 'hero_slider', sectionName: 'Hero Slider', displayOrder: 1, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'promo_bar', sectionName: 'Announcement Bar', displayOrder: 2, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'shop_by_category', sectionName: 'Shop by Category', displayOrder: 3, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'featured_collections', sectionName: 'Featured Collections', displayOrder: 4, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'bestseller_products', sectionName: 'Bestseller Products', displayOrder: 5, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'mid_page_banner', sectionName: 'Mid-Page Banner', displayOrder: 6, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'shop_by_occasion', sectionName: 'Shop by Occasion', displayOrder: 7, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'new_arrivals', sectionName: 'New Arrivals', displayOrder: 8, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'brand_story', sectionName: 'Brand Story', displayOrder: 9, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'instagram_feed', sectionName: 'Instagram Feed', displayOrder: 10, isActive: true, description: null },
+        { id: crypto.randomUUID(), sectionKey: 'trust_badges', sectionName: 'Trust Badges', displayOrder: 11, isActive: true, description: null },
+      ]);
+    }
 
     // 2. Seed Announcements
     await db.insert(announcements).values([
