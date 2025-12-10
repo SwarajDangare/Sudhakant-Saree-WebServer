@@ -11,23 +11,25 @@ import {
   instagramPosts,
   instagramSettings,
   trustBadges,
+  heroSlides,
+  newArrivalsSettings,
 } from '@/db/schema';
 
 export async function POST() {
   try {
     // 1. Seed Homepage Sections Control
     await db.insert(homepageSections).values([
-      { id: crypto.randomUUID(), sectionKey: 'hero_slider', sectionName: 'Hero Slider', displayOrder: 1, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'promo_bar', sectionName: 'Announcement Bar', displayOrder: 2, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'shop_by_category', sectionName: 'Shop by Category', displayOrder: 3, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'featured_collections', sectionName: 'Featured Collections', displayOrder: 4, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'bestseller_products', sectionName: 'Bestseller Products', displayOrder: 5, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'mid_page_banner', sectionName: 'Mid-Page Banner', displayOrder: 6, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'shop_by_occasion', sectionName: 'Shop by Occasion', displayOrder: 7, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'new_arrivals', sectionName: 'New Arrivals', displayOrder: 8, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'brand_story', sectionName: 'Brand Story', displayOrder: 9, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'instagram_feed', sectionName: 'Instagram Feed', displayOrder: 10, isActive: true },
-      { id: crypto.randomUUID(), sectionKey: 'trust_badges', sectionName: 'Trust Badges', displayOrder: 11, isActive: true },
+      { id: crypto.randomUUID(), sectionKey: 'hero_slider', sectionName: 'Hero Slider', displayOrder: 1, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'promo_bar', sectionName: 'Announcement Bar', displayOrder: 2, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'shop_by_category', sectionName: 'Shop by Category', displayOrder: 3, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'featured_collections', sectionName: 'Featured Collections', displayOrder: 4, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'bestseller_products', sectionName: 'Bestseller Products', displayOrder: 5, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'mid_page_banner', sectionName: 'Mid-Page Banner', displayOrder: 6, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'shop_by_occasion', sectionName: 'Shop by Occasion', displayOrder: 7, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'new_arrivals', sectionName: 'New Arrivals', displayOrder: 8, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'brand_story', sectionName: 'Brand Story', displayOrder: 9, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'instagram_feed', sectionName: 'Instagram Feed', displayOrder: 10, isActive: true, description: null },
+      { id: crypto.randomUUID(), sectionKey: 'trust_badges', sectionName: 'Trust Badges', displayOrder: 11, isActive: true, description: null },
     ]);
 
     // 2. Seed Announcements
@@ -299,6 +301,53 @@ export async function POST() {
         isActive: true,
       },
     ]);
+
+    // 11. Seed Hero Slides
+    await db.insert(heroSlides).values([
+      {
+        id: crypto.randomUUID(),
+        title: 'Exquisite Handloom Sarees',
+        subtitle: 'NEW COLLECTION',
+        description: 'Discover the finest handcrafted sarees for every occasion',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg',
+        imagePublicId: 'demo/accessories-bag',
+        ctaText: 'Shop Now',
+        ctaLink: '/collections',
+        displayOrder: 1,
+        isActive: true,
+      },
+      {
+        id: crypto.randomUUID(),
+        title: 'Wedding Season Sale',
+        subtitle: 'SPECIAL OFFER',
+        description: 'Up to 50% OFF on premium bridal collection',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg',
+        imagePublicId: 'demo/leather-bag',
+        ctaText: 'Explore Collection',
+        ctaLink: '/collections/wedding',
+        displayOrder: 2,
+        isActive: true,
+      },
+      {
+        id: crypto.randomUUID(),
+        title: 'Pure Silk Elegance',
+        subtitle: 'EXCLUSIVE DESIGNS',
+        description: 'Handpicked pure silk sarees from master artisans',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg',
+        imagePublicId: 'demo/shoes',
+        ctaText: 'View Collection',
+        ctaLink: '/collections/silk',
+        displayOrder: 3,
+        isActive: true,
+      },
+    ]);
+
+    // 12. Seed New Arrivals Settings
+    await db.insert(newArrivalsSettings).values({
+      id: crypto.randomUUID(),
+      mode: 'automatic', // Show newest products automatically
+      count: 8, // Show 8 newest products
+    });
 
     return NextResponse.json({
       success: true,

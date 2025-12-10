@@ -121,14 +121,14 @@ export default function HomepageManagementPage() {
   const handleEditSection = (sectionKey: string) => {
     // Redirect to appropriate edit page based on section
     const editRoutes: Record<string, string> = {
-      hero_slider: '/admin/settings', // Hero slider uses banner management
+      hero_slider: '/admin/homepage/hero-slider',
       promo_bar: '/admin/homepage/announcements',
-      shop_by_category: '/admin/categories',
+      shop_by_category: '/admin/homepage/featured-categories',
       featured_collections: '/admin/homepage/collections',
-      bestseller_products: '/admin/products?featured=true',
+      bestseller_products: '/admin/homepage/bestsellers',
       mid_page_banner: '/admin/homepage/banner',
       shop_by_occasion: '/admin/homepage/occasions',
-      new_arrivals: '/admin/products?sort=newest',
+      new_arrivals: '/admin/homepage/new-arrivals',
       brand_story: '/admin/homepage/brand-story',
       instagram_feed: '/admin/homepage/instagram',
       trust_badges: '/admin/homepage/trust-badges',

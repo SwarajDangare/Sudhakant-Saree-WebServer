@@ -410,6 +410,58 @@ export const trustBadges = pgTable('trust_badges', {
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
 
+// Hero Slider (Phase 2)
+export const heroSlides = pgTable('hero_slides', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  subtitle: text('subtitle'),
+  description: text('description'),
+  imageUrl: text('imageUrl').notNull(),
+  imagePublicId: text('imagePublicId').notNull(),
+  ctaText: text('ctaText').default('Shop Now'),
+  ctaLink: text('ctaLink'),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  isActive: boolean('isActive').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Featured Categories for Homepage (Phase 2)
+export const featuredCategories = pgTable('featured_categories', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  categoryId: text('categoryId').notNull().references(() => categories.id, { onDelete: 'cascade' }),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  isActive: boolean('isActive').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+
+// Featured Bestsellers for Homepage (Phase 2)
+export const featuredBestsellers = pgTable('featured_bestsellers', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  isActive: boolean('isActive').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+
+// New Arrivals Settings (Phase 2)
+export const newArrivalsSettings = pgTable('new_arrivals_settings', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  mode: text('mode').default('automatic').notNull(), // 'automatic' or 'manual'
+  count: integer('count').default(8).notNull(), // How many to show if automatic
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Featured New Arrivals for Homepage (Phase 2) - Used when mode is 'manual'
+export const featuredNewArrivals = pgTable('featured_new_arrivals', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  displayOrder: integer('displayOrder').default(0).notNull(),
+  isActive: boolean('isActive').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+
 // Relations
 export const sectionsRelations = relations(sections, ({ many }) => ({
   categories: many(categories),
