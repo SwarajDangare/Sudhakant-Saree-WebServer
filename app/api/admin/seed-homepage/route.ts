@@ -396,10 +396,10 @@ export async function POST() {
     }
 
     // 13. Seed Sections (Product Categories) - Check if already exists
-    const existingSections = await db.select().from(sections);
+    const existingProductSections = await db.select().from(sections);
     let sectionIds: Record<string, string> = {};
 
-    if (existingSections.length === 0) {
+    if (existingProductSections.length === 0) {
       const newSections = await db.insert(sections).values([
         {
           id: crypto.randomUUID(),
@@ -426,8 +426,8 @@ export async function POST() {
     } else {
       // Use existing sections
       sectionIds = {
-        traditional: existingSections[0].id,
-        designer: existingSections[1]?.id || existingSections[0].id,
+        traditional: existingProductSections[0].id,
+        designer: existingProductSections[1]?.id || existingProductSections[0].id,
       };
     }
 
