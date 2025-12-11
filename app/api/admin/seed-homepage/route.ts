@@ -36,8 +36,10 @@ export async function POST() {
       ]);
     }
 
-    // 2. Seed Announcements
-    await db.insert(announcements).values([
+    // 2. Seed Announcements (check if already exists)
+    const existingAnnouncements = await db.select().from(announcements);
+    if (existingAnnouncements.length === 0) {
+      await db.insert(announcements).values([
       {
         id: crypto.randomUUID(),
         text: '🎉 FLAT 10% OFF on your first order | Use code',
@@ -62,9 +64,12 @@ export async function POST() {
         isActive: true,
       },
     ]);
+    }
 
-    // 3. Seed Collections
-    await db.insert(collections).values([
+    // 3. Seed Collections (check if already exists)
+    const existingCollections = await db.select().from(collections);
+    if (existingCollections.length === 0) {
+      await db.insert(collections).values([
       {
         id: crypto.randomUUID(),
         name: 'Wedding Special',
@@ -94,9 +99,12 @@ export async function POST() {
         isActive: true,
       },
     ]);
+    }
 
-    // 4. Seed Occasions
-    await db.insert(occasions).values([
+    // 4. Seed Occasions (check if already exists)
+    const existingOccasions = await db.select().from(occasions);
+    if (existingOccasions.length === 0) {
+      await db.insert(occasions).values([
       {
         id: crypto.randomUUID(),
         name: 'Wedding',
@@ -150,9 +158,12 @@ export async function POST() {
         isActive: true,
       },
     ]);
+    }
 
-    // 5. Seed Mid-Page Banner
-    await db.insert(midPageBanner).values({
+    // 5. Seed Mid-Page Banner (check if already exists)
+    const existingBanner = await db.select().from(midPageBanner);
+    if (existingBanner.length === 0) {
+      await db.insert(midPageBanner).values({
       id: crypto.randomUUID(),
       title: 'Wedding Season Sale',
       subtitle: 'EXCLUSIVE OFFER',
@@ -163,10 +174,15 @@ export async function POST() {
       linkText: 'Shop Now',
       isActive: true,
     });
+    }
 
-    // 6. Seed Brand Story
-    const storyId = crypto.randomUUID();
-    await db.insert(brandStory).values({
+    // 6. Seed Brand Story (check if already exists)
+    const existingStory = await db.select().from(brandStory);
+    let storyId: string;
+
+    if (existingStory.length === 0) {
+      storyId = crypto.randomUUID();
+      await db.insert(brandStory).values({
       id: storyId,
       heading: 'Weaving Traditions, Creating Memories',
       subtitle: 'About Us',
@@ -177,9 +193,14 @@ export async function POST() {
       buttonLink: '/about',
       isActive: true,
     });
+    } else {
+      storyId = existingStory[0].id;
+    }
 
-    // 7. Seed Brand Story Stats
-    await db.insert(brandStoryStats).values([
+    // 7. Seed Brand Story Stats (check if already exists)
+    const existingStats = await db.select().from(brandStoryStats);
+    if (existingStats.length === 0) {
+      await db.insert(brandStoryStats).values([
       {
         id: crypto.randomUUID(),
         brandStoryId: storyId,
@@ -202,9 +223,12 @@ export async function POST() {
         displayOrder: 3,
       },
     ]);
+    }
 
-    // 8. Seed Instagram Posts
-    await db.insert(instagramPosts).values([
+    // 8. Seed Instagram Posts (check if already exists)
+    const existingPosts = await db.select().from(instagramPosts);
+    if (existingPosts.length === 0) {
+      await db.insert(instagramPosts).values([
       {
         id: crypto.randomUUID(),
         imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg',
@@ -260,18 +284,24 @@ export async function POST() {
         isActive: true,
       },
     ]);
+    }
 
-    // 9. Seed Instagram Settings
-    await db.insert(instagramSettings).values({
+    // 9. Seed Instagram Settings (check if already exists)
+    const existingInstagramSettings = await db.select().from(instagramSettings);
+    if (existingInstagramSettings.length === 0) {
+      await db.insert(instagramSettings).values({
       id: crypto.randomUUID(),
       instagramHandle: '@sudhakantsarees',
       profileUrl: 'https://instagram.com/sudhakantsarees',
       autoSync: false,
       maxPosts: 6,
     });
+    }
 
-    // 10. Seed Trust Badges
-    await db.insert(trustBadges).values([
+    // 10. Seed Trust Badges (check if already exists)
+    const existingBadges = await db.select().from(trustBadges);
+    if (existingBadges.length === 0) {
+      await db.insert(trustBadges).values([
       {
         id: crypto.randomUUID(),
         title: 'FREE SHIPPING',
@@ -305,9 +335,12 @@ export async function POST() {
         isActive: true,
       },
     ]);
+    }
 
-    // 11. Seed Hero Slides
-    await db.insert(heroSlides).values([
+    // 11. Seed Hero Slides (check if already exists)
+    const existingSlides = await db.select().from(heroSlides);
+    if (existingSlides.length === 0) {
+      await db.insert(heroSlides).values([
       {
         id: crypto.randomUUID(),
         title: 'Exquisite Handloom Sarees',
@@ -345,13 +378,17 @@ export async function POST() {
         isActive: true,
       },
     ]);
+    }
 
-    // 12. Seed New Arrivals Settings
-    await db.insert(newArrivalsSettings).values({
+    // 12. Seed New Arrivals Settings (check if already exists)
+    const existingNewArrivalsSettings = await db.select().from(newArrivalsSettings);
+    if (existingNewArrivalsSettings.length === 0) {
+      await db.insert(newArrivalsSettings).values({
       id: crypto.randomUUID(),
       mode: 'automatic', // Show newest products automatically
       count: 8, // Show 8 newest products
     });
+    }
 
     return NextResponse.json({
       success: true,
