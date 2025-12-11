@@ -9,6 +9,27 @@ import BrandStory from '@/components/BrandStory'
 import InstagramFeed from '@/components/InstagramFeed'
 import Features from '@/components/Features'
 import Link from 'next/link'
+import { db } from '@/db'
+import {
+  homepageSections,
+  announcements,
+  collections,
+  occasions,
+  midPageBanner as midPageBannerTable,
+  brandStory as brandStoryTable,
+  brandStoryStats,
+  instagramPosts,
+  instagramSettings,
+  trustBadges,
+  categories,
+  products,
+  heroSlides,
+  featuredCategories,
+  featuredBestsellers,
+  newArrivalsSettings,
+  featuredNewArrivals,
+} from '@/db/schema'
+import { eq, and, desc, lte, gte, or, isNull } from 'drizzle-orm'
 
 // Force dynamic rendering to avoid build-time prerendering errors
 export const dynamic = 'force-dynamic';
@@ -16,35 +37,223 @@ export const revalidate = 0;
 
 async function getHomepageData() {
   try {
-    // Construct base URL - prioritize Vercel URL for deployments
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : (process.env.NEXTAUTH_URL || 'http://localhost:3000');
+    // Fetch all active homepage sections to determine what to show
+    const sections = await db
+      .select()
+      .from(homepageSections)
+      .where(eq(homepageSections.isActive, true))
+      .orderBy(homepageSections.displayOrder);
 
-    console.log('[Homepage] Fetching from:', baseUrl);
+    const sectionMap = sections.reduce((acc, section) => {
+      acc[section.sectionKey] = section;
+      return acc;
+    }, {} as Record<string, any>);
 
-    const response = await fetch(`${baseUrl}/api/homepage/all`, {
-      cache: 'no-store', // Always get fresh data
-      next: { revalidate: 0 },
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // Fetch all homepage data in parallel
+    const [
+      activeHeroSlides,
+      activeAnnouncements,
+      featuredCollections,
+      homepageFeaturedCategories,
+      bestsellerProducts,
+      newArrivalsConfig,
+      newArrivalProducts,
+      activeMidPageBanner,
+      activeOccasions,
+      activeBrandStory,
+      activeBrandStoryStats,
+      instagramFeed,
+      instagramConfig,
+      activeTrustBadges,
+    ] = await Promise.all([
+      // Hero Slides
+      db
+        .select()
+        .from(heroSlides)
+        .where(eq(heroSlides.isActive, true))
+        .orderBy(heroSlides.displayOrder)
+        .limit(5),
 
-    if (!response.ok) {
-      console.error('[Homepage] API error:', response.status, response.statusText);
-      throw new Error(`Failed to fetch homepage data: ${response.status}`);
+      // Announcements
+      db
+        .select()
+        .from(announcements)
+        .where(
+          and(
+            eq(announcements.isActive, true),
+            or(
+              isNull(announcements.startDate),
+              lte(announcements.startDate, new Date())
+            ),
+            or(
+              isNull(announcements.endDate),
+              gte(announcements.endDate, new Date())
+            )
+          )
+        )
+        .orderBy(announcements.displayOrder)
+        .limit(5),
+
+      // Featured Collections (max 2)
+      db
+        .select()
+        .from(collections)
+        .where(
+          and(
+            eq(collections.isActive, true),
+            eq(collections.isFeatured, true)
+          )
+        )
+        .orderBy(collections.displayOrder)
+        .limit(2),
+
+      // Featured Categories for homepage (max 3)
+      db
+        .select({
+          id: featuredCategories.id,
+          categoryId: featuredCategories.categoryId,
+          displayOrder: featuredCategories.displayOrder,
+          category: categories,
+        })
+        .from(featuredCategories)
+        .leftJoin(categories, eq(featuredCategories.categoryId, categories.id))
+        .where(
+          and(
+            eq(featuredCategories.isActive, true),
+            eq(categories.active, true)
+          )
+        )
+        .orderBy(featuredCategories.displayOrder)
+        .limit(3),
+
+      // Bestseller Products (max 4)
+      db
+        .select({
+          id: featuredBestsellers.id,
+          productId: featuredBestsellers.productId,
+          displayOrder: featuredBestsellers.displayOrder,
+          product: products,
+        })
+        .from(featuredBestsellers)
+        .leftJoin(products, eq(featuredBestsellers.productId, products.id))
+        .where(
+          and(
+            eq(featuredBestsellers.isActive, true),
+            eq(products.active, true)
+          )
+        )
+        .orderBy(featuredBestsellers.displayOrder)
+        .limit(4),
+
+      // New Arrivals Settings
+      db
+        .select()
+        .from(newArrivalsSettings)
+        .limit(1),
+
+      // New Arrivals - For manual mode
+      db
+        .select({
+          id: featuredNewArrivals.id,
+          productId: featuredNewArrivals.productId,
+          displayOrder: featuredNewArrivals.displayOrder,
+          product: products,
+        })
+        .from(featuredNewArrivals)
+        .leftJoin(products, eq(featuredNewArrivals.productId, products.id))
+        .where(
+          and(
+            eq(featuredNewArrivals.isActive, true),
+            eq(products.active, true)
+          )
+        )
+        .orderBy(featuredNewArrivals.displayOrder)
+        .limit(8),
+
+      // Mid-Page Banner
+      db
+        .select()
+        .from(midPageBannerTable)
+        .where(eq(midPageBannerTable.isActive, true))
+        .limit(1),
+
+      // Occasions
+      db
+        .select()
+        .from(occasions)
+        .where(eq(occasions.isActive, true))
+        .orderBy(occasions.displayOrder)
+        .limit(4),
+
+      // Brand Story
+      db
+        .select()
+        .from(brandStoryTable)
+        .where(eq(brandStoryTable.isActive, true))
+        .limit(1),
+
+      // Brand Story Stats
+      db
+        .select()
+        .from(brandStoryStats)
+        .orderBy(brandStoryStats.displayOrder),
+
+      // Instagram Posts
+      db
+        .select()
+        .from(instagramPosts)
+        .where(eq(instagramPosts.isActive, true))
+        .orderBy(instagramPosts.displayOrder)
+        .limit(6),
+
+      // Instagram Settings
+      db
+        .select()
+        .from(instagramSettings)
+        .limit(1),
+
+      // Trust Badges
+      db
+        .select()
+        .from(trustBadges)
+        .where(eq(trustBadges.isActive, true))
+        .orderBy(trustBadges.displayOrder)
+        .limit(4),
+    ]);
+
+    // Determine which new arrivals to show based on settings
+    const newArrivalsMode = newArrivalsConfig[0]?.mode || 'automatic';
+    const newArrivalsCount = newArrivalsConfig[0]?.count || 8;
+
+    let finalNewArrivals;
+    if (newArrivalsMode === 'manual') {
+      finalNewArrivals = newArrivalProducts.map((item: any) => item.product).filter(Boolean);
+    } else {
+      const automaticNewArrivals = await db
+        .select()
+        .from(products)
+        .where(eq(products.active, true))
+        .orderBy(desc(products.createdAt))
+        .limit(newArrivalsCount);
+      finalNewArrivals = automaticNewArrivals;
     }
 
-    const data = await response.json();
-    console.log('[Homepage] Data received:', {
-      heroSlides: data.heroSlides?.length || 0,
-      categories: data.categories?.length || 0,
-      bestsellers: data.bestsellers?.length || 0,
-      newArrivals: data.newArrivals?.length || 0,
-    });
-
-    return data;
+    return {
+      sections: sectionMap,
+      heroSlides: activeHeroSlides,
+      announcements: activeAnnouncements,
+      collections: featuredCollections,
+      categories: homepageFeaturedCategories.map((item: any) => item.category).filter(Boolean),
+      bestsellers: bestsellerProducts.map((item: any) => item.product).filter(Boolean),
+      newArrivals: finalNewArrivals,
+      midPageBanner: activeMidPageBanner[0] || null,
+      occasions: activeOccasions,
+      brandStory: activeBrandStory[0] || null,
+      brandStoryStats: activeBrandStoryStats,
+      instagramFeed: instagramFeed,
+      instagramHandle: instagramConfig[0]?.instagramHandle || '@sudhakantsarees',
+      trustBadges: activeTrustBadges,
+    };
   } catch (error) {
     console.error('Error fetching homepage data:', error);
     // Return empty data structure as fallback
