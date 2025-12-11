@@ -13,6 +13,11 @@ import {
   trustBadges,
   categories,
   products,
+  heroSlides,
+  featuredCategories,
+  featuredBestsellers,
+  newArrivalsSettings,
+  featuredNewArrivals,
 } from '@/db/schema';
 import { eq, and, desc, lte, gte, or, isNull } from 'drizzle-orm';
 
@@ -36,10 +41,12 @@ export async function GET() {
 
     // Fetch all homepage data in parallel
     const [
+      activeHeroSlides,
       activeAnnouncements,
       featuredCollections,
-      featuredCategories,
+      homepageFeaturedCategories,
       bestsellerProducts,
+      newArrivalsConfig,
       newArrivalProducts,
       activeMidPageBanner,
       activeOccasions,
@@ -49,6 +56,13 @@ export async function GET() {
       instagramConfig,
       activeTrustBadges,
     ] = await Promise.all([
+      // Hero Slides
+      db
+        .select()
+        .from(heroSlides)
+        .where(eq(heroSlides.isActive, true))
+        .orderBy(heroSlides.displayOrder)
+        .limit(5),
       // Announcements
       db
         .select()
@@ -82,48 +96,68 @@ export async function GET() {
         .orderBy(collections.displayOrder)
         .limit(2),
 
-      // Featured Categories for homepage (max 3)
+      // Featured Categories for homepage (max 3) - using junction table
       db
-        .select()
-        .from(categories)
+        .select({
+          id: featuredCategories.id,
+          categoryId: featuredCategories.categoryId,
+          displayOrder: featuredCategories.displayOrder,
+          category: categories,
+        })
+        .from(featuredCategories)
+        .leftJoin(categories, eq(featuredCategories.categoryId, categories.id))
         .where(
           and(
-            eq(categories.active, true),
-            eq(categories.featuredOnHome, true)
+            eq(featuredCategories.isActive, true),
+            eq(categories.active, true)
           )
         )
-        .orderBy(categories.homeDisplayOrder)
+        .orderBy(featuredCategories.displayOrder)
         .limit(3),
 
-      // Bestseller Products (max 4)
+      // Bestseller Products (max 4) - using junction table
       db
-        .select()
-        .from(products)
+        .select({
+          id: featuredBestsellers.id,
+          productId: featuredBestsellers.productId,
+          displayOrder: featuredBestsellers.displayOrder,
+          product: products,
+        })
+        .from(featuredBestsellers)
+        .leftJoin(products, eq(featuredBestsellers.productId, products.id))
         .where(
           and(
-            eq(products.active, true),
-            eq(products.isBestseller, true)
+            eq(featuredBestsellers.isActive, true),
+            eq(products.active, true)
           )
         )
-        .orderBy(products.bestsellerRank)
+        .orderBy(featuredBestsellers.displayOrder)
         .limit(4),
 
-      // New Arrivals (max 4)
+      // New Arrivals Settings
       db
         .select()
-        .from(products)
+        .from(newArrivalsSettings)
+        .limit(1),
+
+      // New Arrivals - For manual mode (from junction table)
+      db
+        .select({
+          id: featuredNewArrivals.id,
+          productId: featuredNewArrivals.productId,
+          displayOrder: featuredNewArrivals.displayOrder,
+          product: products,
+        })
+        .from(featuredNewArrivals)
+        .leftJoin(products, eq(featuredNewArrivals.productId, products.id))
         .where(
           and(
-            eq(products.active, true),
-            eq(products.isNewArrival, true),
-            or(
-              isNull(products.newArrivalUntil),
-              gte(products.newArrivalUntil, new Date())
-            )
+            eq(featuredNewArrivals.isActive, true),
+            eq(products.active, true)
           )
         )
-        .orderBy(desc(products.createdAt))
-        .limit(4),
+        .orderBy(featuredNewArrivals.displayOrder)
+        .limit(8),
 
       // Mid-Page Banner (single active)
       db
@@ -176,14 +210,34 @@ export async function GET() {
         .limit(4),
     ]);
 
+    // Determine which new arrivals to show based on settings
+    const newArrivalsMode = newArrivalsConfig[0]?.mode || 'automatic';
+    const newArrivalsCount = newArrivalsConfig[0]?.count || 8;
+
+    let finalNewArrivals;
+    if (newArrivalsMode === 'manual') {
+      // Use manually curated products
+      finalNewArrivals = newArrivalProducts.map((item: any) => item.product).filter(Boolean);
+    } else {
+      // Use automatic mode - fetch newest products
+      const automaticNewArrivals = await db
+        .select()
+        .from(products)
+        .where(eq(products.active, true))
+        .orderBy(desc(products.createdAt))
+        .limit(newArrivalsCount);
+      finalNewArrivals = automaticNewArrivals;
+    }
+
     // Build response with all homepage data
     const response = {
       sections: sectionMap,
+      heroSlides: activeHeroSlides,
       announcements: activeAnnouncements,
       collections: featuredCollections,
-      categories: featuredCategories,
-      bestsellers: bestsellerProducts,
-      newArrivals: newArrivalProducts,
+      categories: homepageFeaturedCategories.map((item: any) => item.category).filter(Boolean),
+      bestsellers: bestsellerProducts.map((item: any) => item.product).filter(Boolean),
+      newArrivals: finalNewArrivals,
       midPageBanner: activeMidPageBanner[0] || null,
       occasions: activeOccasions,
       brandStory: activeBrandStory[0] || null,
@@ -201,6 +255,7 @@ export async function GET() {
     // This allows the build to pass even before migration is applied
     return NextResponse.json({
       sections: {},
+      heroSlides: [],
       announcements: [],
       collections: [],
       categories: [],

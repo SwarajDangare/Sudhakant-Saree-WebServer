@@ -36,6 +36,7 @@ async function getHomepageData() {
     // Return empty data structure as fallback
     return {
       sections: {},
+      heroSlides: [],
       announcements: [],
       collections: [],
       categories: [],
@@ -58,7 +59,9 @@ export default async function Home() {
   return (
     <>
       {/* Hero Slider - Full width banner carousel with video support */}
-      {data.sections.hero_slider?.isActive !== false && <HeroSlider />}
+      {data.sections.hero_slider?.isActive !== false && data.heroSlides.length > 0 && (
+        <HeroSlider slides={data.heroSlides} />
+      )}
 
       {/* Shop by Category - 3 category cards with images */}
       {data.sections.shop_by_category?.isActive !== false && data.categories.length > 0 && (
