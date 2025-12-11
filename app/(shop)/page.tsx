@@ -16,21 +16,35 @@ export const revalidate = 0;
 
 async function getHomepageData() {
   try {
-    // Use absolute URL only in production, use direct import in build
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL
+    // Construct base URL - prioritize Vercel URL for deployments
+    const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
+      : (process.env.NEXTAUTH_URL || 'http://localhost:3000');
+
+    console.log('[Homepage] Fetching from:', baseUrl);
 
     const response = await fetch(`${baseUrl}/api/homepage/all`, {
       cache: 'no-store', // Always get fresh data
-      next: { revalidate: 0 }
+      next: { revalidate: 0 },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch homepage data');
+      console.error('[Homepage] API error:', response.status, response.statusText);
+      throw new Error(`Failed to fetch homepage data: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('[Homepage] Data received:', {
+      heroSlides: data.heroSlides?.length || 0,
+      categories: data.categories?.length || 0,
+      bestsellers: data.bestsellers?.length || 0,
+      newArrivals: data.newArrivals?.length || 0,
+    });
+
+    return data;
   } catch (error) {
     console.error('Error fetching homepage data:', error);
     // Return empty data structure as fallback

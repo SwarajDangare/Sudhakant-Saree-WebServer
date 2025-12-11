@@ -247,7 +247,21 @@ export async function GET() {
       trustBadges: activeTrustBadges,
     };
 
-    return NextResponse.json(response);
+    console.log('[API /homepage/all] Returning data:', {
+      heroSlides: response.heroSlides.length,
+      categories: response.categories.length,
+      bestsellers: response.bestsellers.length,
+      newArrivals: response.newArrivals.length,
+      sections: Object.keys(response.sections).length,
+    });
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'CDN-Cache-Control': 'no-store',
+        'Vercel-CDN-Cache-Control': 'no-store',
+      },
+    });
   } catch (error) {
     console.error('Error fetching homepage data:', error);
 
