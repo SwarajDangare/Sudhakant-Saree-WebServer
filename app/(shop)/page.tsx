@@ -113,6 +113,10 @@ async function getHomepageData() {
           id: featuredCategories.id,
           categoryId: featuredCategories.categoryId,
           displayOrder: featuredCategories.displayOrder,
+          overrideImageUrl: featuredCategories.overrideImageUrl,
+          overrideTitle: featuredCategories.overrideTitle,
+          overrideDescription: featuredCategories.overrideDescription,
+          overrideLinkUrl: featuredCategories.overrideLinkUrl,
           category: categories,
         })
         .from(featuredCategories)
