@@ -305,7 +305,6 @@ export const collections = pgTable('collections', {
   imageUrl: text('imageUrl').notNull(),
   imagePublicId: text('imagePublicId').notNull(), // Cloudinary
   linkUrl: text('linkUrl').notNull(), // Where to redirect
-  productsCount: integer('productsCount').default(0),
   isFeatured: boolean('isFeatured').default(false),
   isActive: boolean('isActive').default(true).notNull(),
   displayOrder: integer('displayOrder').default(0).notNull(),
@@ -432,6 +431,12 @@ export const featuredCategories = pgTable('featured_categories', {
   categoryId: text('categoryId').notNull().references(() => categories.id, { onDelete: 'cascade' }),
   displayOrder: integer('displayOrder').default(0).notNull(),
   isActive: boolean('isActive').default(true).notNull(),
+  // Override fields for homepage customization
+  overrideImageUrl: text('overrideImageUrl'),
+  overrideImagePublicId: text('overrideImagePublicId'),
+  overrideTitle: text('overrideTitle'),
+  overrideDescription: text('overrideDescription'),
+  overrideLinkUrl: text('overrideLinkUrl'),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
@@ -441,6 +446,12 @@ export const featuredBestsellers = pgTable('featured_bestsellers', {
   productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
   displayOrder: integer('displayOrder').default(0).notNull(),
   isActive: boolean('isActive').default(true).notNull(),
+  // Override fields for homepage customization
+  overrideImageUrl: text('overrideImageUrl'),
+  overrideImagePublicId: text('overrideImagePublicId'),
+  overrideTitle: text('overrideTitle'),
+  overrideDescription: text('overrideDescription'),
+  overrideLinkUrl: text('overrideLinkUrl'),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
@@ -459,6 +470,12 @@ export const featuredNewArrivals = pgTable('featured_new_arrivals', {
   productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
   displayOrder: integer('displayOrder').default(0).notNull(),
   isActive: boolean('isActive').default(true).notNull(),
+  // Override fields for homepage customization
+  overrideImageUrl: text('overrideImageUrl'),
+  overrideImagePublicId: text('overrideImagePublicId'),
+  overrideTitle: text('overrideTitle'),
+  overrideDescription: text('overrideDescription'),
+  overrideLinkUrl: text('overrideLinkUrl'),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 

@@ -282,52 +282,52 @@ export default async function Home() {
   return (
     <>
       {/* Hero Slider - Full width banner carousel with video support */}
-      {data.sections.hero_slider?.isActive !== false && data.heroSlides.length > 0 && (
+      {data.sections.hero_slider?.isActive === true && data.heroSlides.length > 0 && (
         <HeroSlider slides={data.heroSlides} />
       )}
 
       {/* Shop by Category - 3 category cards with images */}
-      {data.sections.shop_by_category?.isActive !== false && data.categories.length > 0 && (
+      {data.sections.shop_by_category?.isActive === true && data.categories.length > 0 && (
         <ShopByCategory categories={data.categories} />
       )}
 
       {/* Featured Collections - 2-column curated collections */}
-      {data.sections.featured_collections?.isActive !== false && data.collections.length > 0 && (
+      {data.sections.featured_collections?.isActive === true && data.collections.length > 0 && (
         <FeaturedCollections collections={data.collections} />
       )}
 
       {/* Bestseller Products - 4-column grid with sale badges */}
-      {data.sections.bestseller_products?.isActive !== false && data.bestsellers.length > 0 && (
+      {data.sections.bestseller_products?.isActive === true && data.bestsellers.length > 0 && (
         <BestsellerProducts products={data.bestsellers} />
       )}
 
       {/* Mid-Page Banner - Full width promotional banner */}
-      {data.sections.mid_page_banner?.isActive !== false && data.midPageBanner && (
+      {data.sections.mid_page_banner?.isActive === true && data.midPageBanner && (
         <MidPageBanner banner={data.midPageBanner} />
       )}
 
       {/* Shop by Occasion - Wedding, Festival, Party, Casual */}
-      {data.sections.shop_by_occasion?.isActive !== false && data.occasions.length > 0 && (
+      {data.sections.shop_by_occasion?.isActive === true && data.occasions.length > 0 && (
         <ShopByOccasion occasions={data.occasions} />
       )}
 
       {/* New Arrivals - Latest products grid */}
-      {data.sections.new_arrivals?.isActive !== false && data.newArrivals.length > 0 && (
+      {data.sections.new_arrivals?.isActive === true && data.newArrivals.length > 0 && (
         <NewArrivals products={data.newArrivals} />
       )}
 
       {/* Brand Story - Heritage and values section */}
-      {data.sections.brand_story?.isActive !== false && data.brandStory && (
+      {data.sections.brand_story?.isActive === true && data.brandStory && (
         <BrandStory story={data.brandStory} stats={data.brandStoryStats} />
       )}
 
       {/* Instagram Feed - Social media integration */}
-      {data.sections.instagram_feed?.isActive !== false && data.instagramFeed.length > 0 && (
+      {data.sections.instagram_feed?.isActive === true && data.instagramFeed.length > 0 && (
         <InstagramFeed posts={data.instagramFeed} handle={data.instagramHandle} />
       )}
 
       {/* Trust Badges - Free shipping, secure payment, authentic products, easy returns */}
-      {data.sections.trust_badges?.isActive !== false && data.trustBadges.length > 0 && (
+      {data.sections.trust_badges?.isActive === true && data.trustBadges.length > 0 && (
         <Features badges={data.trustBadges} />
       )}
 
