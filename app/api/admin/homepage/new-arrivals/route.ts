@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { newArrivalsSettings, featuredNewArrivals, products } from '@/db/schema';
 import { eq, like, or, desc } from 'drizzle-orm';
@@ -51,6 +52,7 @@ export async function PUT(request: Request) {
         .update(newArrivalsSettings)
         .set({ mode: mode || 'automatic', count: count || 8, updatedAt: new Date() })
         .returning();
+      revalidatePath('/');
       return NextResponse.json(updated);
     } else {
       const [created] = await db.insert(newArrivalsSettings).values({
@@ -58,6 +60,7 @@ export async function PUT(request: Request) {
         mode: mode || 'automatic',
         count: count || 8,
       }).returning();
+      revalidatePath('/');
       return NextResponse.json(created);
     }
   } catch (error: any) {
@@ -76,6 +79,7 @@ export async function POST(request: Request) {
       isActive: true,
     }).returning();
 
+    revalidatePath('/');
     return NextResponse.json(newFeatured, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -86,6 +90,7 @@ export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
     await db.delete(featuredNewArrivals).where(eq(featuredNewArrivals.id, id));
+    revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

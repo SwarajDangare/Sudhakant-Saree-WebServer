@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { instagramPosts } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -40,6 +41,7 @@ export async function PUT(
       );
     }
 
+    revalidatePath('/');
     return NextResponse.json(updatedPost);
   } catch (error: any) {
     console.error('Error updating Instagram post:', error);
@@ -58,6 +60,7 @@ export async function DELETE(
   try {
     await db.delete(instagramPosts).where(eq(instagramPosts.id, params.id));
 
+    revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting Instagram post:', error);

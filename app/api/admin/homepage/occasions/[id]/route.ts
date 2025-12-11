@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { occasions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -55,6 +56,7 @@ export async function PUT(
       );
     }
 
+    revalidatePath('/');
     return NextResponse.json(updatedOccasion);
   } catch (error: any) {
     console.error('Error updating occasion:', error);
@@ -73,6 +75,7 @@ export async function DELETE(
   try {
     await db.delete(occasions).where(eq(occasions.id, params.id));
 
+    revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting occasion:', error);

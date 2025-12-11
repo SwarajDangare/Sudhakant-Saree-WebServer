@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { trustBadges } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
       })
       .returning();
 
+    revalidatePath('/');
     return NextResponse.json(newBadge, { status: 201 });
   } catch (error: any) {
     console.error('Error creating trust badge:', error);

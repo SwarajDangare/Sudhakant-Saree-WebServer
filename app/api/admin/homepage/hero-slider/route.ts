@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { heroSlides } from '@/db/schema';
 
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
       isActive: isActive !== undefined ? isActive : true,
     }).returning();
 
+    revalidatePath('/');
     return NextResponse.json(newSlide, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

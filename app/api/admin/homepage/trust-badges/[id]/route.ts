@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { trustBadges } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -39,6 +40,7 @@ export async function PUT(
       );
     }
 
+    revalidatePath('/');
     return NextResponse.json(updatedBadge);
   } catch (error: any) {
     console.error('Error updating trust badge:', error);
@@ -57,6 +59,7 @@ export async function DELETE(
   try {
     await db.delete(trustBadges).where(eq(trustBadges.id, params.id));
 
+    revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting trust badge:', error);

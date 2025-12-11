@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { heroSlides } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -29,6 +30,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Slide not found' }, { status: 404 });
     }
 
+    revalidatePath('/');
     return NextResponse.json(updated);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -38,6 +40,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     await db.delete(heroSlides).where(eq(heroSlides.id, params.id));
+    revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

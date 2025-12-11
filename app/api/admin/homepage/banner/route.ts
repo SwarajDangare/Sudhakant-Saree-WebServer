@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { midPageBanner } from '@/db/schema';
 
@@ -78,6 +79,7 @@ export async function PUT(request: Request) {
         .returning();
     }
 
+    revalidatePath('/');
     return NextResponse.json(updatedBanner);
   } catch (error: any) {
     console.error('Error updating mid-page banner:', error);

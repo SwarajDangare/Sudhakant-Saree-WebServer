@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { featuredCategories, categories } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
       isActive: true,
     }).returning();
 
+    revalidatePath('/');
     return NextResponse.json(newFeatured, { status: 201 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -50,6 +52,7 @@ export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
     await db.delete(featuredCategories).where(eq(featuredCategories.id, id));
+    revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

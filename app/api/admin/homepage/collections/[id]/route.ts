@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { collections } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -57,6 +58,7 @@ export async function PUT(
       );
     }
 
+    revalidatePath('/');
     return NextResponse.json(updatedCollection);
   } catch (error: any) {
     console.error('Error updating collection:', error);
@@ -75,6 +77,7 @@ export async function DELETE(
   try {
     await db.delete(collections).where(eq(collections.id, params.id));
 
+    revalidatePath('/');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting collection:', error);

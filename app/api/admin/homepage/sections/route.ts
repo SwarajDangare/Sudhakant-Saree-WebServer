@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { homepageSections } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -20,6 +21,10 @@ export async function PATCH(request: Request) {
       .update(homepageSections)
       .set({ isActive, updatedAt: new Date() })
       .where(eq(homepageSections.sectionKey, sectionKey));
+
+    // Revalidate homepage to show/hide section immediately
+    revalidatePath('/');
+    revalidatePath('/admin/homepage');
 
     return NextResponse.json({
       success: true,

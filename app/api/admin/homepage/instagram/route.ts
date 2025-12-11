@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { instagramPosts, instagramSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -57,6 +58,7 @@ export async function POST(request: Request) {
       })
       .returning();
 
+    revalidatePath('/');
     return NextResponse.json(newPost, { status: 201 });
   } catch (error: any) {
     console.error('Error creating Instagram post:', error);
@@ -101,6 +103,7 @@ export async function PUT(request: Request) {
         .returning();
     }
 
+    revalidatePath('/');
     return NextResponse.json(updatedSettings);
   } catch (error: any) {
     console.error('Error updating Instagram settings:', error);

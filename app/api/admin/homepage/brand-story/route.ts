@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { brandStory, brandStoryStats } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -105,6 +106,10 @@ export async function PUT(request: Request) {
         }))
       );
     }
+
+    // Revalidate homepage to show changes immediately
+    revalidatePath('/');
+    revalidatePath('/admin/homepage/brand-story');
 
     return NextResponse.json(updatedStory);
   } catch (error: any) {
