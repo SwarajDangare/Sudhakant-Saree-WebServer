@@ -12,6 +12,11 @@ export async function GET() {
         categoryId: featuredCategories.categoryId,
         displayOrder: featuredCategories.displayOrder,
         isActive: featuredCategories.isActive,
+        overrideImageUrl: featuredCategories.overrideImageUrl,
+        overrideImagePublicId: featuredCategories.overrideImagePublicId,
+        overrideTitle: featuredCategories.overrideTitle,
+        overrideDescription: featuredCategories.overrideDescription,
+        overrideLinkUrl: featuredCategories.overrideLinkUrl,
         category: categories,
       })
       .from(featuredCategories)
@@ -28,7 +33,15 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { categoryId, displayOrder } = await request.json();
+    const {
+      categoryId,
+      displayOrder,
+      overrideImageUrl,
+      overrideImagePublicId,
+      overrideTitle,
+      overrideDescription,
+      overrideLinkUrl,
+    } = await request.json();
 
     if (!categoryId) {
       return NextResponse.json({ error: 'Category ID required' }, { status: 400 });
@@ -39,6 +52,11 @@ export async function POST(request: Request) {
       categoryId,
       displayOrder: displayOrder || 0,
       isActive: true,
+      overrideImageUrl: overrideImageUrl || null,
+      overrideImagePublicId: overrideImagePublicId || null,
+      overrideTitle: overrideTitle || null,
+      overrideDescription: overrideDescription || null,
+      overrideLinkUrl: overrideLinkUrl || null,
     }).returning();
 
     revalidatePath('/');
