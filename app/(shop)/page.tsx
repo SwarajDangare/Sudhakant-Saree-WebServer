@@ -258,7 +258,7 @@ async function getHomepageData() {
     console.error('Error fetching homepage data:', error);
     // Return empty data structure as fallback
     return {
-      sections: {},
+      sections: {} as Record<string, any>,
       heroSlides: [],
       announcements: [],
       collections: [],
