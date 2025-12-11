@@ -13,6 +13,11 @@ import {
   trustBadges,
   heroSlides,
   newArrivalsSettings,
+  sections,
+  categories,
+  products,
+  featuredCategories,
+  featuredBestsellers,
 } from '@/db/schema';
 
 export async function POST() {
@@ -390,9 +395,205 @@ export async function POST() {
     });
     }
 
+    // 13. Seed Sections (Product Categories) - Check if already exists
+    const existingSections = await db.select().from(sections);
+    let sectionIds: Record<string, string> = {};
+
+    if (existingSections.length === 0) {
+      const newSections = await db.insert(sections).values([
+        {
+          id: crypto.randomUUID(),
+          name: 'Traditional Sarees',
+          slug: 'traditional',
+          description: 'Timeless traditional sarees for every occasion',
+          order: 1,
+          active: true,
+        },
+        {
+          id: crypto.randomUUID(),
+          name: 'Designer Collection',
+          slug: 'designer',
+          description: 'Exclusive designer sarees handpicked by experts',
+          order: 2,
+          active: true,
+        },
+      ]).returning();
+
+      sectionIds = {
+        traditional: newSections[0].id,
+        designer: newSections[1].id,
+      };
+    } else {
+      // Use existing sections
+      sectionIds = {
+        traditional: existingSections[0].id,
+        designer: existingSections[1]?.id || existingSections[0].id,
+      };
+    }
+
+    // 14. Seed Categories - Check if already exists
+    const existingCategories = await db.select().from(categories);
+    let categoryIds: string[] = [];
+
+    if (existingCategories.length === 0) {
+      const newCategories = await db.insert(categories).values([
+        {
+          id: crypto.randomUUID(),
+          sectionId: sectionIds.traditional,
+          name: 'Silk Sarees',
+          slug: 'silk-sarees',
+          description: 'Pure silk sarees with rich textures and elegant designs',
+          order: 1,
+          active: true,
+          featuredOnHome: true,
+          homeDisplayOrder: 1,
+          homeTagline: 'Pure Elegance',
+          homeDescription: 'Handwoven pure silk sarees',
+        },
+        {
+          id: crypto.randomUUID(),
+          sectionId: sectionIds.traditional,
+          name: 'Cotton Sarees',
+          slug: 'cotton-sarees',
+          description: 'Comfortable cotton sarees perfect for daily wear',
+          order: 2,
+          active: true,
+          featuredOnHome: true,
+          homeDisplayOrder: 2,
+          homeTagline: 'Comfort & Style',
+          homeDescription: 'Breathable cotton sarees',
+        },
+        {
+          id: crypto.randomUUID(),
+          sectionId: sectionIds.designer,
+          name: 'Designer Sarees',
+          slug: 'designer-sarees',
+          description: 'Contemporary designer sarees with modern aesthetics',
+          order: 3,
+          active: true,
+          featuredOnHome: true,
+          homeDisplayOrder: 3,
+          homeTagline: 'Modern Elegance',
+          homeDescription: 'Exclusive designer collection',
+        },
+      ]).returning();
+
+      categoryIds = newCategories.map(cat => cat.id);
+    } else {
+      categoryIds = existingCategories.slice(0, 3).map(cat => cat.id);
+    }
+
+    // 15. Seed Products - Check if already exists
+    const existingProducts = await db.select().from(products);
+    let productIds: string[] = [];
+
+    if (existingProducts.length === 0 && categoryIds.length > 0) {
+      const newProducts = await db.insert(products).values([
+        {
+          id: crypto.randomUUID(),
+          categoryId: categoryIds[0],
+          name: 'Royal Blue Kanjivaram Silk Saree',
+          description: 'Exquisite Kanjivaram silk saree with traditional zari work and intricate border designs. Perfect for weddings and special occasions.',
+          price: '8999.00',
+          discountType: 'PERCENTAGE',
+          discountValue: '10',
+          material: 'Pure Silk',
+          length: '6.3 meters with blouse piece',
+          blousePieceIncluded: true,
+          workType: 'Handloom with Zari Work',
+          borderType: 'Traditional Zari Border',
+          occasion: 'Wedding, Festival',
+          careInstructions: 'Dry clean only',
+          stockQuantity: 10,
+          featured: true,
+          active: true,
+        },
+        {
+          id: crypto.randomUUID(),
+          categoryId: categoryIds[0],
+          name: 'Maroon Banarasi Silk Saree',
+          description: 'Elegant Banarasi silk saree with golden zari motifs and rich texture. A timeless piece for traditional ceremonies.',
+          price: '7499.00',
+          material: 'Banarasi Silk',
+          length: '6.3 meters with blouse piece',
+          blousePieceIncluded: true,
+          workType: 'Pure Zari Work',
+          occasion: 'Wedding, Festival, Party',
+          careInstructions: 'Dry clean recommended',
+          stockQuantity: 8,
+          featured: true,
+          active: true,
+        },
+        {
+          id: crypto.randomUUID(),
+          categoryId: categoryIds[1],
+          name: 'Floral Print Cotton Saree',
+          description: 'Lightweight cotton saree with beautiful floral prints. Comfortable for daily wear and casual occasions.',
+          price: '1999.00',
+          discountType: 'FLAT',
+          discountValue: '200',
+          material: 'Pure Cotton',
+          length: '6 meters with blouse piece',
+          blousePieceIncluded: true,
+          workType: 'Screen Print',
+          occasion: 'Casual, Office Wear',
+          careInstructions: 'Machine wash gentle',
+          stockQuantity: 25,
+          featured: true,
+          active: true,
+        },
+        {
+          id: crypto.randomUUID(),
+          categoryId: categoryIds[2],
+          name: 'Contemporary Designer Saree',
+          description: 'Modern designer saree with unique patterns and contemporary styling. Perfect for cocktail parties and evening events.',
+          price: '5999.00',
+          material: 'Georgette with Embellishments',
+          length: '6 meters with unstitched blouse',
+          blousePieceIncluded: true,
+          workType: 'Embroidery and Sequin Work',
+          occasion: 'Party, Cocktail, Evening Wear',
+          careInstructions: 'Dry clean only',
+          stockQuantity: 5,
+          featured: true,
+          active: true,
+        },
+      ]).returning();
+
+      productIds = newProducts.map(prod => prod.id);
+    } else {
+      productIds = existingProducts.slice(0, 4).map(prod => prod.id);
+    }
+
+    // 16. Link Categories to Featured Categories (check if already exists)
+    const existingFeaturedCats = await db.select().from(featuredCategories);
+    if (existingFeaturedCats.length === 0 && categoryIds.length > 0) {
+      await db.insert(featuredCategories).values(
+        categoryIds.slice(0, 3).map((catId, index) => ({
+          id: crypto.randomUUID(),
+          categoryId: catId,
+          displayOrder: index + 1,
+          isActive: true,
+        }))
+      );
+    }
+
+    // 17. Link Products to Featured Bestsellers (check if already exists)
+    const existingFeaturedBestsellers = await db.select().from(featuredBestsellers);
+    if (existingFeaturedBestsellers.length === 0 && productIds.length > 0) {
+      await db.insert(featuredBestsellers).values(
+        productIds.map((prodId, index) => ({
+          id: crypto.randomUUID(),
+          productId: prodId,
+          displayOrder: index + 1,
+          isActive: true,
+        }))
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      message: '✅ Homepage seeded successfully! All 11 sections are now populated with initial content.',
+      message: '✅ Homepage seeded successfully! All 11 sections are now populated with initial content including demo products and categories.',
     });
   } catch (error: any) {
     console.error('Error seeding homepage:', error);
