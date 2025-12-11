@@ -8,8 +8,8 @@ interface BrandStoryProps {
     subtitle?: string | null;
     description: string;
     imageUrl: string;
-    buttonText: string;
-    buttonLink: string;
+    buttonText: string | null;
+    buttonLink: string | null;
   };
   stats: Array<{
     id: string;
@@ -127,15 +127,17 @@ export default function BrandStory({ story, stats }: BrandStoryProps) {
             </div>
 
             {/* CTA Button */}
-            <Link
-              href={story.buttonLink}
-              className="inline-flex items-center gap-3 bg-maroon text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-deep-maroon transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 group"
-            >
-              <span>{story.buttonText}</span>
-              <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
+            {story.buttonLink && story.buttonText && (
+              <Link
+                href={story.buttonLink}
+                className="inline-flex items-center gap-3 bg-maroon text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-deep-maroon transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 group"
+              >
+                <span>{story.buttonText}</span>
+                <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            )}
 
             {/* Decorative line */}
             <div className="flex items-center gap-4 mt-10 opacity-50">

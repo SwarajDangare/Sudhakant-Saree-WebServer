@@ -10,7 +10,7 @@ interface Collection {
   description?: string | null;
   imageUrl: string;
   linkUrl: string;
-  productsCount: number;
+  productsCount: number | null;
 }
 
 interface FeaturedCollectionsProps {
@@ -74,7 +74,7 @@ export default function FeaturedCollections({ collections }: FeaturedCollections
                   {/* Products Count and CTA */}
                   <div className="flex items-center justify-between">
                     <span className="text-white/80 text-sm">
-                      {collection.productsCount} Products
+                      {collection.productsCount || 0} Products
                     </span>
 
                     <div className="flex items-center gap-2 text-white font-semibold text-sm md:text-base group/btn">

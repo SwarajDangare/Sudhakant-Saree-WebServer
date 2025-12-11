@@ -8,8 +8,8 @@ interface Occasion {
   slug: string;
   icon: string;
   imageUrl: string;
-  gradientFrom: string;
-  gradientTo: string;
+  gradientFrom: string | null;
+  gradientTo: string | null;
   linkUrl: string;
 }
 
@@ -54,7 +54,7 @@ export default function ShopByOccasion({ occasions }: ShopByOccasionProps) {
                 <div
                   className="absolute inset-0 bg-gradient-to-t opacity-70 group-hover:opacity-80 transition-opacity duration-300"
                   style={{
-                    backgroundImage: `linear-gradient(to top, ${occasion.gradientFrom}, ${occasion.gradientTo})`
+                    backgroundImage: `linear-gradient(to top, ${occasion.gradientFrom || '#800000'}, ${occasion.gradientTo || '#FFD700'})`
                   }}
                 ></div>
 
