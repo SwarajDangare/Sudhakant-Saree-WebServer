@@ -530,7 +530,7 @@ export async function POST() {
           name: 'Floral Print Cotton Saree',
           description: 'Lightweight cotton saree with beautiful floral prints. Comfortable for daily wear and casual occasions.',
           price: '1999.00',
-          discountType: 'FLAT',
+          discountType: 'FIXED',
           discountValue: '200',
           material: 'Pure Cotton',
           length: '6 meters with blouse piece',
