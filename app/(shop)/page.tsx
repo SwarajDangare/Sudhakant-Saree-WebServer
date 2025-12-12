@@ -143,7 +143,7 @@ async function getHomepageData() {
           product: products,
         })
         .from(featuredBestsellers)
-        .leftJoin(products, eq(featuredBestsellers.productId, products.id))
+        .innerJoin(products, eq(featuredBestsellers.productId, products.id))
         .where(
           and(
             eq(featuredBestsellers.isActive, true),
@@ -172,7 +172,7 @@ async function getHomepageData() {
           product: products,
         })
         .from(featuredNewArrivals)
-        .leftJoin(products, eq(featuredNewArrivals.productId, products.id))
+        .innerJoin(products, eq(featuredNewArrivals.productId, products.id))
         .where(
           and(
             eq(featuredNewArrivals.isActive, true),
