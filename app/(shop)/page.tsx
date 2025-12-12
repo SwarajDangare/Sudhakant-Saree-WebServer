@@ -120,7 +120,7 @@ async function getHomepageData() {
           category: categories,
         })
         .from(featuredCategories)
-        .leftJoin(categories, eq(featuredCategories.categoryId, categories.id))
+        .innerJoin(categories, eq(featuredCategories.categoryId, categories.id))
         .where(
           and(
             eq(featuredCategories.isActive, true),
@@ -257,7 +257,7 @@ async function getHomepageData() {
       heroSlides: activeHeroSlides,
       announcements: activeAnnouncements,
       collections: featuredCollections,
-      categories: homepageFeaturedCategories.filter((item: any) => item.category !== null),
+      categories: homepageFeaturedCategories,
       bestsellers: bestsellerProducts,
       newArrivals: finalNewArrivals,
       midPageBanner: activeMidPageBanner[0] || null,
