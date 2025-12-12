@@ -257,7 +257,7 @@ async function getHomepageData() {
       heroSlides: activeHeroSlides,
       announcements: activeAnnouncements,
       collections: featuredCollections,
-      categories: homepageFeaturedCategories,
+      categories: homepageFeaturedCategories.filter((item: any) => item.category !== null),
       bestsellers: bestsellerProducts,
       newArrivals: finalNewArrivals,
       midPageBanner: activeMidPageBanner[0] || null,
