@@ -156,6 +156,8 @@ export const categories = pgTable('categories', {
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
   description: text('description'),
+  imageUrl: text('imageUrl').notNull(),
+  imagePublicId: text('imagePublicId').notNull(),
   order: integer('order').default(0).notNull(),
   active: boolean('active').default(true).notNull(),
 
