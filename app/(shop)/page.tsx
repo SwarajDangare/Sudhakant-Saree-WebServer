@@ -136,6 +136,10 @@ async function getHomepageData() {
           id: featuredBestsellers.id,
           productId: featuredBestsellers.productId,
           displayOrder: featuredBestsellers.displayOrder,
+          overrideImageUrl: featuredBestsellers.overrideImageUrl,
+          overrideTitle: featuredBestsellers.overrideTitle,
+          overrideDescription: featuredBestsellers.overrideDescription,
+          overrideLinkUrl: featuredBestsellers.overrideLinkUrl,
           product: products,
         })
         .from(featuredBestsellers)
@@ -247,8 +251,8 @@ async function getHomepageData() {
       heroSlides: activeHeroSlides,
       announcements: activeAnnouncements,
       collections: featuredCollections,
-      categories: homepageFeaturedCategories.map((item: any) => item.category).filter(Boolean),
-      bestsellers: bestsellerProducts.map((item: any) => item.product).filter(Boolean),
+      categories: homepageFeaturedCategories,
+      bestsellers: bestsellerProducts,
       newArrivals: finalNewArrivals,
       midPageBanner: activeMidPageBanner[0] || null,
       occasions: activeOccasions,

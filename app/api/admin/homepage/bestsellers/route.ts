@@ -16,6 +16,11 @@ export async function GET(request: Request) {
         productId: featuredBestsellers.productId,
         displayOrder: featuredBestsellers.displayOrder,
         isActive: featuredBestsellers.isActive,
+        overrideImageUrl: featuredBestsellers.overrideImageUrl,
+        overrideImagePublicId: featuredBestsellers.overrideImagePublicId,
+        overrideTitle: featuredBestsellers.overrideTitle,
+        overrideDescription: featuredBestsellers.overrideDescription,
+        overrideLinkUrl: featuredBestsellers.overrideLinkUrl,
         product: products,
       })
       .from(featuredBestsellers)
