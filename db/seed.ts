@@ -56,6 +56,8 @@ async function seed() {
         name: 'Silk Sarees',
         slug: 'silk',
         description: 'Pure silk sarees with rich texture and shine',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg',
+        imagePublicId: 'demo/accessories-bag',
         order: 1,
       },
       {
@@ -63,6 +65,8 @@ async function seed() {
         name: 'Cotton Sarees',
         slug: 'cotton',
         description: 'Comfortable and breathable cotton sarees for daily wear',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg',
+        imagePublicId: 'demo/leather-bag',
         order: 2,
       },
       {
@@ -70,6 +74,8 @@ async function seed() {
         name: 'Banarasi Sarees',
         slug: 'banarasi',
         description: 'Traditional Banarasi silk sarees with intricate zari work',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg',
+        imagePublicId: 'demo/shoes',
         order: 3,
       },
       {
@@ -77,6 +83,8 @@ async function seed() {
         name: 'Kanjivaram Sarees',
         slug: 'kanjivaram',
         description: 'South Indian Kanjivaram silk sarees with temple borders',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg',
+        imagePublicId: 'demo/analog-classic',
         order: 4,
       },
       {
@@ -84,6 +92,8 @@ async function seed() {
         name: 'Patola Sarees',
         slug: 'patola',
         description: 'Double ikat Patola sarees with geometric patterns',
+        imageUrl: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food.jpg',
+        imagePublicId: 'demo/food',
         order: 5,
       },
     ];

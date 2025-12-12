@@ -51,15 +51,24 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { sectionId, name, slug, description, order, active } = body;
+    const { sectionId, name, slug, description, order, active, imageUrl, imagePublicId } = body;
 
-    console.log('Creating category with data:', { sectionId, name, slug, description, order, active });
+    console.log('Creating category with data:', { sectionId, name, slug, description, order, active, imageUrl, imagePublicId });
 
     // Validate required fields
     if (!sectionId || !name || !slug) {
       console.error('Missing required fields:', { sectionId, name, slug });
       return NextResponse.json(
         { error: 'Section, name, and slug are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate image fields (required)
+    if (!imageUrl || !imagePublicId) {
+      console.error('Missing required image fields:', { imageUrl, imagePublicId });
+      return NextResponse.json(
+        { error: 'Image URL and Image Public ID are required' },
         { status: 400 }
       );
     }
@@ -72,6 +81,8 @@ export async function POST(request: NextRequest) {
         name,
         slug,
         description: description || null,
+        imageUrl,
+        imagePublicId,
         order: order || 0,
         active: active ?? true,
       })
