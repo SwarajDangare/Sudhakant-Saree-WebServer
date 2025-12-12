@@ -14,7 +14,6 @@ interface Collection {
   imageUrl: string;
   imagePublicId: string;
   linkUrl: string | null;
-  productsCount: number;
   isFeatured: boolean;
   displayOrder: number;
   isActive: boolean;
@@ -37,7 +36,6 @@ export default function CollectionsPage() {
     imageUrl: '',
     imagePublicId: '',
     linkUrl: '',
-    productsCount: 0,
     isFeatured: true,
     displayOrder: 0,
     isActive: true,
@@ -70,7 +68,6 @@ export default function CollectionsPage() {
       imageUrl: '',
       imagePublicId: '',
       linkUrl: '',
-      productsCount: 0,
       isFeatured: true,
       displayOrder: collections.length,
       isActive: true,
@@ -88,7 +85,6 @@ export default function CollectionsPage() {
       imageUrl: collection.imageUrl,
       imagePublicId: collection.imagePublicId,
       linkUrl: collection.linkUrl || '',
-      productsCount: collection.productsCount,
       isFeatured: collection.isFeatured,
       displayOrder: collection.displayOrder,
       isActive: collection.isActive,
@@ -135,7 +131,6 @@ export default function CollectionsPage() {
           imageUrl: '',
           imagePublicId: '',
           linkUrl: '',
-          productsCount: 0,
           isFeatured: true,
           displayOrder: 0,
           isActive: true,
@@ -301,31 +296,17 @@ export default function CollectionsPage() {
               </CldUploadWidget>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Link URL
-                </label>
-                <input
-                  type="text"
-                  value={formData.linkUrl}
-                  onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  placeholder="/collections/wedding"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Products Count
-                </label>
-                <input
-                  type="number"
-                  value={formData.productsCount}
-                  onChange={(e) => setFormData({ ...formData, productsCount: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Link URL
+              </label>
+              <input
+                type="text"
+                value={formData.linkUrl}
+                onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                placeholder="/collections/wedding"
+              />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
@@ -440,8 +421,7 @@ export default function CollectionsPage() {
                     {collection.description && (
                       <p className="text-sm text-gray-600 mb-2">{collection.description}</p>
                     )}
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                      <span>{collection.productsCount} products</span>
+                    <div className="flex items-center justify-end text-xs text-gray-500 mb-3">
                       <span>Order: {collection.displayOrder}</span>
                     </div>
                     <div className="flex gap-2">
