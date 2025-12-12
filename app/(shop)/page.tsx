@@ -165,6 +165,10 @@ async function getHomepageData() {
           id: featuredNewArrivals.id,
           productId: featuredNewArrivals.productId,
           displayOrder: featuredNewArrivals.displayOrder,
+          overrideImageUrl: featuredNewArrivals.overrideImageUrl,
+          overrideTitle: featuredNewArrivals.overrideTitle,
+          overrideDescription: featuredNewArrivals.overrideDescription,
+          overrideLinkUrl: featuredNewArrivals.overrideLinkUrl,
           product: products,
         })
         .from(featuredNewArrivals)
@@ -235,8 +239,10 @@ async function getHomepageData() {
 
     let finalNewArrivals;
     if (newArrivalsMode === 'manual') {
-      finalNewArrivals = newArrivalProducts.map((item: any) => item.product).filter(Boolean);
+      // Pass full items with override fields for manual mode
+      finalNewArrivals = newArrivalProducts.filter((item: any) => item.product);
     } else {
+      // For automatic mode, fetch newest products (no override fields)
       const automaticNewArrivals = await db
         .select()
         .from(products)

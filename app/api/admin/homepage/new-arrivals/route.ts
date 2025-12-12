@@ -18,6 +18,12 @@ export async function GET(request: Request) {
         id: featuredNewArrivals.id,
         productId: featuredNewArrivals.productId,
         displayOrder: featuredNewArrivals.displayOrder,
+        isActive: featuredNewArrivals.isActive,
+        overrideImageUrl: featuredNewArrivals.overrideImageUrl,
+        overrideImagePublicId: featuredNewArrivals.overrideImagePublicId,
+        overrideTitle: featuredNewArrivals.overrideTitle,
+        overrideDescription: featuredNewArrivals.overrideDescription,
+        overrideLinkUrl: featuredNewArrivals.overrideLinkUrl,
         product: products,
       })
       .from(featuredNewArrivals)
