@@ -20,7 +20,7 @@ export default function ShopLayout({
         </ScrollWrapper>
       </div>
 
-      {/* Main content without top padding on homepage, with padding on other pages */}
+      {/* Main content - homepage has no top padding (hero starts from top), other pages have padding */}
       <main className="min-h-screen">
         {children}
       </main>
