@@ -62,6 +62,14 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
               Home
             </Link>
 
+            <Link
+              href="/shop"
+              className="block py-2 text-gray-700 hover:text-maroon transition-colors font-medium"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Shop All
+            </Link>
+
             {/* Categories Section */}
             <div className="space-y-1">
               <Link
