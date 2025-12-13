@@ -67,12 +67,20 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { sectionId, name, slug, description, order, active } = body;
+    const { sectionId, name, slug, description, order, active, imageUrl, imagePublicId } = body;
 
     // Validate required fields
     if (!sectionId || !name || !slug) {
       return NextResponse.json(
         { error: 'Section, name, and slug are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate image fields (required)
+    if (!imageUrl || !imagePublicId) {
+      return NextResponse.json(
+        { error: 'Image URL and Image Public ID are required' },
         { status: 400 }
       );
     }
@@ -85,6 +93,8 @@ export async function PUT(
         name,
         slug,
         description: description || null,
+        imageUrl,
+        imagePublicId,
         order: order || 0,
         active: active ?? true,
         updatedAt: new Date(),

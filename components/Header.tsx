@@ -48,6 +48,10 @@ export default async function Header() {
               Home
             </Link>
 
+            <Link href="/shop" className="text-gray-700 hover:text-maroon transition-colors font-medium">
+              Shop All
+            </Link>
+
             {/* Section Dropdowns */}
             {sectionsWithCategories.map((section) => (
               <div key={section.id} className="relative group">

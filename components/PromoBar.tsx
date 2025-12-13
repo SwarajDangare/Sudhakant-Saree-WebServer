@@ -2,32 +2,40 @@
 
 import { useState, useEffect } from 'react';
 
+interface Announcement {
+  id: string;
+  text: string;
+  highlightText: string | null;
+}
+
 export default function PromoBar() {
   const [isVisible, setIsVisible] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Multiple announcements that rotate
-  const announcements = [
-    {
-      id: 1,
-      text: '🎉 FLAT 10% OFF on your first order | Use code',
-      highlight: 'WELCOME10',
-    },
-    {
-      id: 2,
-      text: '🚚 FREE Shipping on orders above',
-      highlight: '₹999',
-    },
-    {
-      id: 3,
-      text: '💰 COD Available | Easy Returns | 100% Authentic',
-      highlight: null,
-    },
-  ];
+  // Fetch announcements from database
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await fetch('/api/homepage/announcements');
+        if (response.ok) {
+          const data = await response.json();
+          setAnnouncements(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch announcements:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
 
   // Auto-rotate announcements every 4 seconds
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || announcements.length === 0) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % announcements.length);
@@ -36,7 +44,8 @@ export default function PromoBar() {
     return () => clearInterval(interval);
   }, [isVisible, announcements.length]);
 
-  if (!isVisible) return null;
+  // Don't render if closed, loading, or no announcements
+  if (!isVisible || loading || announcements.length === 0) return null;
 
   const currentAnnouncement = announcements[currentIndex];
 
@@ -54,8 +63,8 @@ export default function PromoBar() {
       >
         <p className="inline">
           {currentAnnouncement.text}{' '}
-          {currentAnnouncement.highlight && (
-            <span className="font-bold text-golden">{currentAnnouncement.highlight}</span>
+          {currentAnnouncement.highlightText && (
+            <span className="font-bold text-golden">{currentAnnouncement.highlightText}</span>
           )}
         </p>
       </div>

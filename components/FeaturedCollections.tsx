@@ -1,57 +1,47 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import SectionHeading from './SectionHeading';
 
-// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
-const collections = [
-  {
-    id: 1,
-    name: 'Wedding Special',
-    tagline: 'Bridal Elegance',
-    description: 'Exquisite sarees for your special day',
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg', // Replace with actual image
-    link: '/collections/wedding-special',
-    productsCount: 48,
-  },
-  {
-    id: 2,
-    name: 'Festive Favorites',
-    tagline: 'Celebrate in Style',
-    description: 'Perfect for all your celebrations',
-    image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg', // Replace with actual image
-    link: '/collections/festive',
-    productsCount: 36,
-  },
-];
+interface Collection {
+  id: string;
+  name: string;
+  slug: string;
+  tagline?: string | null;
+  description?: string | null;
+  imageUrl: string;
+  linkUrl: string;
+}
 
-export default function FeaturedCollections() {
+interface FeaturedCollectionsProps {
+  collections: Collection[];
+}
+
+export default function FeaturedCollections({ collections }: FeaturedCollectionsProps) {
+  if (!collections || collections.length === 0) {
+    return null;
+  }
   return (
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <span className="text-golden text-sm font-semibold tracking-widest uppercase">
-            Curated for You
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-maroon mt-3 mb-4">
-            Featured Collections
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Handpicked selections to make every occasion memorable
-          </p>
-        </div>
+        <SectionHeading
+          subtitle="Curated for You"
+          title="Featured Collections"
+          description="Handpicked selections to make every occasion memorable"
+        />
 
         {/* Collections Grid - 2 Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {collections.map((collection, index) => (
             <Link
               key={collection.id}
-              href={collection.link}
+              href={collection.linkUrl}
               className="group relative overflow-hidden rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-1"
             >
               {/* Image Container */}
               <div className="aspect-[16/10] relative bg-gray-100">
                 <Image
-                  src={collection.image}
+                  src={collection.imageUrl}
                   alt={collection.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -80,12 +70,8 @@ export default function FeaturedCollections() {
                     {collection.description}
                   </p>
 
-                  {/* Products Count and CTA */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80 text-sm">
-                      {collection.productsCount} Products
-                    </span>
-
+                  {/* CTA Button */}
+                  <div className="flex items-center justify-end">
                     <div className="flex items-center gap-2 text-white font-semibold text-sm md:text-base group/btn">
                       <span>EXPLORE COLLECTION</span>
                       <svg

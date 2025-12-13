@@ -1,84 +1,48 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import SectionHeading from './SectionHeading';
 
-// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
-export default function ShopByOccasion() {
-  const occasions = [
-    {
-      id: 1,
-      name: 'Wedding',
-      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/accessories-bag.jpg', // Replace
-      link: '/categories?occasion=wedding',
-      gradient: 'from-pink-600/80 to-red-600/80',
-      icon: '💍',
-    },
-    {
-      id: 2,
-      name: 'Festival',
-      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg', // Replace
-      link: '/categories?occasion=festival',
-      gradient: 'from-purple-600/80 to-indigo-600/80',
-      icon: '🎉',
-    },
-    {
-      id: 3,
-      name: 'Party',
-      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/shoes.jpg', // Replace
-      link: '/categories?occasion=party',
-      gradient: 'from-blue-600/80 to-cyan-600/80',
-      icon: '🥳',
-    },
-    {
-      id: 4,
-      name: 'Casual',
-      image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/analog-classic.jpg', // Replace
-      link: '/categories?occasion=casual',
-      gradient: 'from-green-600/80 to-teal-600/80',
-      icon: '👗',
-    },
-  ];
+interface Occasion {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  imageUrl: string;
+  gradientFrom: string | null;
+  gradientTo: string | null;
+  linkUrl: string;
+}
+
+interface ShopByOccasionProps {
+  occasions: Occasion[];
+}
+
+export default function ShopByOccasion({ occasions }: ShopByOccasionProps) {
+  if (!occasions || occasions.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-white py-12 md:py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-8 md:mb-16">
-          {/* Decorative element */}
-          <div className="flex items-center justify-center mb-4">
-            <svg className="w-16 h-8 text-maroon" viewBox="0 0 100 20" fill="currentColor">
-              <path d="M0 10 Q 25 0, 50 10 T 100 10" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-              <circle cx="50" cy="10" r="3" fill="currentColor"/>
-            </svg>
-          </div>
-
-          <h2 className="text-4xl md:text-5xl font-bold text-maroon mb-4">
-            Shop by Occasion
-          </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Find the perfect saree for every celebration
-          </p>
-
-          {/* Decorative element */}
-          <div className="flex items-center justify-center mt-4">
-            <svg className="w-16 h-8 text-maroon" viewBox="0 0 100 20" fill="currentColor">
-              <path d="M0 10 Q 25 20, 50 10 T 100 10" stroke="currentColor" strokeWidth="0.5" fill="none"/>
-              <circle cx="50" cy="10" r="3" fill="currentColor"/>
-            </svg>
-          </div>
-        </div>
+        <SectionHeading
+          title="Shop by Occasion"
+          description="Find the perfect saree for every celebration"
+        />
 
         {/* Occasions Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {occasions.map((occasion) => (
             <Link
               key={occasion.id}
-              href={occasion.link}
+              href={occasion.linkUrl}
               className="group relative overflow-hidden rounded-xl md:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
               {/* Image Container with Next.js Image - Shorter on mobile */}
               <div className="aspect-[4/3] md:aspect-[3/4] relative bg-gray-100">
                 <Image
-                  src={occasion.image}
+                  src={occasion.imageUrl}
                   alt={occasion.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -87,7 +51,12 @@ export default function ShopByOccasion() {
                 />
 
                 {/* Gradient overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-t ${occasion.gradient} opacity-70 group-hover:opacity-80 transition-opacity duration-300`}></div>
+                <div
+                  className="absolute inset-0 bg-gradient-to-t opacity-70 group-hover:opacity-80 transition-opacity duration-300"
+                  style={{
+                    backgroundImage: `linear-gradient(to top, ${occasion.gradientFrom || '#800000'}, ${occasion.gradientTo || '#FFD700'})`
+                  }}
+                ></div>
 
                 {/* Content */}
                 <div className="absolute inset-0 flex items-center justify-center p-2 md:p-0">

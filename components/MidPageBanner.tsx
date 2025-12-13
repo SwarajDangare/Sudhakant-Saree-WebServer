@@ -1,20 +1,20 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-// Mock data for Phase 1 - will be replaced with database fetch in Phase 2
-const banner = {
-  id: 1,
-  title: 'Wedding Season Sale',
-  subtitle: 'EXCLUSIVE OFFER',
-  description: 'Get up to 50% OFF on bridal collection',
-  image: 'https://res.cloudinary.com/demo/image/upload/v1/samples/ecommerce/leather-bag-gray.jpg', // Replace with actual image
-  linkUrl: '/sale/wedding-season',
-  linkText: 'Shop Now',
-  active: true,
-};
+interface MidPageBannerProps {
+  banner: {
+    id: string;
+    title: string;
+    subtitle?: string | null;
+    description?: string | null;
+    imageUrl: string;
+    linkUrl?: string | null;
+    linkText?: string | null;
+  };
+}
 
-export default function MidPageBanner() {
-  if (!banner.active) return null;
+export default function MidPageBanner({ banner }: MidPageBannerProps) {
+  if (!banner) return null;
 
   return (
     <section className="relative w-full overflow-hidden">
@@ -22,7 +22,7 @@ export default function MidPageBanner() {
       <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px]">
         {/* Background Image */}
         <Image
-          src={banner.image}
+          src={banner.imageUrl}
           alt={banner.title}
           fill
           className="object-cover"
