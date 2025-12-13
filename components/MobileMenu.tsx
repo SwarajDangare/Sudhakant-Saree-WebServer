@@ -38,7 +38,7 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
       {/* Mobile menu button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden text-gray-700 hover:text-maroon"
+        className="md:hidden text-white hover:text-golden drop-shadow-md"
         aria-label="Toggle mobile menu"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +52,7 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <nav className="md:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg max-h-[80vh] overflow-y-auto">
+        <nav className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border-t border-golden/30 shadow-lg max-h-[80vh] overflow-y-auto z-50">
           <div className="px-4 py-4 space-y-2">
             <Link
               href="/"
@@ -184,7 +184,7 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
               ) : (
                 <Link
                   href="/login"
-                  className="block py-2 text-center bg-maroon text-white rounded-md hover:bg-deep-maroon transition-colors font-medium mt-2"
+                  className="block py-2 text-center bg-golden text-maroon rounded-md hover:bg-maroon hover:text-white transition-colors font-medium mt-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Login / Create Account
