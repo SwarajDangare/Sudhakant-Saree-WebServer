@@ -10,7 +10,6 @@ interface Announcement {
 
 export default function PromoBar() {
   const [isVisible, setIsVisible] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,28 +33,6 @@ export default function PromoBar() {
     fetchAnnouncements();
   }, []);
 
-  // Handle scroll behavior - hide on scroll down, show on scroll up
-  useEffect(() => {
-    let lastScrollY = window.scrollY;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        // Scrolling down
-        setIsScrolled(true);
-      } else {
-        // Scrolling up
-        setIsScrolled(false);
-      }
-
-      lastScrollY = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   // Auto-rotate announcements every 4 seconds
   useEffect(() => {
     if (!isVisible || announcements.length === 0) return;
@@ -73,7 +50,7 @@ export default function PromoBar() {
   const currentAnnouncement = announcements[currentIndex];
 
   return (
-    <div className={`relative bg-maroon/80 text-white text-center py-2.5 px-4 text-sm overflow-hidden transition-transform duration-300 ${isScrolled ? '-translate-y-full' : 'translate-y-0'}`}>
+    <div className="relative bg-maroon/80 text-white text-center py-2.5 px-4 text-sm overflow-hidden">
       {/* Animated background pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent animate-shimmer"></div>
