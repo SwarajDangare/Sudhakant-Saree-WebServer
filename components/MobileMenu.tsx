@@ -52,7 +52,7 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <nav className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border-t border-golden/30 shadow-lg max-h-[80vh] overflow-y-auto z-50">
+        <nav className="md:hidden absolute top-full left-0 right-0 bg-white/95 border-t border-golden/30 shadow-lg max-h-[80vh] overflow-y-auto z-50">
           <div className="px-4 py-4 space-y-2">
             <Link
               href="/"

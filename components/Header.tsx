@@ -32,13 +32,13 @@ export default async function Header() {
   );
 
   return (
-    <header className="bg-transparent backdrop-blur-md">
+    <header className="bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="text-3xl font-bold text-golden drop-shadow-lg">
-              श्री SHREE
+              Sudhakant Sarees
             </div>
           </Link>
 
@@ -69,7 +69,7 @@ export default async function Header() {
 
                 {/* Dropdown for categories in this section */}
                 {section.categories.length > 0 && (
-                  <div className="absolute left-0 mt-2 w-56 bg-white/95 backdrop-blur-md rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 max-h-96 overflow-y-auto">
+                  <div className="absolute left-0 mt-2 w-56 bg-white/95 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 max-h-96 overflow-y-auto">
                     <div className="py-2">
                       {section.categories.map((category) => (
                         <Link

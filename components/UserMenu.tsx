@@ -19,7 +19,7 @@ export default function UserMenu() {
           </svg>
           {session.user.name || 'Account'}
         </button>
-        <div className="absolute right-0 mt-2 w-48 bg-white/95 backdrop-blur-md rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
+        <div className="absolute right-0 mt-2 w-48 bg-white/95 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
           <Link href="/orders" className="block px-4 py-2 text-gray-700 hover:bg-golden hover:text-white transition-colors rounded-t-lg">
             My Orders
           </Link>
