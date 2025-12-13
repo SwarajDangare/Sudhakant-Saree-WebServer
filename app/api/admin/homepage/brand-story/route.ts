@@ -107,8 +107,9 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Revalidate homepage to show changes immediately
+    // Revalidate pages to show changes immediately
     revalidatePath('/');
+    revalidatePath('/about');
     revalidatePath('/admin/homepage/brand-story');
 
     return NextResponse.json(updatedStory);

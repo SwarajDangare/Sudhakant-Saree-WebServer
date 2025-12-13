@@ -30,6 +30,7 @@ export async function PUT(request: Request) {
       imagePublicId,
       linkUrl,
       linkText,
+      gradientColor,
       isActive,
     } = body;
 
@@ -57,6 +58,7 @@ export async function PUT(request: Request) {
           imagePublicId: imagePublicId || '',
           linkUrl: linkUrl || null,
           linkText: linkText || 'Shop Now',
+          gradientColor: gradientColor || '#800000',
           isActive: isActive !== undefined ? isActive : true,
           updatedAt: new Date(),
         })
@@ -74,6 +76,7 @@ export async function PUT(request: Request) {
           imagePublicId: imagePublicId || '',
           linkUrl: linkUrl || null,
           linkText: linkText || 'Shop Now',
+          gradientColor: gradientColor || '#800000',
           isActive: isActive !== undefined ? isActive : true,
         })
         .returning();
