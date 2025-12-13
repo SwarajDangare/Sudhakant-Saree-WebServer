@@ -3,6 +3,10 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { midPageBanner } from '@/db/schema';
 
+// Force Node.js runtime for database operations
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // GET the mid-page banner
 export async function GET() {
   try {

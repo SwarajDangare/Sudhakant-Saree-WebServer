@@ -4,6 +4,10 @@ import { db } from '@/db';
 import { brandStory, brandStoryStats } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+// Force Node.js runtime for database operations
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // GET the brand story with stats
 export async function GET() {
   try {
