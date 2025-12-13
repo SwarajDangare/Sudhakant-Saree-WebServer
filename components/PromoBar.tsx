@@ -50,7 +50,7 @@ export default function PromoBar() {
   const currentAnnouncement = announcements[currentIndex];
 
   return (
-    <div className="relative bg-maroon text-white text-center py-2.5 px-4 text-sm overflow-hidden">
+    <div className="relative bg-maroon/80 text-white text-center py-2.5 px-4 text-sm overflow-hidden">
       {/* Animated background pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent animate-shimmer"></div>

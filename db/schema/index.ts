@@ -342,6 +342,7 @@ export const midPageBanner = pgTable('mid_page_banner', {
   linkUrl: text('linkUrl'),
   linkText: text('linkText').default('Shop Now'),
   backgroundColor: text('backgroundColor'),
+  gradientColor: text('gradientColor').default('#800000'), // Maroon default
   textColor: text('textColor').default('#FFFFFF'),
   isActive: boolean('isActive').default(true).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),

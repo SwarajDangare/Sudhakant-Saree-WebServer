@@ -4,6 +4,10 @@ import { db } from '@/db';
 import { brandStory, brandStoryStats } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
+// Force Node.js runtime for database operations
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // GET the brand story with stats
 export async function GET() {
   try {
@@ -107,8 +111,9 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Revalidate homepage to show changes immediately
+    // Revalidate pages to show changes immediately
     revalidatePath('/');
+    revalidatePath('/about');
     revalidatePath('/admin/homepage/brand-story');
 
     return NextResponse.json(updatedStory);

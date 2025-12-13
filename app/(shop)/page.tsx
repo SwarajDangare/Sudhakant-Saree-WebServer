@@ -330,10 +330,7 @@ export default async function Home() {
         <NewArrivals products={data.newArrivals} />
       )}
 
-      {/* Brand Story - Heritage and values section */}
-      {data.sections.brand_story?.isActive === true && data.brandStory && (
-        <BrandStory story={data.brandStory} stats={data.brandStoryStats} />
-      )}
+      {/* Brand Story - Moved to /about page */}
 
       {/* Instagram Feed - Social media integration */}
       {data.sections.instagram_feed?.isActive === true && data.instagramFeed.length > 0 && (
