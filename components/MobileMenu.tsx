@@ -38,7 +38,7 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
       {/* Mobile menu button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden text-white hover:text-golden drop-shadow-md"
+        className="md:hidden hover:text-[#9d2235] drop-shadow-md transition-colors"
         aria-label="Toggle mobile menu"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

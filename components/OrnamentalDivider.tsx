@@ -4,7 +4,7 @@ interface OrnamentalDividerProps {
 
 export default function OrnamentalDivider({ className = '' }: OrnamentalDividerProps) {
   return (
-    <div className={`flex justify-center my-4 ${className}`}>
+    <div className={`flex justify-center ${className}`}>
       <svg
         width="300"
         height="80"
