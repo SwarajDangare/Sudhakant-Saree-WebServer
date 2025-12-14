@@ -2,6 +2,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
 import PromoBar from '@/components/PromoBar';
+import ScrollWrapper from '@/components/ScrollWrapper';
 import { Providers } from '@/components/Providers';
 
 export default function ShopLayout({
@@ -13,11 +14,13 @@ export default function ShopLayout({
     <Providers>
       {/* PromoBar and Header with fixed positioning to overlay on content */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <PromoBar />
-        <Header />
+        <ScrollWrapper>
+          <PromoBar />
+          <Header />
+        </ScrollWrapper>
       </div>
 
-      {/* Main content without top padding on homepage, with padding on other pages */}
+      {/* Main content - homepage has no top padding (hero starts from top), other pages have padding */}
       <main className="min-h-screen">
         {children}
       </main>

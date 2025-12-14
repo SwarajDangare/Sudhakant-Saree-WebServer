@@ -32,6 +32,7 @@ export default function MidPageBannerPage() {
     imagePublicId: '',
     linkUrl: '',
     linkText: 'Shop Now',
+    gradientColor: '#800000', // Maroon default
     isActive: true,
   });
 
@@ -53,6 +54,7 @@ export default function MidPageBannerPage() {
           imagePublicId: data.imagePublicId,
           linkUrl: data.linkUrl || '',
           linkText: data.linkText || 'Shop Now',
+          gradientColor: data.gradientColor || '#800000',
           isActive: data.isActive,
         });
       }
@@ -228,6 +230,31 @@ export default function MidPageBannerPage() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Gradient Overlay Color
+            </label>
+            <div className="flex items-center gap-4">
+              <input
+                type="color"
+                value={formData.gradientColor}
+                onChange={(e) => setFormData({ ...formData, gradientColor: e.target.value })}
+                className="h-12 w-24 border border-gray-300 rounded-lg cursor-pointer"
+              />
+              <input
+                type="text"
+                value={formData.gradientColor}
+                onChange={(e) => setFormData({ ...formData, gradientColor: e.target.value })}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono"
+                placeholder="#800000"
+                pattern="^#[0-9A-Fa-f]{6}$"
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Choose the color for the gradient overlay on the banner image
+            </p>
+          </div>
+
           <div className="flex items-center">
             <input
               type="checkbox"
@@ -261,7 +288,12 @@ export default function MidPageBannerPage() {
                 fill
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
+              <div
+                className="absolute inset-0 flex items-center"
+                style={{
+                  background: `linear-gradient(to right, ${formData.gradientColor}e6 0%, ${formData.gradientColor}99 50%, transparent 100%)`
+                }}
+              >
                 <div className="max-w-2xl p-12 text-white">
                   {formData.subtitle && (
                     <p className="text-sm font-semibold uppercase tracking-wider mb-2 text-saffron">

@@ -10,6 +10,7 @@ interface MidPageBannerProps {
     imageUrl: string;
     linkUrl?: string | null;
     linkText?: string | null;
+    gradientColor?: string | null;
   };
 }
 
@@ -31,7 +32,12 @@ export default function MidPageBanner({ banner }: MidPageBannerProps) {
         />
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-maroon/90 via-maroon/60 to-transparent"></div>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to right, ${banner.gradientColor || '#800000'}e6 0%, ${banner.gradientColor || '#800000'}99 50%, transparent 100%)`
+          }}
+        ></div>
 
         {/* Content */}
         <div className="absolute inset-0 flex items-center">

@@ -1,0 +1,1 @@
+ALTER TABLE "mid_page_banner" ADD COLUMN "gradientColor" text DEFAULT '#800000';

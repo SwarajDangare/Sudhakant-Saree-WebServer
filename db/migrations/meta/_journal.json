@@ -85,6 +85,13 @@
       "when": 1765571321946,
       "tag": "0011_many_taskmaster",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1765662149217,
+      "tag": "0012_boring_zeigeist",
+      "breakpoints": true
     }
   ]
 }
