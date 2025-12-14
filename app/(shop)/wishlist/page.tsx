@@ -7,6 +7,10 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+// Force dynamic rendering - this page makes API calls
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface WishlistProduct {
     id: string;
     productId: string;
