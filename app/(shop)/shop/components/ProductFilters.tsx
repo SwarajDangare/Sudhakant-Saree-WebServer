@@ -88,7 +88,6 @@ export default function ProductFilters({
     (filters.discountRange ? 1 : 0);
 
   return (
-<<<<<<< HEAD
     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden sticky top-24">
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
@@ -96,15 +95,6 @@ export default function ProductFilters({
           <h2 className="text-base font-bold text-gray-900 uppercase tracking-wide">Filter By</h2>
           {activeFilterCount > 0 && (
             <span className="bg-maroon text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-=======
-    <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">FILTER BY</h2>
-          {activeFilterCount > 0 && (
-            <span className="bg-maroon text-white text-xs font-semibold px-2 py-1 rounded-full">
->>>>>>> 09de0b8185741b59e2c6824e38c9e2570aa40b3b
               {activeFilterCount}
             </span>
           )}
@@ -112,13 +102,9 @@ export default function ProductFilters({
         {activeFilterCount > 0 && (
           <button
             onClick={onClearFilters}
-<<<<<<< HEAD
             className="text-xs text-gray-500 hover:text-maroon transition uppercase tracking-wide font-medium"
-=======
-            className="text-sm text-gray-500 hover:text-maroon transition font-medium uppercase tracking-wide"
->>>>>>> 09de0b8185741b59e2c6824e38c9e2570aa40b3b
           >
-            Reset
+            Clear All
           </button>
         )}
       </div>
