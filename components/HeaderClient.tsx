@@ -54,16 +54,9 @@ export default function HeaderClient({ sectionsWithCategories }: HeaderClientPro
 
     const isHomepage = pathname === '/';
 
-    const headerClass = isScrolled
+    const headerClass = (isScrolled || !isHomepage)
         ? 'bg-white border-b border-gray-100 shadow-sm'
         : 'bg-transparent border-transparent';
-
-    // If on homepage: Text is white when at top (transparent), dark when scrolled.
-    // If NOT on homepage (e.g. Shop): Text is ALWAYS dark because background is likely white/light (except if we want transparency there too, but user asked for black font on shop page).
-    // Actually, usually inner pages have a white header by default or transparent over nothing.
-    // Let's assume inner pages have a default white header or at least need dark text.
-
-    // User request: "change the header font color to black when on shop pagew"
 
     const textColorClass = (isScrolled || !isHomepage)
         ? 'text-gray-900'
@@ -73,7 +66,7 @@ export default function HeaderClient({ sectionsWithCategories }: HeaderClientPro
 
     return (
         <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerClass}`}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="w-full px-4 sm:px-6 md:px-8">
                 <div className="flex justify-between items-center h-20">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-2">
