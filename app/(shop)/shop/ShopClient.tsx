@@ -335,15 +335,15 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
   };
 
   return (
-    <div className="min-h-screen bg-silk-white">
+    <div className="min-h-screen bg-white">
       {/* Page Header */}
-      <section className="bg-gradient-to-br from-maroon via-indian-red to-saffron text-white pattern-bg py-12">
+      <section className="bg-gradient-to-br from-maroon via-indian-red to-saffron text-white py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">
               Shop All Sarees
             </h1>
-            <p className="text-xl text-silk-white max-w-2xl mx-auto">
+            <p className="text-lg text-silk-white">
               Browse our complete collection of handcrafted sarees
             </p>
           </div>
@@ -351,7 +351,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
       </section>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Toolbar */}
         <ProductToolbar
           totalProducts={filteredProducts.length}
@@ -368,9 +368,9 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
           onClearAll={handleClearFilters}
         />
 
-        <div className="flex gap-8">
+        <div className="flex gap-6 py-6">
           {/* Desktop Filters Sidebar */}
-          <aside className="hidden lg:block w-80 flex-shrink-0">
+          <aside className="hidden lg:block w-72 flex-shrink-0">
             <ProductFilters
               filters={filters}
               filterOptions={filterOptions}

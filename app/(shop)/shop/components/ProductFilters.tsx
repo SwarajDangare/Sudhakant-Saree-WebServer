@@ -85,13 +85,13 @@ export default function ProductFilters({
     (filters.onSale ? 1 : 0);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden sticky top-24">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold text-maroon">Filters</h2>
+          <h2 className="text-base font-bold text-gray-900 uppercase tracking-wide">Filter By</h2>
           {activeFilterCount > 0 && (
-            <span className="bg-saffron text-white text-xs font-semibold px-2 py-1 rounded-full">
+            <span className="bg-maroon text-white text-xs font-semibold px-2 py-0.5 rounded-full">
               {activeFilterCount}
             </span>
           )}
@@ -99,14 +99,14 @@ export default function ProductFilters({
         {activeFilterCount > 0 && (
           <button
             onClick={onClearFilters}
-            className="text-sm text-gray-500 hover:text-maroon transition"
+            className="text-xs text-gray-500 hover:text-maroon transition uppercase tracking-wide font-medium"
           >
             Clear All
           </button>
         )}
       </div>
 
-      <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto pr-2">
+      <div className="space-y-0 max-h-[calc(100vh-250px)] overflow-y-auto">
         {/* Sections Filter */}
         <FilterSection
           title="Collection"
@@ -210,11 +210,10 @@ export default function ProductFilters({
                 <button
                   key={color}
                   onClick={() => handleCheckboxChange('colors', color)}
-                  className={`group relative w-10 h-10 rounded-full border-2 transition-all ${
-                    filters.colors.includes(color)
-                      ? 'border-maroon scale-110 shadow-lg'
-                      : 'border-gray-300 hover:border-saffron hover:scale-105'
-                  }`}
+                  className={`group relative w-10 h-10 rounded-full border-2 transition-all ${filters.colors.includes(color)
+                    ? 'border-maroon scale-110 shadow-lg'
+                    : 'border-gray-300 hover:border-saffron hover:scale-105'
+                    }`}
                   title={color}
                 >
                   <div
@@ -358,22 +357,20 @@ export default function ProductFilters({
                     onFilterChange({ blousePieceIncluded: null });
                   }
                 }}
-                className={`w-12 h-6 rounded-full transition-colors relative ${
-                  filters.blousePieceIncluded === true
-                    ? 'bg-green-500'
-                    : filters.blousePieceIncluded === false
+                className={`w-12 h-6 rounded-full transition-colors relative ${filters.blousePieceIncluded === true
+                  ? 'bg-green-500'
+                  : filters.blousePieceIncluded === false
                     ? 'bg-red-500'
                     : 'bg-gray-300'
-                }`}
+                  }`}
               >
                 <div
-                  className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                    filters.blousePieceIncluded === true
-                      ? 'translate-x-7'
-                      : filters.blousePieceIncluded === false
+                  className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${filters.blousePieceIncluded === true
+                    ? 'translate-x-7'
+                    : filters.blousePieceIncluded === false
                       ? 'translate-x-1'
                       : 'translate-x-4'
-                  }`}
+                    }`}
                 />
               </button>
             </label>
@@ -384,14 +381,12 @@ export default function ProductFilters({
               </span>
               <button
                 onClick={() => onFilterChange({ inStockOnly: !filters.inStockOnly })}
-                className={`w-12 h-6 rounded-full transition-colors relative ${
-                  filters.inStockOnly ? 'bg-maroon' : 'bg-gray-300'
-                }`}
+                className={`w-12 h-6 rounded-full transition-colors relative ${filters.inStockOnly ? 'bg-maroon' : 'bg-gray-300'
+                  }`}
               >
                 <div
-                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                    filters.inStockOnly ? 'translate-x-6' : ''
-                  }`}
+                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${filters.inStockOnly ? 'translate-x-6' : ''
+                    }`}
                 />
               </button>
             </label>
@@ -402,14 +397,12 @@ export default function ProductFilters({
               </span>
               <button
                 onClick={() => onFilterChange({ onSale: !filters.onSale })}
-                className={`w-12 h-6 rounded-full transition-colors relative ${
-                  filters.onSale ? 'bg-saffron' : 'bg-gray-300'
-                }`}
+                className={`w-12 h-6 rounded-full transition-colors relative ${filters.onSale ? 'bg-saffron' : 'bg-gray-300'
+                  }`}
               >
                 <div
-                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                    filters.onSale ? 'translate-x-6' : ''
-                  }`}
+                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${filters.onSale ? 'translate-x-6' : ''
+                    }`}
                 />
               </button>
             </label>
@@ -433,16 +426,16 @@ function FilterSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-gray-200 pb-4">
+    <div className="border-b border-gray-200">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between mb-3 group"
+        className="w-full flex items-center justify-between px-6 py-4 group hover:bg-gray-50 transition"
       >
-        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-maroon transition">
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
           {title}
         </h3>
         <svg
-          className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -450,7 +443,7 @@ function FilterSection({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      {isExpanded && <div>{children}</div>}
+      {isExpanded && <div className="px-6 pb-4">{children}</div>}
     </div>
   );
 }
