@@ -34,7 +34,7 @@ export default function ProductToolbar({
   }, [searchInput, onFilterChange]);
 
   return (
-    <div className="bg-white border-b border-gray-100 sticky top-[var(--header-height)] z-20">
+    <div className="bg-white border-b border-gray-100 sticky top-20 z-40 transition-all duration-300">
       {/* Desktop Toolbar */}
       <div className="hidden lg:flex items-stretch justify-between h-14">
         {/* Left: View Options */}

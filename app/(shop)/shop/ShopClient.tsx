@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ProductFilters from './components/ProductFilters';
 import ProductToolbar from './components/ProductToolbar';
@@ -364,11 +365,12 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
   return (
     <div className="min-h-screen bg-white">
       {/* Breadcrumbs / Minimal Top Header - optional, can be dynamic based on category */}
+      {/* Breadcrumbs / Minimal Top Header - optional, can be dynamic based on category */}
       <div className="pt-24 md:pt-28 pb-4 px-6 md:px-8 border-b border-gray-100 mb-0">
         <nav className="flex text-xs text-gray-500 uppercase tracking-widest font-medium">
-          <span className="hover:text-gray-900 cursor-pointer">Home</span>
+          <Link href="/" className="hover:text-gray-900 cursor-pointer">Home</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900">New Arrivals</span>
+          <span className="text-gray-900">Shop</span>
         </nav>
       </div>
 
