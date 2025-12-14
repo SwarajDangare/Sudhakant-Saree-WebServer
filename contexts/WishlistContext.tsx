@@ -94,10 +94,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }, [wishlistItems]);
 
     const addToWishlist = useCallback(async (productId: string) => {
-        if (wishlistItems.includes(productId)) return;
-
-        // Optimistically update UI
-        setWishlistItems((prev) => [...prev, productId]);
+        // Optimistically update UI using functional setState to avoid stale closure
+        setWishlistItems((prev) => {
+            if (prev.includes(productId)) return prev;
+            return [...prev, productId];
+        });
 
         // If user is authenticated, sync to backend
         if (session?.user?.id) {
@@ -122,7 +123,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
                 setIsLoading(false);
             }
         }
-    }, [wishlistItems, session?.user?.id]);
+    }, [session?.user?.id]);
 
     const removeFromWishlist = useCallback(async (productId: string) => {
         // Optimistically update UI
@@ -152,12 +153,63 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     }, [session?.user?.id]);
 
     const toggleWishlist = useCallback(async (productId: string) => {
-        if (wishlistItems.includes(productId)) {
-            await removeFromWishlist(productId);
-        } else {
-            await addToWishlist(productId);
+        // Determine if the item is currently in the wishlist *before* the optimistic update
+        // This value will be used for the backend call.
+        const isCurrentlyInWishlist = wishlistItems.includes(productId);
+
+        // Optimistically update UI
+        setWishlistItems((prev) => {
+            if (prev.includes(productId)) {
+                return prev.filter((id) => id !== productId);
+            } else {
+                return [...prev, productId];
+            }
+        });
+
+        // If user is authenticated, sync to backend
+        if (session?.user?.id) {
+            setIsLoading(true);
+            try {
+                if (isCurrentlyInWishlist) {
+                    // Remove from wishlist
+                    const response = await fetch(`/api/wishlist?productId=${productId}`, {
+                        method: 'DELETE',
+                    });
+
+                    if (!response.ok) {
+                        // Revert on error - add back
+                        setWishlistItems((prev) => [...prev, productId]);
+                        console.error('Failed to remove from wishlist');
+                    }
+                } else {
+                    // Add to wishlist
+                    const response = await fetch('/api/wishlist', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId }),
+                    });
+
+                    if (!response.ok) {
+                        // Revert on error - remove
+                        setWishlistItems((prev) => prev.filter((id) => id !== productId));
+                        console.error('Failed to add to wishlist');
+                    }
+                }
+            } catch (error) {
+                // Revert on error
+                setWishlistItems((prev) => {
+                    if (isCurrentlyInWishlist) { // If it was in wishlist, add it back
+                        return [...prev, productId];
+                    } else { // If it was not in wishlist, remove it
+                        return prev.filter((id) => id !== productId);
+                    }
+                });
+                console.error('Error toggling wishlist:', error);
+            } finally {
+                setIsLoading(false);
+            }
         }
-    }, [wishlistItems, addToWishlist, removeFromWishlist]);
+    }, [session?.user?.id, wishlistItems]); // wishlistItems is needed here to capture its value at the time of call for `isCurrentlyInWishlist`
 
     const isInWishlist = useCallback((productId: string) => {
         return wishlistItems.includes(productId);

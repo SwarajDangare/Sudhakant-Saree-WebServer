@@ -33,7 +33,7 @@ export default async function Header() {
 
   return (
     <header className="bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
@@ -44,7 +44,7 @@ export default async function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="text-white hover:text-golden transition-colors font-medium drop-shadow-md">
+            <Link href="/" className="text-black hover:text-golden transition-colors font-medium drop-shadow-md">
               Home
             </Link>
 
