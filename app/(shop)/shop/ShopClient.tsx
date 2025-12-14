@@ -64,7 +64,7 @@ interface Filters {
   search: string;
   sort: string;
   viewMode: 'grid' | 'list';
-  gridCols: 2 | 3 | 4 | 5 | 6;
+  gridCols: 2 | 3 | 4 | 6;
 }
 
 interface ShopClientProps {
@@ -99,7 +99,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     search: searchParams.get('search') || '',
     sort: searchParams.get('sort') || 'featured',
     viewMode: (searchParams.get('view') as 'grid' | 'list') || 'grid',
-    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4 | 5 | 6) || 4,
+    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4 | 6) || 4,
   });
 
   // Update URL when filters change
@@ -363,24 +363,17 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Page Header */}
-      {/* Page Header - Minimal Style */}
-      {/* Page Header - Minimal Style */}
-      <section className="bg-white pt-32 md:pt-40 pb-4">
-        <div className="w-full px-4 md:px-8">
-          <div className="text-center md:text-left">
-            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 tracking-tight">
-              Kanchipuram Silk Sarees
-            </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              Discover our exclusive collection of handcrafted traditional silk sarees
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Breadcrumbs / Minimal Top Header - optional, can be dynamic based on category */}
+      <div className="pt-24 md:pt-28 pb-4 px-6 md:px-8 border-b border-gray-100 mb-0">
+        <nav className="flex text-xs text-gray-500 uppercase tracking-widest font-medium">
+          <span className="hover:text-gray-900 cursor-pointer">Home</span>
+          <span className="mx-2">/</span>
+          <span className="text-gray-900">New Arrivals</span>
+        </nav>
+      </div>
 
       {/* Main Content */}
-      <div className="w-full px-4 md:px-8">
+      <div className="w-full">
         {/* Toolbar */}
         <ProductToolbar
           totalProducts={filteredProducts.length}
@@ -389,7 +382,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
           onMobileFilterToggle={() => setIsMobileFilterOpen(true)}
         />
 
-        {/* Active Filters */}
+        {/* Active Filters Bar - Only show if filters active */}
         <ActiveFilters
           filters={filters}
           filterOptions={filterOptions}
@@ -397,19 +390,22 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
           onClearAll={handleClearFilters}
         />
 
-        <div className="flex gap-6 py-6">
-          {/* Desktop Filters Sidebar */}
-          <aside className="hidden lg:block w-72 flex-shrink-0">
-            <ProductFilters
-              filters={filters}
-              filterOptions={filterOptions}
-              onFilterChange={handleFilterChange}
-              onClearFilters={handleClearFilters}
-            />
-          </aside>
+        <div className="flex relative">
+          {/* Desktop Filter Sidebar - Hidden by default in new design, strictly using Drawer/Overlay style or conditional visibility?? 
+               ByShree actually has a "Filter" button that opens a Drawer even on desktop in some views, OR a sidebar. 
+               The user asked to "clone" the layout. The screenshot shows "FILTER" button on the right. 
+               This implies a DRAWER or toggle-able sidebar. 
+               I will match that behavior: Hide sidebar by default, rely on the drawer I already have logic for (or make desktop drawer).
+               
+               For now, I will keep the sidebar logic BUT only show it if a state triggers, OR just use the Mobile Drawer for all sizes if that's the desired "Filter" button behavior. 
+               
+               Let's stick to the reference: The Screenshot has a "Filter" button. This usually implies a Click-to-Open interaction (Drawer).
+           */}
 
-          {/* Product Grid */}
-          <main className="flex-1 min-w-0">
+          {/* Using Mobile Drawer for Desktop too for the "Filter" button experience */}
+
+          {/* Main Product Grid */}
+          <main className="flex-1 min-w-0 px-2 md:px-6 py-6">
             <ProductGrid
               products={paginatedProducts}
               totalProducts={filteredProducts.length}
@@ -423,50 +419,52 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
         </div>
       </div>
 
-      {/* Mobile Filter Drawer */}
-      {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
+      {/* Filter Drawer - Universal for Mobile & Desktop */}
+      <div className={`fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isMobileFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        {/* Backdrop - Only visible when open */}
+        {isMobileFilterOpen && (
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 transition-opacity"
             onClick={() => setIsMobileFilterOpen(false)}
           />
+        )}
 
-          {/* Drawer */}
-          <div className="absolute inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-4 py-4 flex items-center justify-between z-10">
-              <h2 className="text-xl font-bold text-maroon">Filters</h2>
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+        {/* Drawer Content */}
+        <div className="absolute inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl flex flex-col h-full transform transition-transform delay-75 duration-300">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-900">Filters</h2>
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="p-2 -mr-2 text-gray-400 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-            <div className="p-4">
-              <ProductFilters
-                filters={filters}
-                filterOptions={filterOptions}
-                onFilterChange={handleFilterChange}
-                onClearFilters={handleClearFilters}
-              />
-            </div>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <ProductFilters
+              filters={filters}
+              filterOptions={filterOptions}
+              onFilterChange={handleFilterChange}
+              onClearFilters={handleClearFilters}
+            />
+          </div>
 
-            {/* Apply Button */}
-            <div className="sticky bottom-0 bg-white border-t p-4">
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full btn-primary"
-              >
-                Show {filteredProducts.length} Products
-              </button>
-            </div>
+          {/* Footer Actions */}
+          <div className="p-6 border-t border-gray-100 bg-gray-50">
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="w-full bg-[#8B1538] text-white font-bold uppercase tracking-widest text-xs py-4 hover:bg-[#6e112d] transition-colors"
+            >
+              View {filteredProducts.length} Products
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -4,33 +4,42 @@
 
 :root {
   --saffron: #FF9933;
-  --maroon: #8B1538;        /* Taneira burgundy/wine */
-  --golden: #D4AF37;        /* Champagne gold */
-  --silk-white: #FFFFFF;    /* Pure white background for ByShree look */
-  --cream: #F8F6F0;         /* Light cream */
+  --maroon: #8B1538;
+  /* Taneira burgundy/wine */
+  --golden: #D4AF37;
+  /* Champagne gold */
+  --silk-white: #FFFFFF;
+  /* Pure white background for ByShree look */
+  --cream: #F8F6F0;
+  /* Light cream */
   --indian-green: #138808;
   --indian-red: #CD5C5C;
-  --discount-red: #DC2626;  /* Red for discount badges */
-  --deep-maroon: #6B0F2A;   /* Darker burgundy */
-  --light-maroon: #A81F47;  /* Lighter burgundy */
-  --navy-dark: #1A1A2E;     /* Dark navy */
+  --discount-red: #DC2626;
+  /* Red for discount badges */
+  --deep-maroon: #6B0F2A;
+  /* Darker burgundy */
+  --light-maroon: #A81F47;
+  /* Lighter burgundy */
+  --navy-dark: #1A1A2E;
+  /* Dark navy */
+  --header-height: 5rem;
+  /* 80px */
 }
 
 body {
-  background-color: #FFFFFF;  /* Pure white background like Taneira */
+  background-color: #FFFFFF;
+  /* Pure white background like Taneira */
   color: #2c2c2c;
 }
 
 /* Traditional Indian Pattern Background */
 .pattern-bg {
   background-image:
-    repeating-linear-gradient(
-      45deg,
+    repeating-linear-gradient(45deg,
       transparent,
       transparent 10px,
       rgba(255, 153, 51, 0.03) 10px,
-      rgba(255, 153, 51, 0.03) 20px
-    );
+      rgba(255, 153, 51, 0.03) 20px);
 }
 
 /* Elegant border with golden accent */
@@ -77,15 +86,11 @@ body {
 
 /* Button styles */
 .btn-primary {
-  @apply bg-maroon text-white px-6 py-3 rounded-lg font-semibold
-         hover:bg-saffron transition-elegant shadow-lg
-         hover:shadow-xl transform hover:-translate-y-1;
+  @apply bg-maroon text-white px-6 py-3 rounded-lg font-semibold hover:bg-saffron transition-elegant shadow-lg hover:shadow-xl transform hover:-translate-y-1;
 }
 
 .btn-secondary {
-  @apply border-2 border-maroon text-maroon px-6 py-3 rounded-lg
-         font-semibold hover:bg-maroon hover:text-white
-         transition-elegant;
+  @apply border-2 border-maroon text-maroon px-6 py-3 rounded-lg font-semibold hover:bg-maroon hover:text-white transition-elegant;
 }
 
 /* Section padding */
@@ -207,20 +212,16 @@ body {
 
 /* Soft Input Fields */
 .soft-input {
-  @apply w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50
-         focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50
-         transition-all duration-200 outline-none;
+  @apply w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-blue-400 focus:ring-4 focus:ring-blue-50 transition-all duration-200 outline-none;
 }
 
 /* Soft Button */
 .soft-btn {
-  @apply px-6 py-2.5 rounded-xl font-medium transition-all duration-200
-         shadow-md hover:shadow-lg active:scale-95;
+  @apply px-6 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-md hover:shadow-lg active:scale-95;
 }
 
 .soft-btn-primary {
-  @apply soft-btn bg-gradient-to-r from-blue-500 to-blue-600 text-white
-         hover:from-blue-600 hover:to-blue-700;
+  @apply soft-btn bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700;
 }
 
 .soft-btn-secondary {
@@ -308,10 +309,7 @@ body {
 
 /* Checkbox - Custom Styled */
 .custom-checkbox {
-  @apply w-5 h-5 rounded border-2 border-gray-300
-         checked:bg-green-500 checked:border-green-500
-         focus:ring-2 focus:ring-green-200 cursor-pointer
-         transition-all duration-200;
+  @apply w-5 h-5 rounded border-2 border-gray-300 checked:bg-green-500 checked:border-green-500 focus:ring-2 focus:ring-green-200 cursor-pointer transition-all duration-200;
 }
 
 /* Filter Bar */
@@ -328,6 +326,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -343,6 +342,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -359,9 +359,12 @@ body {
 
 /* Sale badge pulse animation */
 @keyframes pulse-subtle {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.05);
   }
@@ -395,6 +398,7 @@ body {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(100%);
   }

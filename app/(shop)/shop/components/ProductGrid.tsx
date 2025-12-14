@@ -37,7 +37,7 @@ interface ProductGridProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   viewMode: 'grid' | 'list';
-  gridCols: 2 | 3 | 4 | 5 | 6;
+  gridCols: 2 | 3 | 4 | 6;
 }
 
 export default function ProductGrid({
@@ -113,8 +113,6 @@ export default function ProductGrid({
         return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
       case 4:
         return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4';
-      case 5:
-        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
       case 6:
         return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
       default:
@@ -147,11 +145,10 @@ export default function ProductGrid({
               <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  currentPage === 1
+                className={`px-4 py-2 rounded-lg font-medium transition ${currentPage === 1
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white border border-gray-300 text-gray-700 hover:bg-maroon hover:text-white hover:border-maroon'
-                }`}
+                  }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -174,11 +171,10 @@ export default function ProductGrid({
                     <button
                       key={pageNum}
                       onClick={() => onPageChange(pageNum)}
-                      className={`px-4 py-2 rounded-lg font-medium transition ${
-                        currentPage === pageNum
+                      className={`px-4 py-2 rounded-lg font-medium transition ${currentPage === pageNum
                           ? 'bg-maroon text-white'
                           : 'bg-white border border-gray-300 text-gray-700 hover:bg-maroon hover:text-white hover:border-maroon'
-                      }`}
+                        }`}
                     >
                       {pageNum}
                     </button>
@@ -190,11 +186,10 @@ export default function ProductGrid({
               <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  currentPage === totalPages
+                className={`px-4 py-2 rounded-lg font-medium transition ${currentPage === totalPages
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white border border-gray-300 text-gray-700 hover:bg-maroon hover:text-white hover:border-maroon'
-                }`}
+                  }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
