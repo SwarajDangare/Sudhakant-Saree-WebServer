@@ -1,6 +1,6 @@
 'use client';
 
-import ProductCard from '@/components/ProductCard';
+import ShopProductCard from './ShopProductCard';
 import Link from 'next/link';
 
 interface Product {
@@ -112,9 +112,9 @@ export default function ProductGrid({
       case 3:
         return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
       case 4:
-        return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+        return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
       default:
-        return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+        return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
     }
   };
 
@@ -122,8 +122,8 @@ export default function ProductGrid({
     <div>
       {/* Product Grid */}
       <div className={`grid ${getGridColsClass()} gap-6 mb-8`}>
-        {productsForCard.map(product => (
-          <ProductCard key={product.id} product={product} />
+        {products.map(product => (
+          <ShopProductCard key={product.id} product={product} />
         ))}
       </div>
 

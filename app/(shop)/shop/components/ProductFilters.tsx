@@ -26,6 +26,7 @@ interface Filters {
   blousePieceIncluded: boolean | null;
   inStockOnly: boolean;
   onSale: boolean;
+  discountRange: string | null; // '10-20', '20-50', '40-50', null
 }
 
 interface ProductFiltersProps {
@@ -45,6 +46,7 @@ export default function ProductFilters({
     sections: true,
     categories: true,
     price: true,
+    discount: true,
     colors: false,
     materials: false,
     occasions: false,
@@ -82,16 +84,17 @@ export default function ProductFilters({
     (filters.priceMin !== filterOptions.priceRange.min || filters.priceMax !== filterOptions.priceRange.max ? 1 : 0) +
     (filters.blousePieceIncluded !== null ? 1 : 0) +
     (filters.inStockOnly ? 1 : 0) +
-    (filters.onSale ? 1 : 0);
+    (filters.onSale ? 1 : 0) +
+    (filters.discountRange ? 1 : 0);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24">
+    <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold text-maroon">Filters</h2>
+          <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">FILTER BY</h2>
           {activeFilterCount > 0 && (
-            <span className="bg-saffron text-white text-xs font-semibold px-2 py-1 rounded-full">
+            <span className="bg-maroon text-white text-xs font-semibold px-2 py-1 rounded-full">
               {activeFilterCount}
             </span>
           )}
@@ -99,9 +102,9 @@ export default function ProductFilters({
         {activeFilterCount > 0 && (
           <button
             onClick={onClearFilters}
-            className="text-sm text-gray-500 hover:text-maroon transition"
+            className="text-sm text-gray-500 hover:text-maroon transition font-medium uppercase tracking-wide"
           >
-            Clear All
+            Reset
           </button>
         )}
       </div>
@@ -195,6 +198,60 @@ export default function ProductFilters({
               <span>₹{filterOptions.priceRange.min.toLocaleString('en-IN')}</span>
               <span>₹{filterOptions.priceRange.max.toLocaleString('en-IN')}</span>
             </div>
+          </div>
+        </FilterSection>
+
+        {/* Discount */}
+        <FilterSection
+          title="Discount"
+          isExpanded={expandedSections.discount}
+          onToggle={() => toggleSection('discount')}
+        >
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="radio"
+                name="discount"
+                checked={filters.discountRange === '10-20'}
+                onChange={() => onFilterChange({ discountRange: '10-20' })}
+                className="w-4 h-4 text-maroon focus:ring-saffron cursor-pointer"
+              />
+              <span className="text-sm text-gray-700 group-hover:text-maroon transition">
+                10-20%
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="radio"
+                name="discount"
+                checked={filters.discountRange === '20-50'}
+                onChange={() => onFilterChange({ discountRange: '20-50' })}
+                className="w-4 h-4 text-maroon focus:ring-saffron cursor-pointer"
+              />
+              <span className="text-sm text-gray-700 group-hover:text-maroon transition">
+                20-50%
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="radio"
+                name="discount"
+                checked={filters.discountRange === '40-50'}
+                onChange={() => onFilterChange({ discountRange: '40-50' })}
+                className="w-4 h-4 text-maroon focus:ring-saffron cursor-pointer"
+              />
+              <span className="text-sm text-gray-700 group-hover:text-maroon transition">
+                40-50%
+              </span>
+            </label>
+            {filters.discountRange && (
+              <button
+                onClick={() => onFilterChange({ discountRange: null })}
+                className="text-xs text-gray-500 hover:text-maroon transition mt-2"
+              >
+                Clear discount filter
+              </button>
+            )}
           </div>
         </FilterSection>
 

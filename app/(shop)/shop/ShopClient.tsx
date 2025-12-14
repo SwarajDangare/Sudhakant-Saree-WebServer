@@ -60,6 +60,7 @@ interface Filters {
   blousePieceIncluded: boolean | null;
   inStockOnly: boolean;
   onSale: boolean;
+  discountRange: string | null;
   search: string;
   sort: string;
   viewMode: 'grid' | 'list';
@@ -94,10 +95,11 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     blousePieceIncluded: searchParams.get('blousePiece') === 'true' ? true : searchParams.get('blousePiece') === 'false' ? false : null,
     inStockOnly: searchParams.get('inStock') === 'true',
     onSale: searchParams.get('onSale') === 'true',
+    discountRange: searchParams.get('discount') || null,
     search: searchParams.get('search') || '',
     sort: searchParams.get('sort') || 'featured',
     viewMode: (searchParams.get('view') as 'grid' | 'list') || 'grid',
-    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4) || 3,
+    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4) || 4,
   });
 
   // Update URL when filters change
@@ -116,10 +118,11 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     if (filters.blousePieceIncluded !== null) params.set('blousePiece', filters.blousePieceIncluded.toString());
     if (filters.inStockOnly) params.set('inStock', 'true');
     if (filters.onSale) params.set('onSale', 'true');
+    if (filters.discountRange) params.set('discount', filters.discountRange);
     if (filters.search) params.set('search', filters.search);
     if (filters.sort !== 'featured') params.set('sort', filters.sort);
     if (filters.viewMode !== 'grid') params.set('view', filters.viewMode);
-    if (filters.gridCols !== 3) params.set('cols', filters.gridCols.toString());
+    if (filters.gridCols !== 4) params.set('cols', filters.gridCols.toString());
 
     const queryString = params.toString();
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
@@ -200,6 +203,26 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
       result = result.filter(p => p.discountType !== 'NONE');
     }
 
+    // Discount range filter
+    if (filters.discountRange) {
+      const discountRange = filters.discountRange;
+      result = result.filter(p => {
+        if (p.discountType === 'NONE') return false;
+
+        const price = Number(p.price);
+        let discountPercentage = 0;
+
+        if (p.discountType === 'PERCENTAGE') {
+          discountPercentage = Number(p.discountValue);
+        } else if (p.discountType === 'FIXED') {
+          discountPercentage = (Number(p.discountValue) / price) * 100;
+        }
+
+        const [min, max] = discountRange.split('-').map(Number);
+        return discountPercentage >= min && discountPercentage <= max;
+      });
+    }
+
     // Sorting
     switch (filters.sort) {
       case 'price-asc':
@@ -261,10 +284,11 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
       blousePieceIncluded: null,
       inStockOnly: false,
       onSale: false,
+      discountRange: null,
       search: '',
       sort: 'featured',
       viewMode: 'grid',
-      gridCols: 3,
+      gridCols: 4,
     });
   };
 
@@ -327,6 +351,9 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
         break;
       case 'onSale':
         setFilters(prev => ({ ...prev, onSale: false }));
+        break;
+      case 'discountRange':
+        setFilters(prev => ({ ...prev, discountRange: null }));
         break;
       case 'search':
         setFilters(prev => ({ ...prev, search: '' }));
