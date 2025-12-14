@@ -7,10 +7,6 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-// Force dynamic rendering - this page makes API calls
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 interface WishlistProduct {
     id: string;
     productId: string;
@@ -45,9 +41,20 @@ export default function WishlistPage() {
     const [products, setProducts] = useState<WishlistProduct[]>([]);
     const [loadingProducts, setLoadingProducts] = useState(true);
     const [addingToCart, setAddingToCart] = useState<string | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Ensure component is mounted (client-side only)
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Fetch product details for wishlist items
     useEffect(() => {
+        // Only run on client side after mount
+        if (!isMounted || typeof window === 'undefined') {
+            return;
+        }
+
         const fetchProducts = async () => {
             if (session?.user?.id) {
                 // Fetch from backend for authenticated users
@@ -94,7 +101,7 @@ export default function WishlistPage() {
         };
 
         fetchProducts();
-    }, [wishlistItems, session?.user?.id]);
+    }, [wishlistItems, session?.user?.id, isMounted]);
 
     const handleRemoveFromWishlist = async (productId: string) => {
         await removeFromWishlist(productId);
@@ -116,6 +123,23 @@ export default function WishlistPage() {
             setAddingToCart(null);
         }
     };
+
+    // Don't render anything during SSR/build
+    if (!isMounted) {
+        return (
+            <div className="min-h-screen bg-cream pt-32 pb-16">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-center py-20">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-maroon mx-auto mb-4"></div>
+                            <p className="text-gray-600">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
 
     if (isSyncing || loadingProducts) {
         return (
