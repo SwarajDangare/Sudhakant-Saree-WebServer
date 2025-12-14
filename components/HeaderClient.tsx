@@ -60,7 +60,7 @@ export default function HeaderClient({ sectionsWithCategories }: HeaderClientPro
 
     const textColorClass = (isScrolled || !isHomepage)
         ? 'text-gray-900'
-        : 'text-white';
+        : 'text-black';
 
     const logoColor = (isScrolled || !isHomepage) ? 'text-[#d4af37]' : 'text-[#d4af37]';
 

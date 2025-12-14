@@ -108,6 +108,14 @@ export const cartItems = pgTable('cartItems', {
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
 
+// Wishlist Items
+export const wishlistItems = pgTable('wishlist_items', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  customerId: text('customerId').notNull().references(() => customers.id, { onDelete: 'cascade' }),
+  productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+
 // Orders
 export const orders = pgTable('orders', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -531,6 +539,7 @@ export const customersRelations = relations(customers, ({ many }) => ({
   addresses: many(addresses),
   carts: many(carts),
   orders: many(orders),
+  wishlistItems: many(wishlistItems),
 }));
 
 export const addressesRelations = relations(addresses, ({ one, many }) => ({
@@ -632,3 +641,16 @@ export const brandStoryStatsRelations = relations(brandStoryStats, ({ one }) => 
     references: [brandStory.id],
   }),
 }));
+
+// Wishlist Relations
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  customer: one(customers, {
+    fields: [wishlistItems.customerId],
+    references: [customers.id],
+  }),
+  product: one(products, {
+    fields: [wishlistItems.productId],
+    references: [products.id],
+  }),
+}));
+
