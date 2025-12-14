@@ -365,8 +365,9 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     <div className="min-h-screen bg-white">
       {/* Page Header */}
       {/* Page Header - Minimal Style */}
-      <section className="bg-white pt-8 pb-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Page Header - Minimal Style */}
+      <section className="bg-white pt-32 md:pt-40 pb-4">
+        <div className="w-full px-4 md:px-8">
           <div className="text-center md:text-left">
             <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 tracking-tight">
               Kanchipuram Silk Sarees
@@ -379,7 +380,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
       </section>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 md:px-8">
         {/* Toolbar */}
         <ProductToolbar
           totalProducts={filteredProducts.length}

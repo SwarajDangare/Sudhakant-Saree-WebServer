@@ -37,9 +37,31 @@ export default function ProductToolbar({
     <div className="bg-white border-b border-gray-100">
       {/* Desktop Toolbar */}
       <div className="hidden lg:flex items-center justify-between px-6 py-4">
-        {/* Left: Product Count */}
-        <div className="text-sm font-medium text-gray-900">
-          {totalProducts} PRODUCTS
+        {/* Left: Product Count & Grid Toggles */}
+        <div className="flex items-center gap-6">
+          <div className="text-sm font-medium text-gray-900">
+            {totalProducts} PRODUCTS
+          </div>
+
+          {/* Grid Column Toggles - Minimal */}
+          <div className="flex items-center gap-2 border-l border-gray-200 pl-6">
+            <span className="text-xs text-gray-400 uppercase tracking-widest font-medium">Columns:</span>
+            <div className="flex items-center gap-1">
+              {[2, 3, 4, 5, 6].map((cols) => (
+                <button
+                  key={cols}
+                  onClick={() => onFilterChange({ gridCols: cols as any })}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-all ${filters.gridCols === cols
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-500 hover:bg-gray-100'
+                    }`}
+                  title={`${cols} Columns`}
+                >
+                  {cols}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Right: Sort By */}
