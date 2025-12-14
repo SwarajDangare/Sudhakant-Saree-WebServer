@@ -99,7 +99,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     search: searchParams.get('search') || '',
     sort: searchParams.get('sort') || 'featured',
     viewMode: (searchParams.get('view') as 'grid' | 'list') || 'grid',
-    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4 | 5 | 6) || 6,
+    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4 | 5 | 6) || 4,
   });
 
   // Update URL when filters change
@@ -364,14 +364,15 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
   return (
     <div className="min-h-screen bg-white">
       {/* Page Header */}
-      <section className="bg-gradient-to-br from-maroon via-indian-red to-saffron text-white py-8">
+      {/* Page Header - Minimal Style */}
+      <section className="bg-white pt-8 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              Shop All Sarees
+          <div className="text-center md:text-left">
+            <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 tracking-tight">
+              Kanchipuram Silk Sarees
             </h1>
-            <p className="text-lg text-silk-white">
-              Browse our complete collection of handcrafted sarees
+            <p className="mt-2 text-sm text-gray-500">
+              Discover our exclusive collection of handcrafted traditional silk sarees
             </p>
           </div>
         </div>
