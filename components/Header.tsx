@@ -14,11 +14,7 @@ export default async function Header() {
   const sectionsWithCategories = await Promise.all(
     allSections.map(async (section) => {
       const sectionCategories = await db
-        .select({
-          id: categories.id,
-          name: categories.name,
-          slug: categories.slug,
-        })
+        .select()
         .from(categories)
         .where(and(
           eq(categories.sectionId, section.id),
@@ -27,9 +23,7 @@ export default async function Header() {
         .orderBy(categories.order, categories.name);
 
       return {
-        id: section.id,
-        name: section.name,
-        slug: section.slug,
+        ...section,
         categories: sectionCategories,
       };
     })

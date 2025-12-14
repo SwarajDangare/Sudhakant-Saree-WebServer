@@ -10,12 +10,18 @@ interface Category {
     id: string;
     name: string;
     slug: string;
+    description: string | null;
+    order: number;
+    active: boolean;
 }
 
 interface Section {
     id: string;
     name: string;
     slug: string;
+    description: string | null;
+    order: number;
+    active: boolean;
     categories: Category[];
 }
 
