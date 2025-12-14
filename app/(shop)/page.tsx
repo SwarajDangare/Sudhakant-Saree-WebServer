@@ -294,7 +294,7 @@ export default async function Home() {
   const data = await getHomepageData();
 
   return (
-    <div className="w-full pt-32 md:pt-40">
+    <div className="w-full pt-0">
       {/* Hero Slider - Full width banner carousel with video support */}
       {data.sections.hero_slider?.isActive === true && data.heroSlides.length > 0 && (
         <HeroSlider slides={data.heroSlides} />
