@@ -33,8 +33,33 @@ export default function ProductToolbar({
     return () => clearTimeout(timer);
   }, [searchInput, onFilterChange]);
 
+  /* logic to track header visibility matching ScrollWrapper */
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Match ScrollWrapper logic: hide on scroll down > 50px, show on scroll up
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsHeaderVisible(false);
+      } else {
+        setIsHeaderVisible(true);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className="bg-white border-b border-gray-100 sticky top-20 z-40 transition-all duration-300">
+    <div
+      className={`bg-white border-b border-gray-100 sticky z-40 transition-all duration-300 ${isHeaderVisible ? 'top-20' : 'top-0'}`}
+    >
       {/* Desktop Toolbar */}
       <div className="hidden lg:flex items-stretch justify-between h-14">
         {/* Left: View Options */}
@@ -69,20 +94,30 @@ export default function ProductToolbar({
               title="4 Columns"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 4h3.5v3.5H3V4zM9.25 4h3.5v3.5h-3.5V4zM15.5 4h3.5v3.5h-3.5V4zM2 10.25h3.5v3.5H2v-3.5zM8.25 10.25h3.5v3.5h-3.5v-3.5zM14.5 10.25h3.5v3.5h-3.5v-3.5z" />
-                {/* Simplified 4x grid representation */}
-                <rect x="3" y="3" width="3" height="3" />
-                <rect x="8" y="3" width="3" height="3" />
-                <rect x="13" y="3" width="3" height="3" />
-                <rect x="18" y="3" width="3" height="3" />
-                <rect x="3" y="8" width="3" height="3" />
-                <rect x="8" y="8" width="3" height="3" />
-                <rect x="13" y="8" width="3" height="3" />
-                <rect x="18" y="8" width="3" height="3" />
-                <rect x="3" y="13" width="3" height="3" />
-                <rect x="8" y="13" width="3" height="3" />
-                <rect x="13" y="13" width="3" height="3" />
-                <rect x="18" y="13" width="3" height="3" />
+                {/* 4x4 Grid of squares: 4px size, 2px gap. Origin (1,1) */}
+                {/* Row 1 */}
+                <rect x="1" y="1" width="4" height="4" />
+                <rect x="7" y="1" width="4" height="4" />
+                <rect x="13" y="1" width="4" height="4" />
+                <rect x="19" y="1" width="4" height="4" />
+
+                {/* Row 2 */}
+                <rect x="1" y="7" width="4" height="4" />
+                <rect x="7" y="7" width="4" height="4" />
+                <rect x="13" y="7" width="4" height="4" />
+                <rect x="19" y="7" width="4" height="4" />
+
+                {/* Row 3 */}
+                <rect x="1" y="13" width="4" height="4" />
+                <rect x="7" y="13" width="4" height="4" />
+                <rect x="13" y="13" width="4" height="4" />
+                <rect x="19" y="13" width="4" height="4" />
+
+                {/* Row 4 */}
+                <rect x="1" y="19" width="4" height="4" />
+                <rect x="7" y="19" width="4" height="4" />
+                <rect x="13" y="19" width="4" height="4" />
+                <rect x="19" y="19" width="4" height="4" />
               </svg>
             </button>
 

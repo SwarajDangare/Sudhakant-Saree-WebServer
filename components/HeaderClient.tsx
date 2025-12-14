@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import MobileMenu from './MobileMenu';
 import CartIcon from './CartIcon';
 import UserMenu from './UserMenu';
@@ -49,15 +50,26 @@ export default function HeaderClient({ sectionsWithCategories }: HeaderClientPro
     // Let's use standard dark text for "scrolled" (white bg) and white text for "transparent" (hero bg).
     // AND: On hover, always use the maroon accent.
 
+    const pathname = usePathname();
+
+    const isHomepage = pathname === '/';
+
     const headerClass = isScrolled
         ? 'bg-white border-b border-gray-100 shadow-sm'
         : 'bg-transparent border-transparent';
 
-    const textColorClass = isScrolled
+    // If on homepage: Text is white when at top (transparent), dark when scrolled.
+    // If NOT on homepage (e.g. Shop): Text is ALWAYS dark because background is likely white/light (except if we want transparency there too, but user asked for black font on shop page).
+    // Actually, usually inner pages have a white header by default or transparent over nothing.
+    // Let's assume inner pages have a default white header or at least need dark text.
+
+    // User request: "change the header font color to black when on shop pagew"
+
+    const textColorClass = (isScrolled || !isHomepage)
         ? 'text-gray-900'
         : 'text-white';
 
-    const logoColor = isScrolled ? 'text-[#d4af37]' : 'text-[#d4af37]'; // Keep Gold/Saffron for logo always? Or White? Let's stick to Gold/Saffron as it contrasts well often.
+    const logoColor = (isScrolled || !isHomepage) ? 'text-[#d4af37]' : 'text-[#d4af37]';
 
     return (
         <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${headerClass}`}>
