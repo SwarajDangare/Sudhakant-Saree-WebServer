@@ -1,6 +1,6 @@
 'use client';
 
-import ProductCard from '@/components/ProductCard';
+import ShopProductCard from './ShopProductCard';
 import Link from 'next/link';
 
 interface Product {
@@ -37,7 +37,7 @@ interface ProductGridProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   viewMode: 'grid' | 'list';
-  gridCols: 2 | 3 | 4;
+  gridCols: 2 | 3 | 4 | 5 | 6;
 }
 
 export default function ProductGrid({
@@ -108,22 +108,26 @@ export default function ProductGrid({
     }
     switch (gridCols) {
       case 2:
-        return 'grid-cols-1 md:grid-cols-2';
+        return 'grid-cols-1 sm:grid-cols-2';
       case 3:
-        return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+        return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
       case 4:
-        return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+        return 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4';
+      case 5:
+        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5';
+      case 6:
+        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
       default:
-        return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
     }
   };
 
   return (
     <div>
       {/* Product Grid */}
-      <div className={`grid ${getGridColsClass()} gap-6 mb-8`}>
-        {productsForCard.map(product => (
-          <ProductCard key={product.id} product={product} />
+      <div className={`grid ${getGridColsClass()} gap-4 mb-8`}>
+        {products.map(product => (
+          <ShopProductCard key={product.id} product={product} />
         ))}
       </div>
 
