@@ -64,7 +64,7 @@ interface Filters {
   search: string;
   sort: string;
   viewMode: 'grid' | 'list';
-  gridCols: 2 | 3 | 4;
+  gridCols: 2 | 3 | 4 | 5 | 6;
 }
 
 interface ShopClientProps {
@@ -99,7 +99,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     search: searchParams.get('search') || '',
     sort: searchParams.get('sort') || 'featured',
     viewMode: (searchParams.get('view') as 'grid' | 'list') || 'grid',
-    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4) || 4,
+    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4 | 5 | 6) || 6,
   });
 
   // Update URL when filters change
@@ -122,7 +122,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     if (filters.search) params.set('search', filters.search);
     if (filters.sort !== 'featured') params.set('sort', filters.sort);
     if (filters.viewMode !== 'grid') params.set('view', filters.viewMode);
-    if (filters.gridCols !== 4) params.set('cols', filters.gridCols.toString());
+    if (filters.gridCols !== 6) params.set('cols', filters.gridCols.toString());
 
     const queryString = params.toString();
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
@@ -288,7 +288,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
       search: '',
       sort: 'featured',
       viewMode: 'grid',
-      gridCols: 4,
+      gridCols: 6,
     });
   };
 
