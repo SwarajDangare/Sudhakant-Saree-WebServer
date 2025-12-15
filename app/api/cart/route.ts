@@ -56,34 +56,36 @@ export async function GET(request: NextRequest) {
 
     // Get product images and colors for each item
     const enrichedItems = await Promise.all(
-      items.map(async (item) => {
-        const [image] = await db
-          .select()
-          .from(productImages)
-          .where(and(
-            eq(productImages.productId, item.productId),
-            eq(productImages.isPrimary, true)
-          ))
-          .limit(1);
-
-        let color = null;
-        if (item.productColorId) {
-          [color] = await db
+      items
+        .filter(item => item.productId !== null) // Filter out items with deleted products
+        .map(async (item) => {
+          const [image] = await db
             .select()
-            .from(productColors)
-            .where(eq(productColors.id, item.productColorId))
+            .from(productImages)
+            .where(and(
+              eq(productImages.productId, item.productId!), // Non-null assertion is safe due to filter
+              eq(productImages.isPrimary, true)
+            ))
             .limit(1);
-        }
 
-        return {
-          ...item,
-          product: {
-            ...item.product,
-            images: image ? [{ url: image.url, altText: image.altText }] : [],
-          },
-          productColor: color,
-        };
-      })
+          let color = null;
+          if (item.productColorId) {
+            [color] = await db
+              .select()
+              .from(productColors)
+              .where(eq(productColors.id, item.productColorId))
+              .limit(1);
+          }
+
+          return {
+            ...item,
+            product: {
+              ...item.product,
+              images: image ? [{ url: image.url, altText: image.altText }] : [],
+            },
+            productColor: color,
+          };
+        })
     );
 
     return NextResponse.json({ items: enrichedItems });
