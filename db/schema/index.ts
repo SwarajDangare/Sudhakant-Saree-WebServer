@@ -101,7 +101,7 @@ export const carts = pgTable('carts', {
 export const cartItems = pgTable('cartItems', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   cartId: text('cartId').notNull().references(() => carts.id, { onDelete: 'cascade' }),
-  productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  productId: text('productId').references(() => products.id, { onDelete: 'set null' }), // Allow NULL when product is deleted
   productColorId: text('productColorId').references(() => productColors.id, { onDelete: 'set null' }),
   quantity: integer('quantity').default(1).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
@@ -136,7 +136,7 @@ export const orders = pgTable('orders', {
 export const orderItems = pgTable('orderItems', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   orderId: text('orderId').notNull().references(() => orders.id, { onDelete: 'cascade' }),
-  productId: text('productId').notNull().references(() => products.id, { onDelete: 'restrict' }),
+  productId: text('productId').references(() => products.id, { onDelete: 'set null' }), // Allow NULL when product is deleted
   productColorId: text('productColorId').references(() => productColors.id, { onDelete: 'set null' }),
   productName: text('productName').notNull(), // Store product name at time of order
   productColor: text('productColor'), // Store color at time of order
