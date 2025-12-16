@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { db, products, productColors, colorImages } from '@/db';
+import { db, products, productColors, colorImages, productVariants } from '@/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +29,8 @@ export async function POST(request: NextRequest) {
       careInstructions,
       active,
       featured,
-      colors,
+      variants, // New structure
+      hasSizes, // Boolean flag
     } = body;
 
     // Validate required fields
@@ -40,8 +41,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate colors
-    if (!colors || !Array.isArray(colors) || colors.length === 0) {
+    // Validate variants
+    if (!variants || !Array.isArray(variants) || variants.length === 0) {
       return NextResponse.json(
         { error: 'At least one color variant is required' },
         { status: 400 }
@@ -67,40 +68,56 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    // Create colors and images
-    for (const color of colors) {
-      console.log(`Creating color: ${color.color} with ${color.images?.length || 0} images`);
-
-      // Create color
+    // Create variant groups (Colors)
+    for (const variantGroup of variants) {
+      
+      // Create color entry
       const [newColor] = await db
         .insert(productColors)
         .values({
           productId: newProduct.id,
-          color: color.color,
-          colorCode: color.colorCode,
-          inStock: color.inStock ?? true,
+          color: variantGroup.color,
+          colorCode: variantGroup.colorCode,
+          inStock: variantGroup.inStock ?? true, // General availability flag
         })
         .returning();
 
-      console.log(`Color created with ID: ${newColor.id}`);
-
       // Create images for this color
-      if (color.images && color.images.length > 0) {
-        const imageValues = color.images.map((img: any, index: number) => ({
+      if (variantGroup.images && variantGroup.images.length > 0) {
+        const imageValues = variantGroup.images.map((img: any, index: number) => ({
           productColorId: newColor.id,
           url: img.url,
           publicId: img.publicId,
-          altText: img.altText || color.color,
+          altText: img.altText || variantGroup.color,
           displayOrder: img.displayOrder ?? index,
         }));
 
-        console.log(`Inserting ${imageValues.length} images for color ${color.color}`);
-
         await db.insert(colorImages).values(imageValues);
+      }
 
-        console.log(`Images inserted successfully`);
+      // Create product variants (Inventory/Sizes)
+      if (hasSizes && variantGroup.sizes && variantGroup.sizes.length > 0) {
+         // Case 1: Product has sizes
+         const variantValues = variantGroup.sizes.map((s: any) => ({
+             productId: newProduct.id,
+             productColorId: newColor.id,
+             size: s.size,
+             stockQuantity: Number(s.quantity) || 0,
+             sku: s.sku || '',
+             active: true
+         }));
+         await db.insert(productVariants).values(variantValues);
       } else {
-        console.log(`No images to insert for color ${color.color}`);
+         // Case 2: Product has no sizes (just color) or fallback
+         // Treat as a single variant with null size
+         await db.insert(productVariants).values({
+             productId: newProduct.id,
+             productColorId: newColor.id,
+             size: null, 
+             stockQuantity: Number(variantGroup.quantity) || 0,
+             sku: variantGroup.sku || '',
+             active: true
+         });
       }
     }
 

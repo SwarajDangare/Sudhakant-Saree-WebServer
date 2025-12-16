@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from './Providers';
 
 export default function UserMenu() {
   const { data: session, status } = useSession();
+  const { openAuthModal } = useAuth();
 
   if (status === 'loading') {
     return <div className="h-8 w-8 animate-pulse bg-gray-200 rounded-full"></div>;
@@ -44,12 +46,18 @@ export default function UserMenu() {
             </>
           ) : (
             <>
-              <Link href="/login" className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors border-b border-gray-50">
+              <button
+                onClick={() => openAuthModal('login')}
+                className="w-full text-left px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors border-b border-gray-50"
+              >
                 Login
-              </Link>
-              <Link href="/signup" className="block px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#9d2235] transition-colors">
+              </button>
+              <button
+                onClick={() => openAuthModal('signup')}
+                className="w-full text-left px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#9d2235] transition-colors"
+              >
                 Create Account
-              </Link>
+              </button>
             </>
           )}
         </div>

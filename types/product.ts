@@ -6,12 +6,23 @@ export interface ColorImage {
   displayOrder: number;
 }
 
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  productColorId: string | null;
+  size: string | null;
+  stockQuantity: number;
+  sku: string | null;
+  active: boolean;
+}
+
 export interface ColorVariant {
   id?: string; // Optional for backward compatibility
   color: string;
   colorCode: string;
   inStock: boolean;
   images: ColorImage[];
+  variants?: ProductVariant[]; // Size-based variants for this color
 }
 
 export interface Product {

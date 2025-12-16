@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
-import ColorManagement, { ColorVariantData } from './ColorManagement';
+import VariantManagement, { ProductVariantData } from './VariantManagement';
 
 const productSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -43,7 +43,7 @@ type ProductFormData = z.infer<typeof productSchema>;
 interface ProductFormProps {
   sections: Array<{ id: string; name: string }>;
   categories: Array<{ id: string; name: string; sectionId: string }>;
-  initialData?: ProductFormData & { id: string; colors?: ColorVariantData[] };
+  initialData?: ProductFormData & { id: string; variants?: ProductVariantData[]; hasSizes?: boolean };
 }
 
 export default function CompactProductForm({ sections, categories, initialData }: ProductFormProps) {
@@ -51,7 +51,8 @@ export default function CompactProductForm({ sections, categories, initialData }
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string>('');
-  const [colors, setColors] = useState<ColorVariantData[]>(initialData?.colors || []);
+  const [variants, setVariants] = useState<ProductVariantData[]>(initialData?.variants || []);
+  const [hasSizes, setHasSizes] = useState(initialData?.hasSizes || false);
   const [activeTab, setActiveTab] = useState<'basic' | 'details' | 'seo'>('basic');
 
   const {
@@ -106,27 +107,28 @@ export default function CompactProductForm({ sections, categories, initialData }
     setLoading(true);
 
     try {
-      if (colors.length === 0) {
-        setError('Please add at least one color variant');
-        setLoading(false);
-        return;
+      // Validate Variants
+      if (variants.length === 0) {
+        throw new Error('Please add at least one color variant');
       }
 
-      for (const color of colors) {
-        if (!color.color.trim()) {
-          setError('All colors must have a name');
-          setLoading(false);
-          return;
-        }
-        if (!color.colorCode.trim()) {
-          setError('All colors must have a color code');
-          setLoading(false);
-          return;
-        }
-        if (color.images.length === 0) {
-          setError(`Color "${color.color}" must have at least one image`);
-          setLoading(false);
-          return;
+      for (const variant of variants) {
+        if (!variant.color.trim()) throw new Error('All colors must have a name');
+        if (!variant.colorCode.trim()) throw new Error('All colors must have a color code');
+        if (variant.images.length === 0) throw new Error(`Color "${variant.color}" must have at least one image`);
+
+        if (hasSizes) {
+            if (variant.sizes.length === 0) {
+                throw new Error(`Color "${variant.color}" must have at least one size variant`);
+            }
+            for (const s of variant.sizes) {
+                if (!s.size.trim()) throw new Error(`Size name cannot be empty in "${variant.color}"`);
+                if (s.quantity < 0) throw new Error(`Quantity cannot be negative for size "${s.size}"`);
+            }
+        } else {
+            if (variant.quantity !== undefined && variant.quantity < 0) {
+                throw new Error(`Quantity cannot be negative for "${variant.color}"`);
+            }
         }
       }
 
@@ -142,7 +144,8 @@ export default function CompactProductForm({ sections, categories, initialData }
         body: JSON.stringify({
           ...data,
           price: Number(data.price),
-          colors: colors,
+          variants: variants,
+          hasSizes: hasSizes
         }),
       });
 
@@ -294,14 +297,17 @@ export default function CompactProductForm({ sections, categories, initialData }
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Stock</label>
-                  <input
-                    type="number"
-                    {...register('stockQuantity')}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 outline-none"
-                    placeholder="100"
-                    disabled={loading}
-                  />
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Total Stock</label>
+                  <div className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-700 font-semibold">
+                    {variants.reduce((sum, v) => {
+                      if (hasSizes && v.sizes) {
+                        return sum + v.sizes.reduce((s, size) => s + (size.quantity || 0), 0);
+                      } else {
+                        return sum + (v.quantity || 0);
+                      }
+                    }, 0)}
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">Auto-calculated from variants</p>
                 </div>
               </div>
 
@@ -565,9 +571,25 @@ export default function CompactProductForm({ sections, categories, initialData }
                 </svg>
               </div>
               Color Variants & Images
-              <span className="ml-auto text-xs text-gray-500">{colors.length} variants</span>
+              <span className="ml-auto text-xs text-gray-500">{variants.length} variants</span>
             </h3>
-            <ColorManagement colors={colors} onChange={setColors} disabled={loading} />
+            
+            {/* Has Sizes Toggle */}
+            <div className="flex items-center mb-4 p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
+              <input 
+                type="checkbox" 
+                id="hasSizes" 
+                checked={hasSizes} 
+                onChange={(e) => setHasSizes(e.target.checked)} 
+                className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+              />
+              <div className="ml-2">
+                <label htmlFor="hasSizes" className="text-xs font-bold text-indigo-900 cursor-pointer">This product has sizes (e.g. S, M, L)</label>
+                <p className="text-xs text-indigo-700">Check this for dresses/blouses. Uncheck for standard Sarees.</p>
+              </div>
+            </div>
+            
+            <VariantManagement variants={variants} onChange={setVariants} hasSizes={hasSizes} disabled={loading} />
           </div>
         </div>
 
@@ -649,12 +671,24 @@ export default function CompactProductForm({ sections, categories, initialData }
             <div className="space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-gray-600">Colors:</span>
-                <span className="font-semibold text-purple-600">{colors.length}</span>
+                <span className="font-semibold text-purple-600">{variants.length}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Images:</span>
                 <span className="font-semibold text-purple-600">
-                  {colors.reduce((acc, c) => acc + c.images.length, 0)}
+                  {variants.reduce((acc, v) => acc + v.images.length, 0)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Total Stock:</span>
+                <span className="font-semibold text-purple-600">
+                  {variants.reduce((sum, v) => {
+                    if (hasSizes && v.sizes) {
+                      return sum + v.sizes.reduce((s, size) => s + (size.quantity || 0), 0);
+                    } else {
+                      return sum + (v.quantity || 0);
+                    }
+                  }, 0)}
                 </span>
               </div>
               {discountType !== 'NONE' && Number(discountValue) > 0 && (

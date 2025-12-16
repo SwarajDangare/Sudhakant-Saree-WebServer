@@ -28,8 +28,10 @@ import {
   featuredBestsellers,
   newArrivalsSettings,
   featuredNewArrivals,
+  productColors,
+  colorImages,
 } from '@/db/schema'
-import { eq, and, desc, lte, gte, or, isNull } from 'drizzle-orm'
+import { eq, and, desc, lte, gte, or, isNull, asc } from 'drizzle-orm'
 
 // Force dynamic rendering to avoid build-time prerendering errors
 export const dynamic = 'force-dynamic';
@@ -233,23 +235,121 @@ async function getHomepageData() {
         .limit(4),
     ]);
 
+    // Add images to bestseller products
+    const bestsellersWithImages = await Promise.all(
+      bestsellerProducts.map(async (item) => {
+        if (!item.product) return item;
+        
+        // Get first color
+        const [firstColor] = await db
+          .select()
+          .from(productColors)
+          .where(eq(productColors.productId, item.product.id))
+          .orderBy(asc(productColors.createdAt))
+          .limit(1);
+
+        // Get first image from first color
+        let primaryImage = null;
+        if (firstColor) {
+          const [firstImage] = await db
+            .select()
+            .from(colorImages)
+            .where(eq(colorImages.productColorId, firstColor.id))
+            .orderBy(asc(colorImages.displayOrder))
+            .limit(1);
+          primaryImage = firstImage?.url || null;
+        }
+
+        return {
+          ...item,
+          product: {
+            ...item.product,
+            primaryImage,
+          },
+        };
+      })
+    );
+
     // Determine which new arrivals to show based on settings
     const newArrivalsMode = newArrivalsConfig[0]?.mode || 'automatic';
     const newArrivalsCount = newArrivalsConfig[0]?.count || 8;
 
     let finalNewArrivals;
     if (newArrivalsMode === 'manual') {
-      // Pass full items with override fields for manual mode
-      finalNewArrivals = newArrivalProducts.filter((item: any) => item.product);
+      // Add images to manual new arrivals
+      const manualWithImages = await Promise.all(
+        newArrivalProducts
+          .filter((item: any) => item.product)
+          .map(async (item: any) => {
+            // Get first color
+            const [firstColor] = await db
+              .select()
+              .from(productColors)
+              .where(eq(productColors.productId, item.product.id))
+              .orderBy(asc(productColors.createdAt))
+              .limit(1);
+
+            // Get first image from first color
+            let primaryImage = null;
+            if (firstColor) {
+              const [firstImage] = await db
+                .select()
+                .from(colorImages)
+                .where(eq(colorImages.productColorId, firstColor.id))
+                .orderBy(asc(colorImages.displayOrder))
+                .limit(1);
+              primaryImage = firstImage?.url || null;
+            }
+
+            return {
+              ...item,
+              product: {
+                ...item.product,
+                primaryImage,
+              },
+            };
+          })
+      );
+      finalNewArrivals = manualWithImages;
     } else {
-      // For automatic mode, fetch newest products (no override fields)
+      // For automatic mode, fetch newest products with images
       const automaticNewArrivals = await db
         .select()
         .from(products)
         .where(eq(products.active, true))
         .orderBy(desc(products.createdAt))
         .limit(newArrivalsCount);
-      finalNewArrivals = automaticNewArrivals;
+
+      // Add images to automatic new arrivals
+      const automaticWithImages = await Promise.all(
+        automaticNewArrivals.map(async (product) => {
+          // Get first color
+          const [firstColor] = await db
+            .select()
+            .from(productColors)
+            .where(eq(productColors.productId, product.id))
+            .orderBy(asc(productColors.createdAt))
+            .limit(1);
+
+          // Get first image from first color
+          let primaryImage = null;
+          if (firstColor) {
+            const [firstImage] = await db
+              .select()
+              .from(colorImages)
+              .where(eq(colorImages.productColorId, firstColor.id))
+              .orderBy(asc(colorImages.displayOrder))
+              .limit(1);
+            primaryImage = firstImage?.url || null;
+          }
+
+          return {
+            ...product,
+            primaryImage,
+          };
+        })
+      );
+      finalNewArrivals = automaticWithImages;
     }
 
     return {
@@ -258,7 +358,7 @@ async function getHomepageData() {
       announcements: activeAnnouncements,
       collections: featuredCollections,
       categories: homepageFeaturedCategories,
-      bestsellers: bestsellerProducts,
+      bestsellers: bestsellersWithImages,
       newArrivals: finalNewArrivals,
       midPageBanner: activeMidPageBanner[0] || null,
       occasions: activeOccasions,

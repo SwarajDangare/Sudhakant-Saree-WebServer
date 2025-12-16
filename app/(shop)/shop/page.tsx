@@ -1,5 +1,5 @@
-import { db, products, categories, sections, productColors } from '@/db';
-import { eq, and, sql } from 'drizzle-orm';
+import { db, products, categories, sections, productColors, colorImages } from '@/db';
+import { eq, and, sql, asc } from 'drizzle-orm';
 import ShopClient from './ShopClient';
 
 // Enable ISR - revalidate every 60 seconds
@@ -28,16 +28,30 @@ export default async function ShopPage() {
     .where(eq(products.active, true))
     .orderBy(sql`${products.featured} DESC, ${products.createdAt} DESC`);
 
-  // Fetch colors for each product
+  // Fetch colors and images for each product
   const productsWithColors = await Promise.all(
     allProducts.map(async ({ product, category, section }) => {
       const colors = await db
         .select()
         .from(productColors)
-        .where(eq(productColors.productId, product.id));
+        .where(eq(productColors.productId, product.id))
+        .orderBy(asc(productColors.createdAt));
+
+      // Get first image from first color
+      let primaryImage = null;
+      if (colors.length > 0) {
+        const [firstImage] = await db
+          .select()
+          .from(colorImages)
+          .where(eq(colorImages.productColorId, colors[0].id))
+          .orderBy(asc(colorImages.displayOrder))
+          .limit(1);
+        primaryImage = firstImage || null;
+      }
 
       return {
         ...product,
+        primaryImage: primaryImage,
         categoryName: category?.name || 'Uncategorized',
         categorySlug: category?.slug || 'uncategorized',
         sectionName: section?.name || 'Uncategorized',

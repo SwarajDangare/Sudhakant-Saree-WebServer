@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from './Providers';
 
 interface Category {
   id: string;
@@ -32,6 +33,7 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: session } = useSession();
   const { itemCount } = useCart();
+  const { openAuthModal } = useAuth();
 
   return (
     <>
@@ -182,13 +184,15 @@ export default function MobileMenu({ sectionsWithCategories }: MobileMenuProps) 
                   </button>
                 </>
               ) : (
-                <Link
-                  href="/login"
-                  className="block py-2 text-center bg-golden text-maroon rounded-md hover:bg-maroon hover:text-white transition-colors font-medium mt-2"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    openAuthModal('login');
+                  }}
+                  className="block py-2 text-center bg-golden text-maroon rounded-md hover:bg-maroon hover:text-white transition-colors font-medium mt-2 w-full"
                 >
                   Login / Create Account
-                </Link>
+                </button>
               )}
             </div>
           </div>

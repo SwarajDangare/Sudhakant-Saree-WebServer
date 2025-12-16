@@ -41,6 +41,8 @@ export async function GET(request: NextRequest) {
         cartId: cartItems.cartId,
         productId: cartItems.productId,
         productColorId: cartItems.productColorId,
+        productVariantId: cartItems.productVariantId,
+        size: cartItems.size,
         quantity: cartItems.quantity,
         createdAt: cartItems.createdAt,
         updatedAt: cartItems.updatedAt,
@@ -105,7 +107,7 @@ export async function POST(request: NextRequest) {
     const sessionId = request.headers.get('X-Session-Id');
     const body = await request.json();
 
-    const { productId, productColorId, quantity = 1 } = body;
+    const { productId, productColorId, productVariantId, size, quantity = 1 } = body;
 
     if (!productId) {
       return NextResponse.json(
@@ -164,7 +166,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if item already exists in cart
+    // Check if item already exists in cart (match by variant if provided, else by color)
     const [existingItem] = await db
       .select()
       .from(cartItems)
@@ -172,7 +174,9 @@ export async function POST(request: NextRequest) {
         and(
           eq(cartItems.cartId, cart.id),
           eq(cartItems.productId, productId),
-          productColorId
+          productVariantId
+            ? eq(cartItems.productVariantId, productVariantId)
+            : productColorId
             ? eq(cartItems.productColorId, productColorId)
             : isNull(cartItems.productColorId)
         )
@@ -200,6 +204,8 @@ export async function POST(request: NextRequest) {
         cartId: cart.id,
         productId,
         productColorId: productColorId || null,
+        productVariantId: productVariantId || null,
+        size: size || null,
         quantity,
       })
       .returning();

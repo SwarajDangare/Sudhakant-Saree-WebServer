@@ -20,28 +20,21 @@ export default function SectionHeading({
   };
 
   return (
-    <div className={`${alignmentClasses[align]} mb-6 md:mb-8`}>
-      {/* Subtitle */}
-      {subtitle && (
-        <span className="inline-block text-golden text-xs md:text-sm font-semibold tracking-widest uppercase mb-2">
-          {subtitle}
-        </span>
-      )}
-
-      {/* Main Title - Smaller size */}
-      <h2 className="text-2xl md:text-3xl font-bold text-maroon mb-1">
+    <div className={`${alignmentClasses[align]} mb-4 md:mb-6`}>
+      {/* Main Title - BIGGER and more prominent */}
+      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-maroon mb-2">
         {title}
       </h2>
 
-      {/* Ornamental Divider below title */}
-      <OrnamentalDivider className="my-1 md:my-2" />
-
-      {/* Description */}
+      {/* Description - Gray text */}
       {description && (
-        <p className={`text-gray-600 text-sm md:text-base max-w-2xl mt-2 ${align === 'center' ? 'mx-auto' : ''}`}>
+        <p className={`text-gray-600 text-sm md:text-base max-w-2xl mb-2 ${align === 'center' ? 'mx-auto' : ''}`}>
           {description}
         </p>
       )}
+
+      {/* Ornamental Divider BELOW description */}
+      <OrnamentalDivider className="my-2" />
     </div>
   );
 }

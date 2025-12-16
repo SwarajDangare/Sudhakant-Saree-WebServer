@@ -3,43 +3,44 @@
 @tailwind utilities;
 
 :root {
-  --saffron: #FF9933;
-  --maroon: #8B1538;
+  --saffron: #ff9933;
+  --maroon: #8b1538;
   /* Taneira burgundy/wine */
-  --golden: #D4AF37;
+  --golden: #d4af37;
   /* Champagne gold */
-  --silk-white: #FFFFFF;
+  --silk-white: #ffffff;
   /* Pure white background for ByShree look */
-  --cream: #F8F6F0;
+  --cream: #f8f6f0;
   /* Light cream */
   --indian-green: #138808;
-  --indian-red: #CD5C5C;
-  --discount-red: #DC2626;
+  --indian-red: #cd5c5c;
+  --discount-red: #dc2626;
   /* Red for discount badges */
-  --deep-maroon: #6B0F2A;
+  --deep-maroon: #6b0f2a;
   /* Darker burgundy */
-  --light-maroon: #A81F47;
+  --light-maroon: #a81f47;
   /* Lighter burgundy */
-  --navy-dark: #1A1A2E;
+  --navy-dark: #1a1a2e;
   /* Dark navy */
   --header-height: 5rem;
   /* 80px */
 }
 
 body {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   /* Pure white background like Taneira */
   color: #2c2c2c;
 }
 
 /* Traditional Indian Pattern Background */
 .pattern-bg {
-  background-image:
-    repeating-linear-gradient(45deg,
-      transparent,
-      transparent 10px,
-      rgba(255, 153, 51, 0.03) 10px,
-      rgba(255, 153, 51, 0.03) 20px);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 153, 51, 0.03) 10px,
+    rgba(255, 153, 51, 0.03) 20px
+  );
 }
 
 /* Elegant border with golden accent */
@@ -107,12 +108,17 @@ body {
 
 .ornament-divider::before,
 .ornament-divider::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   width: 45%;
   height: 2px;
-  background: linear-gradient(to right, transparent, var(--golden), transparent);
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--golden),
+    transparent
+  );
 }
 
 .ornament-divider::before {
@@ -231,7 +237,11 @@ body {
 /* Stat Card with Icon */
 .stat-card-icon {
   @apply w-14 h-14 rounded-2xl flex items-center justify-center text-2xl;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.05)
+  );
 }
 
 /* Clean Table Styles - Reference Image (NO GRID LINES) */
@@ -359,7 +369,6 @@ body {
 
 /* Sale badge pulse animation */
 @keyframes pulse-subtle {
-
   0%,
   100% {
     transform: scale(1);
@@ -406,4 +415,38 @@ body {
 
 .animate-shimmer {
   animation: shimmer 3s ease-in-out infinite;
+}
+
+/* ============================================
+   AUTH MODAL ANIMATIONS
+   ============================================ */
+
+/* Fade in animation for modal overlay */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Slide up animation for modal content */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
 }

@@ -15,15 +15,15 @@ interface Product {
   discountType: 'NONE' | 'PERCENTAGE' | 'FIXED';
   discountValue: string;
   categoryName: string;
+  primaryImage?: {
+    url: string;
+    altText: string | null;
+  } | null;
   colors: Array<{
     id: string;
     color: string;
     colorCode: string;
     inStock: boolean;
-    images?: Array<{
-      url: string;
-      altText: string | null;
-    }>;
   }>;
 }
 
@@ -43,10 +43,8 @@ export default function ShopProductCard({ product }: ShopProductCardProps) {
   const hasColors = product.colors && product.colors.length > 0;
   const inWishlist = isInWishlist(product.id);
 
-  // Get the first image of the selected color
-  const firstImage = selectedColor?.images && selectedColor.images.length > 0
-    ? selectedColor.images[0]
-    : null;
+  // Use primary image from product
+  const firstImage = product.primaryImage;
 
   // Calculate discount
   const calculatePrice = () => {
