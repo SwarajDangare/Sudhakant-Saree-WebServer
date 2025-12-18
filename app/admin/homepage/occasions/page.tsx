@@ -10,8 +10,8 @@ interface Occasion {
   name: string;
   slug: string;
   icon: string;
-  imageUrl: string;
-  imagePublicId: string;
+  imageUrl: string | null;
+  imagePublicId: string | null;
   linkUrl: string | null;
   gradientFrom: string;
   gradientTo: string;
@@ -89,8 +89,8 @@ export default function OccasionsPage() {
       name: occasion.name,
       slug: occasion.slug,
       icon: occasion.icon,
-      imageUrl: occasion.imageUrl,
-      imagePublicId: occasion.imagePublicId,
+      imageUrl: occasion.imageUrl || '',
+      imagePublicId: occasion.imagePublicId || '',
       linkUrl: occasion.linkUrl || '',
       gradientFrom: occasion.gradientFrom,
       gradientTo: occasion.gradientTo,

@@ -17,8 +17,8 @@ interface Category {
   name: string;
   slug: string;
   description: string | null;
-  imageUrl: string;
-  imagePublicId: string;
+  imageUrl: string | null;
+  imagePublicId: string | null;
   order: number;
   active: boolean;
 }

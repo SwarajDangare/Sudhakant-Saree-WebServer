@@ -7,7 +7,7 @@ interface Occasion {
   name: string;
   slug: string;
   icon: string;
-  imageUrl: string;
+  imageUrl: string | null;
   gradientFrom: string | null;
   gradientTo: string | null;
   linkUrl: string;

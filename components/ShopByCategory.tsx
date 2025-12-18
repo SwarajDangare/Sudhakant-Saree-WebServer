@@ -14,7 +14,7 @@ interface FeaturedCategory {
     id: string;
     name: string;
     slug: string;
-    imageUrl: string;
+    imageUrl: string | null;
     homeTagline?: string | null;
     homeDescription?: string | null;
   };
