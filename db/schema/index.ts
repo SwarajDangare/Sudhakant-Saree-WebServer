@@ -168,8 +168,8 @@ export const categories = pgTable('categories', {
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
   description: text('description'),
-  imageUrl: text('imageUrl').notNull(),
-  imagePublicId: text('imagePublicId').notNull(),
+  imageUrl: text('imageUrl'),
+  imagePublicId: text('imagePublicId'),
   order: integer('order').default(0).notNull(),
   active: boolean('active').default(true).notNull(),
 
@@ -332,8 +332,8 @@ export const occasions = pgTable('occasions', {
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
   icon: text('icon').notNull(), // Emoji or icon code
-  imageUrl: text('imageUrl').notNull(),
-  imagePublicId: text('imagePublicId').notNull(),
+  imageUrl: text('imageUrl'),
+  imagePublicId: text('imagePublicId'),
   gradientFrom: text('gradientFrom').default('from-pink-600/80'),
   gradientTo: text('gradientTo').default('to-red-600/80'),
   linkUrl: text('linkUrl').notNull(),

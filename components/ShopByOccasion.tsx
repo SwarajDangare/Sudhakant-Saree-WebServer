@@ -42,7 +42,7 @@ export default function ShopByOccasion({ occasions }: ShopByOccasionProps) {
               {/* Image Container with Next.js Image - Shorter on mobile */}
               <div className="aspect-[4/3] md:aspect-[3/4] relative bg-gray-100">
                 <Image
-                  src={occasion.imageUrl}
+                  src={occasion.imageUrl || 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=1000&auto=format&fit=crop'}
                   alt={occasion.name}
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"

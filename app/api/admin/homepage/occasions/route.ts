@@ -39,9 +39,9 @@ export async function POST(request: Request) {
       isActive,
     } = body;
 
-    if (!name || !slug || !imageUrl) {
+    if (!name || !slug) {
       return NextResponse.json(
-        { error: 'Name, slug, and image are required' },
+        { error: 'Name and slug are required' },
         { status: 400 }
       );
     }
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         name,
         slug,
         icon: icon || '🎉',
-        imageUrl,
+        imageUrl: imageUrl || null,
         imagePublicId: imagePublicId || '',
         linkUrl: linkUrl || null,
         gradientFrom: gradientFrom || 'rgba(219, 39, 119, 0.8)',

@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
+    console.log('DEBUG: POST /api/admin/categories hit');
     console.log('POST /api/admin/categories - Session:', session?.user);
 
     // Check if user has permission to add categories
@@ -64,15 +65,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate image fields (required)
-    if (!imageUrl || !imagePublicId) {
-      console.error('Missing required image fields:', { imageUrl, imagePublicId });
-      return NextResponse.json(
-        { error: 'Image URL and Image Public ID are required' },
-        { status: 400 }
-      );
-    }
-
     // Create the category
     const [newCategory] = await db
       .insert(categories)
@@ -81,8 +73,8 @@ export async function POST(request: NextRequest) {
         name,
         slug,
         description: description || null,
-        imageUrl,
-        imagePublicId,
+        imageUrl: imageUrl || null,
+        imagePublicId: imagePublicId || null,
         order: order || 0,
         active: active ?? true,
       })

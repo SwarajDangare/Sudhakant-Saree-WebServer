@@ -44,7 +44,7 @@ export default function ShopByCategory({ categories }: ShopByCategoryProps) {
             // Use override values if available, fallback to category defaults
             const displayTitle = item.overrideTitle || item.category.name;
             const displayDescription = item.overrideDescription || item.category.homeDescription;
-            const displayImage = item.overrideImageUrl || item.category.imageUrl;
+            const displayImage = item.overrideImageUrl || item.category.imageUrl || 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=1000&auto=format&fit=crop'; // Fallback to a nice fabric image
             const displayLink = item.overrideLinkUrl || `/categories/${item.category.slug}`;
 
             return (

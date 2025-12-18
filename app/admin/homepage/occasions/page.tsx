@@ -109,8 +109,8 @@ export default function OccasionsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.slug || !formData.imageUrl) {
-      alert('Name, slug, and image are required');
+    if (!formData.name || !formData.slug) {
+      alert('Name and slug are required');
       return;
     }
 
@@ -404,7 +404,7 @@ export default function OccasionsPage() {
                 >
                   <div className="relative h-64">
                     <Image
-                      src={occasion.imageUrl}
+                      src={occasion.imageUrl || 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=1000&auto=format&fit=crop'}
                       alt={occasion.name}
                       fill
                       className="object-cover"
