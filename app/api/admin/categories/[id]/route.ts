@@ -77,14 +77,6 @@ export async function PUT(
       );
     }
 
-    // Validate image fields (required)
-    if (!imageUrl || !imagePublicId) {
-      return NextResponse.json(
-        { error: 'Image URL and Image Public ID are required' },
-        { status: 400 }
-      );
-    }
-
     // Update the category
     const [updatedCategory] = await db
       .update(categories)
@@ -93,8 +85,8 @@ export async function PUT(
         name,
         slug,
         description: description || null,
-        imageUrl,
-        imagePublicId,
+        imageUrl: imageUrl || null,
+        imagePublicId: imagePublicId || null,
         order: order || 0,
         active: active ?? true,
         updatedAt: new Date(),

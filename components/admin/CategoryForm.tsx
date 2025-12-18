@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { CldUploadWidget } from 'next-cloudinary';
+import Image from 'next/image';
 
 interface Section {
   id: string;
@@ -15,6 +17,8 @@ interface Category {
   name: string;
   slug: string;
   description: string | null;
+  imageUrl: string;
+  imagePublicId: string;
   order: number;
   active: boolean;
 }
@@ -36,6 +40,8 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
     name: category?.name || '',
     slug: category?.slug || '',
     description: category?.description || '',
+    imageUrl: category?.imageUrl || '',
+    imagePublicId: category?.imagePublicId || '',
     order: category?.order || 0,
     active: category?.active ?? true,
   });
@@ -47,6 +53,24 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
       name,
       // Auto-generate slug from name if it's a new category
       slug: category ? formData.slug : name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+    });
+  };
+
+  const handleImageSuccess = (result: any) => {
+    if (result.event === 'success') {
+      setFormData({
+        ...formData,
+        imageUrl: result.info.secure_url,
+        imagePublicId: result.info.public_id,
+      });
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({
+      ...formData,
+      imageUrl: '',
+      imagePublicId: '',
     });
   };
 
@@ -77,6 +101,13 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
       return;
     }
 
+    // Prepare data for submission
+    const submissionData = {
+      ...formData,
+      imageUrl: formData.imageUrl || null,
+      imagePublicId: formData.imagePublicId || null,
+    };
+
     try {
       const url = category
         ? `/api/admin/categories/${category.id}`
@@ -84,14 +115,14 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
 
       const method = category ? 'PUT' : 'POST';
 
-      console.log('Submitting category:', { url, method, formData });
+      console.log('Submitting category:', { url, method, submissionData });
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
 
       const data = await response.json();
@@ -155,7 +186,7 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
               required
               value={formData.sectionId}
               onChange={(e) => setFormData({ ...formData, sectionId: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all duration-200"
             >
               <option value="">Select a section</option>
               {sections.map((section) => (
@@ -178,7 +209,7 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
               value={formData.name}
               onChange={handleNameChange}
               placeholder="e.g., Banarasi Silk"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all duration-200"
             />
           </div>
 
@@ -194,7 +225,7 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
               value={formData.slug}
               onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
               placeholder="e.g., banarasi-silk"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none font-mono text-sm"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none font-mono text-sm transition-all duration-200"
             />
             <p className="text-xs text-gray-500 mt-1">
               URL-friendly identifier (lowercase, hyphens, no spaces)
@@ -212,11 +243,85 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
               min="0"
               value={formData.order}
               onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none transition-all duration-200"
             />
             <p className="text-xs text-gray-500 mt-1">
               Lower numbers appear first
             </p>
+          </div>
+        </div>
+
+        {/* Category Image */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Category Image <span className="text-gray-400 font-normal">(Optional)</span>
+          </label>
+          
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-full md:w-48 aspect-square relative bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden flex items-center justify-center group">
+              {formData.imageUrl ? (
+                <>
+                  <Image
+                    src={formData.imageUrl}
+                    alt="Category preview"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                      title="Remove image"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center p-4">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 space-y-3">
+              <p className="text-sm text-gray-500">
+                Upload a high-quality image to represent this category on the website.
+                Recommended size: 800x800px or larger.
+              </p>
+              
+              <CldUploadWidget
+                uploadPreset="product_images"
+                onSuccess={handleImageSuccess}
+              >
+                {({ open }) => (
+                  <button
+                    type="button"
+                    onClick={() => open()}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-maroon transition-colors"
+                  >
+                    <svg className="-ml-1 mr-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    {formData.imageUrl ? 'Change Image' : 'Upload Image'}
+                  </button>
+                )}
+              </CldUploadWidget>
+
+              {formData.imageUrl && (
+                <p className="text-xs text-green-600 flex items-center gap-1 font-medium">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Image uploaded successfully
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -231,7 +336,7 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Brief description of this category..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none resize-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none resize-none transition-all duration-200"
           />
         </div>
 
@@ -242,9 +347,9 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
             id="active"
             checked={formData.active}
             onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-            className="w-4 h-4 text-maroon border-gray-300 rounded focus:ring-maroon"
+            className="w-4 h-4 text-maroon border-gray-300 rounded focus:ring-maroon transition-all duration-200"
           />
-          <label htmlFor="active" className="ml-2 text-sm font-medium text-gray-700">
+          <label htmlFor="active" className="ml-2 text-sm font-medium text-gray-700 cursor-pointer">
             Active (visible on website)
           </label>
         </div>
@@ -254,16 +359,24 @@ export default function CategoryForm({ sections, category, isSuperAdmin }: Categ
           <button
             type="submit"
             disabled={loading || sections.length === 0}
-            className="bg-maroon text-white px-8 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-maroon text-white px-8 py-3 rounded-lg font-semibold hover:bg-deep-maroon transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md active:scale-95"
             title={sections.length === 0 ? 'Please create a section first' : ''}
           >
-            {loading ? 'Saving...' : category ? 'Update Category' : 'Create Category'}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Saving...
+              </span>
+            ) : category ? 'Update Category' : 'Create Category'}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
             disabled={loading}
-            className="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>

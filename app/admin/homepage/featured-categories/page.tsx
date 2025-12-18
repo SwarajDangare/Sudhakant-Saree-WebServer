@@ -154,7 +154,7 @@ export default function FeaturedCategoriesPage() {
     return {
       title: item.overrideTitle || item.category.name,
       description: item.overrideDescription || item.category.description || 'No description',
-      imageUrl: item.overrideImageUrl || item.category.imageUrl,
+      imageUrl: item.overrideImageUrl || item.category.imageUrl || 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?q=80&w=1000&auto=format&fit=crop',
       linkUrl: item.overrideLinkUrl || `/categories/${item.category.slug}`,
     };
   };
