@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { getModernSectionColorClass } from '@/lib/utils/color-utils';
 
 interface Product {
   id: string;
@@ -18,6 +19,10 @@ interface Product {
   discountValue: string | null;
   createdAt: Date;
   category: {
+    id: string;
+    name: string;
+  } | null;
+  section: {
     id: string;
     name: string;
   } | null;
@@ -68,6 +73,52 @@ export default function ModernProductsClient({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Filter state
+  const [search, setSearch] = useState(searchParams.search || '');
+  const [section, setSection] = useState(searchParams.section || '');
+  const [category, setCategory] = useState(searchParams.category || '');
+  const [material, setMaterial] = useState(searchParams.material || '');
+  const [status, setStatus] = useState(searchParams.status || '');
+  const [minPrice, setMinPrice] = useState(searchParams.minPrice || '');
+  const [maxPrice, setMaxPrice] = useState(searchParams.maxPrice || '');
+  const [featured, setFeatured] = useState(searchParams.featured || '');
+
+  // Sync state with props (important for Clear All or browser back/forward)
+  useEffect(() => {
+    setSearch(searchParams.search || '');
+    setSection(searchParams.section || '');
+    setCategory(searchParams.category || '');
+    setMaterial(searchParams.material || '');
+    setStatus(searchParams.status || '');
+    setMinPrice(searchParams.minPrice || '');
+    setMaxPrice(searchParams.maxPrice || '');
+    setFeatured(searchParams.featured || '');
+  }, [searchParams]);
+
+  // Auto-apply filters
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (section) params.set('section', section);
+      if (category) params.set('category', category);
+      if (material) params.set('material', material);
+      if (status) params.set('status', status);
+      if (minPrice) params.set('minPrice', minPrice);
+      if (maxPrice) params.set('maxPrice', maxPrice);
+      if (featured) params.set('featured', featured);
+
+      const queryString = params.toString();
+      const currentQuery = new URLSearchParams(window.location.search).toString();
+      
+      if (queryString !== currentQuery) {
+        router.push(`/admin/products${queryString ? `?${queryString}` : ''}`);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [search, section, category, material, status, minPrice, maxPrice, featured, router]);
 
   const handleSelectAll = () => {
     if (selectedProducts.length === products.length) {
@@ -246,24 +297,18 @@ export default function ModernProductsClient({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Search - Compact */}
           <div className="flex-1 max-w-md">
-            <form action="/admin/products" method="get">
-              <div className="relative">
-                <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  name="search"
-                  defaultValue={searchParams.search}
-                  placeholder="Search products..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-                />
-              </div>
-              {/* Keep other filters as hidden inputs */}
-              {searchParams.category && <input type="hidden" name="category" value={searchParams.category} />}
-              {searchParams.section && <input type="hidden" name="section" value={searchParams.section} />}
-              {searchParams.status && <input type="hidden" name="status" value={searchParams.status} />}
-            </form>
+            <div className="relative">
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search products..."
+                className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+              />
+            </div>
           </div>
 
           {/* Action Buttons - Compact */}
@@ -309,14 +354,14 @@ export default function ModernProductsClient({
 
         {/* Advanced Filters - Compact */}
         {showFilters && (
-          <form action="/admin/products" method="get" className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               {/* Section */}
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Section</label>
                 <select
-                  name="section"
-                  defaultValue={searchParams.section}
+                  value={section}
+                  onChange={(e) => setSection(e.target.value)}
                   className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                     <option value="">All Sections</option>
@@ -330,8 +375,8 @@ export default function ModernProductsClient({
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
                 <select
-                  name="category"
-                  defaultValue={searchParams.category}
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="">All Categories</option>
@@ -345,8 +390,8 @@ export default function ModernProductsClient({
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Material/Fabric</label>
                 <select
-                  name="material"
-                  defaultValue={searchParams.material}
+                  value={material}
+                  onChange={(e) => setMaterial(e.target.value)}
                   className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="">All Materials</option>
@@ -360,8 +405,8 @@ export default function ModernProductsClient({
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
                 <select
-                  name="status"
-                  defaultValue={searchParams.status}
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
                   className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="">All Status</option>
@@ -375,8 +420,8 @@ export default function ModernProductsClient({
                 <label className="block text-xs font-medium text-gray-700 mb-1">Min Price</label>
                 <input
                   type="number"
-                  name="minPrice"
-                  defaultValue={searchParams.minPrice}
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
                   placeholder="₹0"
                   className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
@@ -386,8 +431,8 @@ export default function ModernProductsClient({
                 <label className="block text-xs font-medium text-gray-700 mb-1">Max Price</label>
                 <input
                   type="number"
-                  name="maxPrice"
-                  defaultValue={searchParams.maxPrice}
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
                   placeholder="₹10,000"
                   className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 />
@@ -397,8 +442,8 @@ export default function ModernProductsClient({
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Featured Only</label>
                 <select
-                  name="featured"
-                  defaultValue={searchParams.featured}
+                  value={featured}
+                  onChange={(e) => setFeatured(e.target.value)}
                   className="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 >
                   <option value="">All Products</option>
@@ -409,19 +454,24 @@ export default function ModernProductsClient({
 
             <div className="flex gap-2 mt-4">
               <button
-                type="submit"
-                className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-all"
-              >
-                Apply Filters
-              </button>
-              <Link
-                href="/admin/products"
+                type="button"
+                onClick={() => {
+                  setSearch('');
+                  setSection('');
+                  setCategory('');
+                  setMaterial('');
+                  setStatus('');
+                  setMinPrice('');
+                  setMaxPrice('');
+                  setFeatured('');
+                  router.push('/admin/products');
+                }}
                 className="px-4 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-all"
               >
                 Clear All
-              </Link>
+              </button>
             </div>
-          </form>
+          </div>
         )}
       </div>
 
@@ -504,10 +554,17 @@ export default function ModernProductsClient({
                     <h3 className="font-semibold text-gray-900 text-sm mb-1 truncate">{product.name}</h3>
                     <p className="text-xs text-gray-500 mb-2 line-clamp-2">{product.description}</p>
 
-                    {/* Category - Compact */}
-                    <span className="inline-block px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-medium rounded mb-2">
-                      {product.category?.name || 'Uncategorized'}
-                    </span>
+                    {/* Section & Category - Compact */}
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {product.section && (
+                        <span className={`inline-block px-1.5 py-0.5 text-[10px] font-bold rounded border ${getModernSectionColorClass(product.section.name)}`}>
+                          {product.section.name.toUpperCase()}
+                        </span>
+                      )}
+                      <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-medium rounded">
+                        {product.category?.name || 'Uncategorized'}
+                      </span>
+                    </div>
 
                     {/* Colors - Compact */}
                     {product.colorCount > 0 && (
@@ -640,9 +697,16 @@ export default function ModernProductsClient({
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
-                          {product.category?.name || 'N/A'}
-                        </span>
+                        <div className="flex flex-col gap-1">
+                          {product.section && (
+                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded border inline-block w-fit ${getModernSectionColorClass(product.section.name)}`}>
+                              {product.section.name.toUpperCase()}
+                            </span>
+                          )}
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-medium rounded inline-block w-fit">
+                            {product.category?.name || 'N/A'}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         {hasDiscount ? (

@@ -5,7 +5,9 @@ import { db, categories, sections } from '@/db';
 import { eq, desc, like, or, and } from 'drizzle-orm';
 import Link from 'next/link';
 import DeleteCategoryButton from '@/components/admin/DeleteCategoryButton';
+import CategoryFilters from '@/components/admin/CategoryFilters';
 import { getServerPermissions } from '@/lib/server-permissions';
+import { getSectionColorClass } from '@/lib/utils/color-utils';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -75,7 +77,7 @@ export default async function CategoriesPage({
     .from(categories)
     .leftJoin(sections, eq(categories.sectionId, sections.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(categories.order, desc(categories.createdAt));
+    .orderBy(sections.name, categories.order);
 
   // Fetch all sections for filter
   const allSections = await db.select().from(sections).orderBy(sections.name);
@@ -96,77 +98,12 @@ export default async function CategoriesPage({
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <form className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Search */}
-          <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
-              Search
-            </label>
-            <input
-              type="text"
-              id="search"
-              name="search"
-              defaultValue={searchParams.search}
-              placeholder="Search categories..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-            />
-          </div>
-
-          {/* Section Filter */}
-          <div>
-            <label htmlFor="section" className="block text-sm font-medium text-gray-700 mb-2">
-              Section
-            </label>
-            <select
-              id="section"
-              name="section"
-              defaultValue={searchParams.section}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-            >
-              <option value="">All Sections</option>
-              {allSections.map((sec) => (
-                <option key={sec.id} value={sec.id}>
-                  {sec.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Status Filter */}
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              defaultValue={searchParams.status}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-            >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-
-          {/* Submit Button */}
-          <div className="md:col-span-3 flex gap-2">
-            <button
-              type="submit"
-              className="bg-maroon text-white px-6 py-2 rounded-md font-semibold hover:bg-deep-maroon transition"
-            >
-              Apply Filters
-            </button>
-            <Link
-              href="/admin/categories"
-              className="bg-gray-200 text-gray-700 px-6 py-2 rounded-md font-semibold hover:bg-gray-300 transition"
-            >
-              Clear
-            </Link>
-          </div>
-        </form>
-      </div>
+      <CategoryFilters 
+        sections={allSections} 
+        initialSearch={searchParams.search}
+        initialSection={searchParams.section}
+        initialStatus={searchParams.status}
+      />
 
       {/* Categories Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -233,7 +170,7 @@ export default async function CategoriesPage({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded border ${getSectionColorClass(category.section?.name || 'No Section')}`}>
                         {category.section?.name || 'No Section'}
                       </span>
                     </td>
