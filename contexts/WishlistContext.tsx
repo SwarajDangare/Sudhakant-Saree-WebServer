@@ -11,6 +11,8 @@ interface WishlistContextType {
     toggleWishlist: (productId: string) => Promise<void>;
     isLoading: boolean;
     isSyncing: boolean;
+    isWishlistOpen: boolean;
+    setIsWishlistOpen: (isOpen: boolean) => void;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
@@ -19,6 +21,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     const [wishlistItems, setWishlistItems] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [isWishlistOpen, setIsWishlistOpen] = useState(false);
     const [hasLoadedFromBackend, setHasLoadedFromBackend] = useState(false);
     const { data: session, status } = useSession();
 
@@ -121,7 +124,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
                 console.error('Error adding to wishlist:', error);
             } finally {
                 setIsLoading(false);
+                setIsWishlistOpen(true);
             }
+        } else {
+            // For non-authenticated, it was already updated optimistically
+            setIsWishlistOpen(true);
         }
     }, [session?.user?.id]);
 
@@ -207,6 +214,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
                 console.error('Error toggling wishlist:', error);
             } finally {
                 setIsLoading(false);
+                if (!isCurrentlyInWishlist) {
+                    setIsWishlistOpen(true);
+                }
+            }
+        } else {
+            // For non-authenticated
+            if (!isCurrentlyInWishlist) {
+                setIsWishlistOpen(true);
             }
         }
     }, [session?.user?.id, wishlistItems]); // wishlistItems is needed here to capture its value at the time of call for `isCurrentlyInWishlist`
@@ -225,6 +240,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
                 toggleWishlist,
                 isLoading,
                 isSyncing,
+                isWishlistOpen,
+                setIsWishlistOpen,
             }}
         >
             {children}

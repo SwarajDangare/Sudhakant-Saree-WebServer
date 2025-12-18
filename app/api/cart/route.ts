@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { customerAuthOptions } from '@/lib/customer-auth';
-import { db, carts, cartItems, products, productImages, productColors } from '@/db';
+import { db, carts, cartItems, products, productImages, productColors, colorImages } from '@/db';
 import { eq, and, isNull } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
@@ -61,14 +61,48 @@ export async function GET(request: NextRequest) {
       items
         .filter(item => item.productId !== null) // Filter out items with deleted products
         .map(async (item) => {
-          const [image] = await db
-            .select()
-            .from(productImages)
-            .where(and(
-              eq(productImages.productId, item.productId!), // Non-null assertion is safe due to filter
-              eq(productImages.isPrimary, true)
-            ))
-            .limit(1);
+          let image = null;
+
+          // 1. Try to get image for specific color if selected
+          if (item.productColorId) {
+            const [colorImage] = await db
+              .select()
+              .from(colorImages)
+              .where(eq(colorImages.productColorId, item.productColorId))
+              .orderBy(colorImages.displayOrder)
+              .limit(1);
+            if (colorImage) {
+              image = { url: colorImage.url, altText: colorImage.altText };
+            }
+          }
+
+          // 2. Fallback to primary product image if no color image found
+          if (!image) {
+            const [primaryImage] = await db
+              .select()
+              .from(productImages)
+              .where(and(
+                eq(productImages.productId, item.productId!),
+                eq(productImages.isPrimary, true)
+              ))
+              .limit(1);
+            if (primaryImage) {
+              image = { url: primaryImage.url, altText: primaryImage.altText };
+            }
+          }
+
+          // 3. Last fallback: any product image
+          if (!image) {
+            const [anyImage] = await db
+              .select()
+              .from(productImages)
+              .where(eq(productImages.productId, item.productId!))
+              .orderBy(productImages.displayOrder)
+              .limit(1);
+            if (anyImage) {
+              image = { url: anyImage.url, altText: anyImage.altText };
+            }
+          }
 
           let color = null;
           if (item.productColorId) {
@@ -83,7 +117,7 @@ export async function GET(request: NextRequest) {
             ...item,
             product: {
               ...item.product,
-              images: image ? [{ url: image.url, altText: image.altText }] : [],
+              images: image ? [image] : [],
             },
             productColor: color,
           };

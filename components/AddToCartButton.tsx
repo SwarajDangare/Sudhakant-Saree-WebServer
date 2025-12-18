@@ -1,15 +1,27 @@
 'use client';
 
+import { useCart } from '@/contexts/CartContext';
+
 interface AddToCartButtonProps {
-  productId: string; // Changed to string to support UUID from database
+  productId: string;
   productName: string;
 }
 
 export default function AddToCartButton({ productId, productName }: AddToCartButtonProps) {
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
-    // Add to cart logic will be implemented in Phase 2
-    console.log(`Adding ${productName} (ID: ${productId}) to cart`);
+    e.stopPropagation();
+    
+    try {
+      await addToCart({
+        productId,
+        quantity: 1,
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    }
   };
 
   return (

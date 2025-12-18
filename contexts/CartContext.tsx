@@ -16,6 +16,8 @@ interface CartContextType {
   refreshCart: () => Promise<void>;
   isInCart: (productId: string, productColorId: string | undefined) => boolean;
   getCartItemQuantity: (productId: string, productColorId: string | undefined) => number;
+  isCartOpen: boolean;
+  setIsCartOpen: (isOpen: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Get or create session ID for anonymous users
   const getSessionId = useCallback(() => {
@@ -81,6 +84,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok) {
         await refreshCart();
+        setIsCartOpen(true);
       } else {
         const error = await response.json();
         throw new Error(error.message || 'Failed to add to cart');
@@ -188,6 +192,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         refreshCart,
         isInCart,
         getCartItemQuantity,
+        isCartOpen,
+        setIsCartOpen,
       }}
     >
       {children}

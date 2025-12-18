@@ -5,6 +5,8 @@ import { SessionProvider } from 'next-auth/react';
 import { CartProvider } from '@/contexts/CartContext';
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import AuthModal from './AuthModal';
+import CartDrawer from './CartDrawer';
+import WishlistDrawer from './WishlistDrawer';
 
 interface AuthContextType {
   openAuthModal: (mode: 'login' | 'signup') => void;
@@ -55,6 +57,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <AuthProvider>
             {children}
           </AuthProvider>
+          <CartDrawer />
+          <WishlistDrawer />
         </WishlistProvider>
       </CartProvider>
     </SessionProvider>

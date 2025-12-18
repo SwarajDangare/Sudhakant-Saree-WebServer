@@ -37,7 +37,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     try {
       await addToCart({
         productId: product.id,
-        productColorId: hasColors && selectedColor ? selectedColor.color : undefined,
+        productColorId: hasColors && selectedColor ? selectedColor.id : undefined,
         quantity: 1,
       });
       setShowSuccess(true);
