@@ -1,12 +1,10 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
-import ColorManagement, { ColorVariantData } from './ColorManagement';
+import VariantManagement, { ProductVariantData } from './VariantManagement';
 
 const productSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -32,7 +30,7 @@ type ProductFormData = z.infer<typeof productSchema>;
 interface ProductFormProps {
   sections: Array<{ id: string; name: string }>;
   categories: Array<{ id: string; name: string; sectionId: string }>;
-  initialData?: ProductFormData & { id: string; colors?: ColorVariantData[] };
+  initialData?: ProductFormData & { id: string; colors?: any[], variants?: any[] };
 }
 
 export default function ProductForm({ sections, categories, initialData }: ProductFormProps) {
@@ -40,7 +38,10 @@ export default function ProductForm({ sections, categories, initialData }: Produ
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string>('');
-  const [colors, setColors] = useState<ColorVariantData[]>(initialData?.colors || []);
+  
+  // New state for variants
+  const [variants, setVariants] = useState<ProductVariantData[]>([]);
+  const [hasSizes, setHasSizes] = useState(false);
 
   const {
     register,
@@ -57,52 +58,71 @@ export default function ProductForm({ sections, categories, initialData }: Produ
     },
   });
 
-  // Watch price and discount fields for live calculation
+  // Watch fields
   const price = watch('price');
   const discountType = watch('discountType');
   const discountValue = watch('discountValue');
 
-  // Calculate final price
+  // Initialize Data
+  useEffect(() => {
+    if (initialData) {
+      if (initialData.categoryId) {
+        const category = categories.find(cat => cat.id === initialData.categoryId);
+        if (category) {
+          setSelectedSectionId(category.sectionId);
+        }
+      }
+
+      // Transform initialData.colors/variants into ProductVariantData structure
+      // Note: This logic depends on how the API returns data. 
+      // Assuming API returns colors with nested variants or strictly flat variants.
+      // For now, if we are editing an old product, it might just have colors.
+      if (initialData.colors) {
+           // Basic mapping from old structure to new
+           const mappedVariants: ProductVariantData[] = initialData.colors.map((c: any) => ({
+             id: c.id,
+             color: c.color,
+             colorCode: c.colorCode,
+             images: c.images || [],
+             inStock: c.inStock,
+             // Look for variants linked to this color
+             sizes: c.variants ? c.variants.map((v: any) => ({
+                 size: v.size,
+                 quantity: v.stockQuantity,
+                 sku: v.sku
+             })) : [],
+             quantity: c.stockQuantity || 0 // Fallback if no sizes
+           }));
+           setVariants(mappedVariants);
+           
+           // Detect if it has sizes
+           const detectedHasSizes = mappedVariants.some(v => v.sizes && v.sizes.length > 0 && v.sizes[0].size);
+           setHasSizes(detectedHasSizes);
+      }
+    }
+  }, [initialData, categories]);
+
+  // Calculations
   const calculateFinalPrice = () => {
     const priceNum = Number(price) || 0;
     const discountNum = Number(discountValue) || 0;
-
-    if (discountType === 'PERCENTAGE') {
-      return priceNum - (priceNum * discountNum / 100);
-    } else if (discountType === 'FIXED') {
-      return Math.max(0, priceNum - discountNum);
-    }
+    if (discountType === 'PERCENTAGE') return priceNum - (priceNum * discountNum / 100);
+    if (discountType === 'FIXED') return Math.max(0, priceNum - discountNum);
     return priceNum;
   };
 
   const calculateDiscountPercentage = () => {
     const priceNum = Number(price) || 0;
     const discountNum = Number(discountValue) || 0;
-
     if (priceNum === 0) return 0;
-
-    if (discountType === 'PERCENTAGE') {
-      return discountNum;
-    } else if (discountType === 'FIXED') {
-      return (discountNum / priceNum) * 100;
-    }
+    if (discountType === 'PERCENTAGE') return discountNum;
+    if (discountType === 'FIXED') return (discountNum / priceNum) * 100;
     return 0;
   };
 
   const finalPrice = calculateFinalPrice();
   const discountPercentage = calculateDiscountPercentage();
 
-  // When editing a product, pre-select the section based on the category
-  useEffect(() => {
-    if (initialData?.categoryId) {
-      const category = categories.find(cat => cat.id === initialData.categoryId);
-      if (category) {
-        setSelectedSectionId(category.sectionId);
-      }
-    }
-  }, [initialData, categories]);
-
-  // Filter categories by selected section
   const filteredCategories = selectedSectionId
     ? categories.filter(cat => cat.sectionId === selectedSectionId)
     : categories;
@@ -112,36 +132,32 @@ export default function ProductForm({ sections, categories, initialData }: Produ
     setLoading(true);
 
     try {
-      // Validate colors
-      if (colors.length === 0) {
-        setError('Please add at least one color variant');
-        setLoading(false);
-        return;
+      // Validate Variants
+      if (variants.length === 0) {
+        throw new Error('Please add at least one color variant');
       }
 
-      // Validate each color has required fields
-      for (const color of colors) {
-        if (!color.color.trim()) {
-          setError('All colors must have a name');
-          setLoading(false);
-          return;
-        }
-        if (!color.colorCode.trim()) {
-          setError('All colors must have a color code');
-          setLoading(false);
-          return;
-        }
-        if (color.images.length === 0) {
-          setError(`Color "${color.color}" must have at least one image`);
-          setLoading(false);
-          return;
+      for (const variant of variants) {
+        if (!variant.color.trim()) throw new Error('All colors must have a name');
+        if (!variant.colorCode.trim()) throw new Error('All colors must have a color code');
+        if (variant.images.length === 0) throw new Error(`Color "${variant.color}" must have at least one image`);
+
+        if (hasSizes) {
+            if (variant.sizes.length === 0) {
+                throw new Error(`Color "${variant.color}" must have at least one size variant`);
+            }
+            for (const s of variant.sizes) {
+                if (!s.size.trim()) throw new Error(`Size name cannot be empty in "${variant.color}"`);
+                if (s.quantity < 0) throw new Error(`Quantity cannot be negative for size "${s.size}"`);
+            }
+        } else {
+            if (variant.quantity !== undefined && variant.quantity < 0) {
+                throw new Error(`Quantity cannot be negative for "${variant.color}"`);
+            }
         }
       }
 
-      const endpoint = initialData
-        ? `/api/products/${initialData.id}`
-        : '/api/products';
-
+      const endpoint = initialData ? `/api/products/${initialData.id}` : '/api/products';
       const method = initialData ? 'PUT' : 'POST';
 
       const response = await fetch(endpoint, {
@@ -150,7 +166,8 @@ export default function ProductForm({ sections, categories, initialData }: Produ
         body: JSON.stringify({
           ...data,
           price: Number(data.price),
-          colors: colors,
+          variants: variants, // Send the full variant structure
+          hasSizes: hasSizes
         }),
       });
 
@@ -163,7 +180,6 @@ export default function ProductForm({ sections, categories, initialData }: Produ
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
       setLoading(false);
     }
   };
@@ -177,18 +193,11 @@ export default function ProductForm({ sections, categories, initialData }: Produ
       )}
 
       <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
-        {/* Basic Information */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Basic Information
-          </h2>
-
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
           <div className="grid grid-cols-1 gap-6">
-            {/* Product Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Product Name *
-              </label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
               <input
                 type="text"
                 id="name"
@@ -197,16 +206,11 @@ export default function ProductForm({ sections, categories, initialData }: Produ
                 placeholder="e.g., Elegant Banarasi Silk Saree"
                 disabled={loading}
               />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-              )}
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
             </div>
 
-            {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
               <textarea
                 id="description"
                 {...register('description')}
@@ -215,17 +219,12 @@ export default function ProductForm({ sections, categories, initialData }: Produ
                 placeholder="Describe the saree in detail..."
                 disabled={loading}
               />
-              {errors.description && (
-                <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
-              )}
+              {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>}
             </div>
 
-            {/* Price, Section, and Category */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                  Price (₹) *
-                </label>
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">Price (₹) *</label>
                 <input
                   type="number"
                   id="price"
@@ -235,15 +234,11 @@ export default function ProductForm({ sections, categories, initialData }: Produ
                   placeholder="5999.00"
                   disabled={loading}
                 />
-                {errors.price && (
-                  <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
-                )}
+                {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>}
               </div>
 
               <div>
-                <label htmlFor="sectionId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Section *
-                </label>
+                <label htmlFor="sectionId" className="block text-sm font-medium text-gray-700 mb-2">Section *</label>
                 <select
                   id="sectionId"
                   value={selectedSectionId}
@@ -253,51 +248,34 @@ export default function ProductForm({ sections, categories, initialData }: Produ
                 >
                   <option value="">Select a section</option>
                   {sections.map((section) => (
-                    <option key={section.id} value={section.id}>
-                      {section.name}
-                    </option>
+                    <option key={section.id} value={section.id}>{section.name}</option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-gray-500">
-                  Select section first to filter categories
-                </p>
               </div>
 
               <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category *
-                </label>
+                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                 <select
                   id="categoryId"
                   {...register('categoryId')}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
                   disabled={loading || !selectedSectionId}
                 >
-                  <option value="">
-                    {selectedSectionId ? 'Select a category' : 'Select section first'}
-                  </option>
+                  <option value="">{selectedSectionId ? 'Select a category' : 'Select section first'}</option>
                   {filteredCategories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
+                    <option key={category.id} value={category.id}>{category.name}</option>
                   ))}
                 </select>
-                {errors.categoryId && (
-                  <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>
-                )}
+                {errors.categoryId && <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>}
               </div>
             </div>
 
             {/* Discount Section */}
             <div className="border-t pt-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Discount</h3>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Discount Type */}
                 <div>
-                  <label htmlFor="discountType" className="block text-sm font-medium text-gray-700 mb-2">
-                    Discount Type
-                  </label>
+                  <label htmlFor="discountType" className="block text-sm font-medium text-gray-700 mb-2">Discount Type</label>
                   <select
                     id="discountType"
                     {...register('discountType')}
@@ -310,50 +288,35 @@ export default function ProductForm({ sections, categories, initialData }: Produ
                   </select>
                 </div>
 
-                {/* Discount Value */}
                 {discountType !== 'NONE' && (
                   <div>
                     <label htmlFor="discountValue" className="block text-sm font-medium text-gray-700 mb-2">
-                      Discount Value {discountType === 'PERCENTAGE' ? '(%)' : '(₹)'}
+                       Discount Value {discountType === 'PERCENTAGE' ? '(%)' : '(₹)'}
                     </label>
                     <input
                       type="number"
                       id="discountValue"
                       {...register('discountValue')}
                       step="0.01"
-                      min="0"
-                      max={discountType === 'PERCENTAGE' ? '100' : undefined}
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-                      placeholder={discountType === 'PERCENTAGE' ? '0' : '0.00'}
                       disabled={loading}
                     />
-                    {errors.discountValue && (
-                      <p className="mt-1 text-sm text-red-600">{errors.discountValue.message}</p>
-                    )}
+                    {errors.discountValue && <p className="mt-1 text-sm text-red-600">{errors.discountValue.message}</p>}
                   </div>
                 )}
               </div>
-
-              {/* Price Calculation Summary */}
-              {discountType !== 'NONE' && Number(discountValue) > 0 && (
+              
+               {discountType !== 'NONE' && Number(discountValue) > 0 && (
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
                   <h4 className="text-sm font-semibold text-green-900 mb-2">Price Summary</h4>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Original Price:</span>
-                      <span className="font-medium">₹{Number(price || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                       <span className="text-gray-600">Original:</span>
+                       <span className="font-medium">₹{Number(price || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Discount:</span>
-                      <span className="font-medium text-red-600">
-                        {discountType === 'PERCENTAGE' && `${discountValue}%`}
-                        {discountType === 'FIXED' && `₹${Number(discountValue).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                        {discountPercentage > 0 && ` (${discountPercentage.toFixed(1)}% off)`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between pt-2 border-t border-green-300">
-                      <span className="font-semibold text-green-900">Final Price:</span>
-                      <span className="font-bold text-green-900 text-lg">₹{finalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                       <span className="text-gray-600">Final Price:</span>
+                       <span className="font-bold text-green-900">₹{finalPrice.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
@@ -364,133 +327,70 @@ export default function ProductForm({ sections, categories, initialData }: Produ
 
         {/* Additional Details */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Additional Details
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Material */}
-            <div>
-              <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-2">
-                Material
-              </label>
-              <input
-                type="text"
-                id="material"
-                {...register('material')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-                placeholder="e.g., Pure Silk"
-                disabled={loading}
-              />
-            </div>
-
-            {/* Length */}
-            <div>
-              <label htmlFor="length" className="block text-sm font-medium text-gray-700 mb-2">
-                Length
-              </label>
-              <input
-                type="text"
-                id="length"
-                {...register('length')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-                placeholder="e.g., 6.5 meters"
-                disabled={loading}
-              />
-            </div>
-
-            {/* Occasion */}
-            <div>
-              <label htmlFor="occasion" className="block text-sm font-medium text-gray-700 mb-2">
-                Occasion
-              </label>
-              <input
-                type="text"
-                id="occasion"
-                {...register('occasion')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-                placeholder="e.g., Wedding, Festival"
-                disabled={loading}
-              />
-            </div>
-
-            {/* Care Instructions */}
-            <div>
-              <label htmlFor="careInstructions" className="block text-sm font-medium text-gray-700 mb-2">
-                Care Instructions
-              </label>
-              <input
-                type="text"
-                id="careInstructions"
-                {...register('careInstructions')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-maroon focus:border-transparent outline-none"
-                placeholder="e.g., Dry clean only"
-                disabled={loading}
-              />
-            </div>
-          </div>
+           <h2 className="text-xl font-semibold text-gray-900 mb-4">Additional Details</h2>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Material</label>
+                    <input type="text" {...register('material')} className="w-full px-4 py-2 border rounded-md" disabled={loading} />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Length</label>
+                    <input type="text" {...register('length')} className="w-full px-4 py-2 border rounded-md" disabled={loading} />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Occasion</label>
+                    <input type="text" {...register('occasion')} className="w-full px-4 py-2 border rounded-md" disabled={loading} />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Care Instructions</label>
+                    <input type="text" {...register('careInstructions')} className="w-full px-4 py-2 border rounded-md" disabled={loading} />
+                </div>
+           </div>
         </div>
-
-        {/* Status & Visibility */}
+        
+        {/* Status flags */}
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Status & Visibility
-          </h2>
-
-          <div className="space-y-4">
-            {/* Active */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="active"
-                {...register('active')}
-                className="w-4 h-4 text-maroon border-gray-300 rounded focus:ring-maroon"
-                disabled={loading}
-              />
-              <label htmlFor="active" className="ml-2 block text-sm text-gray-900">
-                Active (product visible in store)
-              </label>
-            </div>
-
-            {/* Featured */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="featured"
-                {...register('featured')}
-                className="w-4 h-4 text-maroon border-gray-300 rounded focus:ring-maroon"
-                disabled={loading}
-              />
-              <label htmlFor="featured" className="ml-2 block text-sm text-gray-900">
-                Featured (show on homepage)
-              </label>
-            </div>
-          </div>
+           <h2 className="text-xl font-semibold text-gray-900 mb-4">Status</h2>
+           <div className="space-y-2">
+               <div className="flex items-center">
+                    <input type="checkbox" id="active" {...register('active')} className="w-4 h-4 text-maroon rounded" />
+                    <label htmlFor="active" className="ml-2">Active</label>
+               </div>
+               <div className="flex items-center">
+                    <input type="checkbox" id="featured" {...register('featured')} className="w-4 h-4 text-maroon rounded" />
+                    <label htmlFor="featured" className="ml-2">Featured</label>
+               </div>
+           </div>
         </div>
       </div>
 
-      {/* Color Variants & Images */}
+      {/* Variant Management */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <ColorManagement
-          colors={colors}
-          onChange={setColors}
+         <div className="flex items-center mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
+             <input 
+                type="checkbox" 
+                id="hasSizes" 
+                checked={hasSizes} 
+                onChange={(e) => setHasSizes(e.target.checked)} 
+                className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
+             />
+             <div className="ml-3">
+                 <label htmlFor="hasSizes" className="text-sm font-bold text-indigo-900 cursor-pointer">This product has sizes (e.g. S, M, L)</label>
+                 <p className="text-xs text-indigo-700">Check this for dresses/blouses. Uncheck for standard Sarees.</p>
+             </div>
+         </div>
+      
+        <VariantManagement
+          variants={variants}
+          onChange={setVariants}
+          hasSizes={hasSizes}
           disabled={loading}
         />
       </div>
 
-      {/* Actions */}
       <div className="flex items-center justify-end gap-4">
-        <Link
-          href="/admin/products"
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 font-semibold hover:bg-gray-50 transition"
-        >
-          Cancel
-        </Link>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2 bg-maroon text-white rounded-md font-semibold hover:bg-deep-maroon transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        <Link href="/admin/products" className="px-6 py-2 border rounded-md text-gray-700 hover:bg-gray-50">Cancel</Link>
+        <button type="submit" disabled={loading} className="px-6 py-2 bg-maroon text-white rounded-md hover:bg-deep-maroon disabled:opacity-50">
           {loading ? 'Saving...' : initialData ? 'Update Product' : 'Create Product'}
         </button>
       </div>

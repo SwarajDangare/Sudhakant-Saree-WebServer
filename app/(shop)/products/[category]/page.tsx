@@ -1,5 +1,5 @@
-import { db, categories as categoriesTable, products } from '@/db';
-import { eq, and } from 'drizzle-orm';
+import { db, categories as categoriesTable, products, productColors, colorImages } from '@/db';
+import { eq, and, asc } from 'drizzle-orm';
 import ProductCard from '@/components/ProductCard';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -64,12 +64,47 @@ export default async function ProductsPage({ params }: ProductsPageProps) {
     .from(categoriesTable)
     .where(eq(categoriesTable.active, true));
 
-  // Map products to include category name and colors array
-  const productsWithCategory = categoryProducts.map(product => ({
-    ...product,
-    category: category.name,
-    colors: [], // Empty array for now - ProductCard doesn't need colors for list view
-  }));
+  // Map products to include category name, colors array, and images
+  const productsWithCategory = await Promise.all(
+    categoryProducts.map(async (product) => {
+      // Get first color
+      const [firstColor] = await db
+        .select()
+        .from(productColors)
+        .where(eq(productColors.productId, product.id))
+        .orderBy(asc(productColors.createdAt))
+        .limit(1);
+
+      // Get first image from first color
+      let imagesList: any[] = [];
+      if (firstColor) {
+        const images = await db
+          .select()
+          .from(colorImages)
+          .where(eq(colorImages.productColorId, firstColor.id))
+          .orderBy(asc(colorImages.displayOrder))
+          .limit(1);
+        imagesList = images;
+      }
+
+      return {
+        ...product,
+        category: category.name,
+        colors: firstColor ? [{
+          color: firstColor.color,
+          colorCode: firstColor.colorCode,
+          inStock: firstColor.inStock,
+          images: imagesList.map(img => ({
+            id: img.id,
+            url: img.url,
+            publicId: img.publicId,
+            altText: img.altText || firstColor.color,
+            displayOrder: img.displayOrder,
+          })),
+        }] : [],
+      };
+    })
+  );
 
   return (
     <div className="min-h-screen bg-silk-white">

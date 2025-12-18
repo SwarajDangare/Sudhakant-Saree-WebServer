@@ -101,11 +101,21 @@ export const carts = pgTable('carts', {
 export const cartItems = pgTable('cartItems', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   cartId: text('cartId').notNull().references(() => carts.id, { onDelete: 'cascade' }),
-  productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  productId: text('productId').references(() => products.id, { onDelete: 'set null' }), // Allow NULL when product is deleted
   productColorId: text('productColorId').references(() => productColors.id, { onDelete: 'set null' }),
+  productVariantId: text('productVariantId').references(() => productVariants.id, { onDelete: 'set null' }), // NEW
   quantity: integer('quantity').default(1).notNull(),
+  size: text('size'), // NEW: Snapshot of size name
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Wishlist Items
+export const wishlistItems = pgTable('wishlist_items', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  customerId: text('customerId').notNull().references(() => customers.id, { onDelete: 'cascade' }),
+  productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
 // Orders
@@ -128,10 +138,12 @@ export const orders = pgTable('orders', {
 export const orderItems = pgTable('orderItems', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   orderId: text('orderId').notNull().references(() => orders.id, { onDelete: 'cascade' }),
-  productId: text('productId').notNull().references(() => products.id, { onDelete: 'restrict' }),
+  productId: text('productId').references(() => products.id, { onDelete: 'set null' }), // Allow NULL when product is deleted
   productColorId: text('productColorId').references(() => productColors.id, { onDelete: 'set null' }),
+  productVariantId: text('productVariantId').references(() => productVariants.id, { onDelete: 'set null' }), // NEW
   productName: text('productName').notNull(), // Store product name at time of order
   productColor: text('productColor'), // Store color at time of order
+  size: text('size'), // NEW: Store size at time of order
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
   quantity: integer('quantity').notNull(),
   subtotal: decimal('subtotal', { precision: 10, scale: 2 }).notNull(),
@@ -342,6 +354,7 @@ export const midPageBanner = pgTable('mid_page_banner', {
   linkUrl: text('linkUrl'),
   linkText: text('linkText').default('Shop Now'),
   backgroundColor: text('backgroundColor'),
+  gradientColor: text('gradientColor').default('#800000'), // Maroon default
   textColor: text('textColor').default('#FFFFFF'),
   isActive: boolean('isActive').default(true).notNull(),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
@@ -482,6 +495,33 @@ export const featuredNewArrivals = pgTable('featured_new_arrivals', {
 });
 
 // Relations
+// Product Variants (New: Size + Quantity Management)
+export const productVariants = pgTable('product_variants', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  productId: text('productId').notNull().references(() => products.id, { onDelete: 'cascade' }),
+  productColorId: text('productColorId').references(() => productColors.id, { onDelete: 'cascade' }), // Nullable if no color
+  size: text('size'), // Nullable (for products with no specific size, or "Free Size")
+  stockQuantity: integer('stockQuantity').default(0).notNull(),
+  sku: text('sku'),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+// Relations
+export const productVariantsRelations = relations(productVariants, ({ one, many }) => ({
+  product: one(products, {
+    fields: [productVariants.productId],
+    references: [products.id],
+  }),
+  productColor: one(productColors, {
+    fields: [productVariants.productColorId],
+    references: [productColors.id],
+  }),
+  cartItems: many(cartItems),
+  orderItems: many(orderItems),
+}));
+
 export const sectionsRelations = relations(sections, ({ many }) => ({
   categories: many(categories),
 }));
@@ -501,6 +541,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   }),
   images: many(productImages),
   colors: many(productColors),
+  variants: many(productVariants),
 }));
 
 export const productImagesRelations = relations(productImages, ({ one }) => ({
@@ -516,6 +557,7 @@ export const productColorsRelations = relations(productColors, ({ one, many }) =
     references: [products.id],
   }),
   images: many(colorImages),
+  variants: many(productVariants),
 }));
 
 export const colorImagesRelations = relations(colorImages, ({ one }) => ({
@@ -530,6 +572,7 @@ export const customersRelations = relations(customers, ({ many }) => ({
   addresses: many(addresses),
   carts: many(carts),
   orders: many(orders),
+  wishlistItems: many(wishlistItems),
 }));
 
 export const addressesRelations = relations(addresses, ({ one, many }) => ({
@@ -559,8 +602,12 @@ export const cartItemsRelations = relations(cartItems, ({ one }) => ({
     references: [products.id],
   }),
   productColor: one(productColors, {
-    fields: [cartItems.productColorId],
+    fields: [cartItems.productColorId], // Kept for backward compat / easy access
     references: [productColors.id],
+  }),
+  variant: one(productVariants, {
+    fields: [cartItems.productVariantId],
+    references: [productVariants.id],
   }),
 }));
 
@@ -586,9 +633,13 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
     fields: [orderItems.productId],
     references: [products.id],
   }),
-  productColor: one(productColors, {
+  productColor: one(productColors, { // Kept for history
     fields: [orderItems.productColorId],
     references: [productColors.id],
+  }),
+  variant: one(productVariants, {
+    fields: [orderItems.productVariantId],
+    references: [productVariants.id],
   }),
 }));
 
@@ -631,3 +682,16 @@ export const brandStoryStatsRelations = relations(brandStoryStats, ({ one }) => 
     references: [brandStory.id],
   }),
 }));
+
+// Wishlist Relations
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  customer: one(customers, {
+    fields: [wishlistItems.customerId],
+    references: [customers.id],
+  }),
+  product: one(products, {
+    fields: [wishlistItems.productId],
+    references: [products.id],
+  }),
+}));
+

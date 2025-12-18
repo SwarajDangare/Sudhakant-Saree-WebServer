@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { db, products, productColors, productImages, colorImages } from '@/db';
+import { db, products, productColors, productImages, colorImages, productVariants } from '@/db';
 import { eq, asc } from 'drizzle-orm';
 import { requirePermission, getPermissionErrorMessage } from '@/lib/permission-guards';
 
@@ -34,14 +34,19 @@ export async function GET(
       .from(productColors)
       .where(eq(productColors.productId, params.id));
 
-    // Fetch images for each color
-    const colorsWithImages = await Promise.all(
+    // Fetch images and variants for each color
+    const colorsWithData = await Promise.all(
       colors.map(async (color) => {
         const images = await db
           .select()
           .from(colorImages)
           .where(eq(colorImages.productColorId, color.id))
           .orderBy(asc(colorImages.displayOrder));
+
+        const variants = await db
+            .select()
+            .from(productVariants)
+            .where(eq(productVariants.productColorId, color.id));
 
         return {
           ...color,
@@ -52,6 +57,7 @@ export async function GET(
             altText: img.altText,
             displayOrder: img.displayOrder,
           })),
+          variants: variants // Return variants (sizes) nested under color
         };
       })
     );
@@ -59,7 +65,7 @@ export async function GET(
     return NextResponse.json({
       product: {
         ...product,
-        colors: colorsWithImages,
+        colors: colorsWithData,
       },
     });
   } catch (error) {
@@ -96,7 +102,8 @@ export async function PUT(
       careInstructions,
       active,
       featured,
-      colors,
+      variants, // Renamed from colors to match new structure
+      hasSizes,
     } = body;
 
     // Validate required fields
@@ -107,8 +114,8 @@ export async function PUT(
       );
     }
 
-    // Validate colors
-    if (!colors || !Array.isArray(colors) || colors.length === 0) {
+    // Validate variants
+    if (!variants || !Array.isArray(variants) || variants.length === 0) {
       return NextResponse.json(
         { error: 'At least one color variant is required' },
         { status: 400 }
@@ -140,41 +147,57 @@ export async function PUT(
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    // Delete existing colors and their images
-    const existingColors = await db
-      .select()
-      .from(productColors)
-      .where(eq(productColors.productId, params.id));
-
-    for (const color of existingColors) {
-      await db.delete(colorImages).where(eq(colorImages.productColorId, color.id));
-    }
+    // Replace Variants logic: Delete existing colors (cascades to images and variants)
     await db.delete(productColors).where(eq(productColors.productId, params.id));
 
-    // Create new colors and images
-    for (const color of colors) {
+    // Create new colors, images, and variants
+    for (const variantGroup of variants) {
       // Create color
       const [newColor] = await db
         .insert(productColors)
         .values({
           productId: params.id,
-          color: color.color,
-          colorCode: color.colorCode,
-          inStock: color.inStock ?? true,
+          color: variantGroup.color,
+          colorCode: variantGroup.colorCode,
+          inStock: variantGroup.inStock ?? true,
         })
         .returning();
 
       // Create images for this color
-      if (color.images && color.images.length > 0) {
+      if (variantGroup.images && variantGroup.images.length > 0) {
         await db.insert(colorImages).values(
-          color.images.map((img: any, index: number) => ({
+          variantGroup.images.map((img: any, index: number) => ({
             productColorId: newColor.id,
             url: img.url,
             publicId: img.publicId,
-            altText: img.altText || color.color,
+            altText: img.altText || variantGroup.color,
             displayOrder: img.displayOrder ?? index,
           }))
         );
+      }
+      
+      // Create product variants (Inventory/Sizes)
+      if (hasSizes && variantGroup.sizes && variantGroup.sizes.length > 0) {
+         // Case 1: Product has sizes
+         const variantValues = variantGroup.sizes.map((s: any) => ({
+             productId: updatedProduct.id,
+             productColorId: newColor.id,
+             size: s.size,
+             stockQuantity: Number(s.quantity) || 0,
+             sku: s.sku || '',
+             active: true
+         }));
+         await db.insert(productVariants).values(variantValues);
+      } else {
+         // Case 2: Product has no sizes (just color) or fallback
+         await db.insert(productVariants).values({
+             productId: updatedProduct.id,
+             productColorId: newColor.id,
+             size: null, 
+             stockQuantity: Number(variantGroup.quantity) || 0,
+             sku: variantGroup.sku || '',
+             active: true
+         });
       }
     }
 

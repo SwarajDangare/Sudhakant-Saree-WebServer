@@ -3,6 +3,10 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import { midPageBanner } from '@/db/schema';
 
+// Force Node.js runtime for database operations
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 // GET the mid-page banner
 export async function GET() {
   try {
@@ -30,6 +34,7 @@ export async function PUT(request: Request) {
       imagePublicId,
       linkUrl,
       linkText,
+      gradientColor,
       isActive,
     } = body;
 
@@ -57,6 +62,7 @@ export async function PUT(request: Request) {
           imagePublicId: imagePublicId || '',
           linkUrl: linkUrl || null,
           linkText: linkText || 'Shop Now',
+          gradientColor: gradientColor || '#800000',
           isActive: isActive !== undefined ? isActive : true,
           updatedAt: new Date(),
         })
@@ -74,6 +80,7 @@ export async function PUT(request: Request) {
           imagePublicId: imagePublicId || '',
           linkUrl: linkUrl || null,
           linkText: linkText || 'Shop Now',
+          gradientColor: gradientColor || '#800000',
           isActive: isActive !== undefined ? isActive : true,
         })
         .returning();

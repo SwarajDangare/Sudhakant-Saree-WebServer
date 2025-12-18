@@ -49,6 +49,8 @@ export interface CartItem {
   cartId: string;
   productId: string;
   productColorId: string | null;
+  productVariantId?: string | null; // NEW: Link to specific variant
+  size?: string | null; // NEW: Size snapshot
   quantity: number;
   product?: {
     id: string;
@@ -69,6 +71,8 @@ export interface CartItem {
 export interface AddToCartInput {
   productId: string;
   productColorId?: string;
+  productVariantId?: string; // NEW: Specific variant ID
+  size?: string; // NEW: Size name
   quantity?: number;
 }
 

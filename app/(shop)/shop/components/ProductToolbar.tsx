@@ -6,7 +6,7 @@ interface Filters {
   search: string;
   sort: string;
   viewMode: 'grid' | 'list';
-  gridCols: 2 | 3 | 4;
+  gridCols: 2 | 3 | 4 | 6;
 }
 
 interface ProductToolbarProps {
@@ -33,115 +33,173 @@ export default function ProductToolbar({
     return () => clearTimeout(timer);
   }, [searchInput, onFilterChange]);
 
+  /* logic to track header visibility matching ScrollWrapper */
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Match ScrollWrapper logic: hide on scroll down > 50px, show on scroll up
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsHeaderVisible(false);
+      } else {
+        setIsHeaderVisible(true);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
-      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-        {/* Search Bar */}
-        <div className="flex-1 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search sarees..."
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saffron focus:border-saffron transition"
-          />
-          {searchInput && (
+    <div
+      className={`bg-white border-b border-gray-100 sticky z-40 transition-all duration-300 ${isHeaderVisible ? 'top-20' : 'top-0'}`}
+    >
+      {/* Desktop Toolbar */}
+      <div className="hidden lg:flex items-stretch justify-between h-14">
+        {/* Left: View Options */}
+        <div className="flex items-center px-6 gap-4">
+          <div className="flex items-center gap-2">
+            {/* 2 Columns */}
             <button
-              onClick={() => setSearchInput('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              onClick={() => onFilterChange({ gridCols: 2, viewMode: 'grid' })}
+              className={`p-1.5 transition-colors ${filters.gridCols === 2 && filters.viewMode === 'grid' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+              title="2 Columns"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 4h7v7H4V4zM13 4h7v7h-7V4zM4 13h7v7H4v-7zM13 13h7v7h-7v-7z" />
               </svg>
             </button>
-          )}
+
+            {/* 3 Columns */}
+            <button
+              onClick={() => onFilterChange({ gridCols: 3, viewMode: 'grid' })}
+              className={`p-1.5 transition-colors ${filters.gridCols === 3 && filters.viewMode === 'grid' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+              title="3 Columns"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 4h4v4H4V4zM10 4h4v4h-4V4zM16 4h4v4h-4V4zM4 10h4v4H4v-4zM10 10h4v4h-4v-4zM16 10h4v4h-4v-4zM4 16h4v4H4v-4zM10 16h4v4h-4v-4zM16 16h4v4h-4v-4z" />
+              </svg>
+            </button>
+
+            {/* 4 Columns */}
+            <button
+              onClick={() => onFilterChange({ gridCols: 4, viewMode: 'grid' })}
+              className={`p-1.5 transition-colors ${filters.gridCols === 4 && filters.viewMode === 'grid' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+              title="4 Columns"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                {/* 4x4 Grid of squares: 4px size, 2px gap. Origin (1,1) */}
+                {/* Row 1 */}
+                <rect x="1" y="1" width="4" height="4" />
+                <rect x="7" y="1" width="4" height="4" />
+                <rect x="13" y="1" width="4" height="4" />
+                <rect x="19" y="1" width="4" height="4" />
+
+                {/* Row 2 */}
+                <rect x="1" y="7" width="4" height="4" />
+                <rect x="7" y="7" width="4" height="4" />
+                <rect x="13" y="7" width="4" height="4" />
+                <rect x="19" y="7" width="4" height="4" />
+
+                {/* Row 3 */}
+                <rect x="1" y="13" width="4" height="4" />
+                <rect x="7" y="13" width="4" height="4" />
+                <rect x="13" y="13" width="4" height="4" />
+                <rect x="19" y="13" width="4" height="4" />
+
+                {/* Row 4 */}
+                <rect x="1" y="19" width="4" height="4" />
+                <rect x="7" y="19" width="4" height="4" />
+                <rect x="13" y="19" width="4" height="4" />
+                <rect x="19" y="19" width="4" height="4" />
+              </svg>
+            </button>
+
+            {/* List View */}
+            <button
+              onClick={() => onFilterChange({ viewMode: 'list' })}
+              className={`p-1.5 transition-colors ${filters.viewMode === 'list' ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+              title="List View"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* Sort Dropdown */}
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700 hidden md:block">Sort:</label>
+        {/* Center: Count */}
+        <div className="flex items-center justify-center">
+          <span className="text-xs font-medium tracking-widest text-gray-500 uppercase">
+            {totalProducts} Products
+          </span>
+        </div>
+
+        {/* Right: Sort & Filter */}
+        <div className="flex items-stretch border-l border-gray-100">
+          {/* Sort */}
+          <div className="flex items-center px-6 border-r border-gray-100 relative group cursor-pointer">
+            <span className="text-xs font-medium tracking-widest text-gray-500 uppercase mr-2">Sort By</span>
+            <select
+              value={filters.sort}
+              onChange={(e) => onFilterChange({ sort: e.target.value })}
+              className="appearance-none bg-transparent border-none text-xs font-medium uppercase text-gray-900 focus:ring-0 cursor-pointer pr-4"
+            >
+              <option value="featured">Featured</option>
+              <option value="newest">Newest</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+            </select>
+            <svg className="w-3 h-3 text-gray-400 absolute right-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+
+          {/* Filter */}
+          <button
+            onClick={onMobileFilterToggle} // Re-using mobile toggle for desktop sidebar trigger
+            className="flex items-center px-8 hover:bg-gray-50 transition-colors"
+          >
+            <span className="text-xs font-medium tracking-widest text-gray-500 uppercase">Filter</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Toolbar (Simplified) */}
+      <div className="lg:hidden grid grid-cols-2 divide-x divide-gray-100 border-t border-gray-100">
+        <div className="relative flex items-center justify-center p-3">
           <select
             value={filters.sort}
             onChange={(e) => onFilterChange({ sort: e.target.value })}
-            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-saffron focus:border-saffron transition bg-white cursor-pointer"
+            className="absolute inset-0 w-full h-full opacity-0 z-10"
           >
             <option value="featured">Featured</option>
-            <option value="newest">New Arrivals</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="name-asc">Name: A-Z</option>
-            <option value="name-desc">Name: Z-A</option>
+            <option value="newest">Newest</option>
+            <option value="price-asc">Low to High</option>
+            <option value="price-desc">High to Low</option>
           </select>
-        </div>
-
-        {/* View Mode Toggle (Desktop only) */}
-        <div className="hidden lg:flex items-center gap-1 border border-gray-300 rounded-lg p-1">
-          <button
-            onClick={() => onFilterChange({ viewMode: 'grid' })}
-            className={`p-2 rounded transition ${
-              filters.viewMode === 'grid'
-                ? 'bg-maroon text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="Grid View"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-gray-900">
+            <span>Sort By</span>
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
-          </button>
-          <button
-            onClick={() => onFilterChange({ viewMode: 'list' })}
-            className={`p-2 rounded transition ${
-              filters.viewMode === 'list'
-                ? 'bg-maroon text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-            title="List View"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Grid Columns (Desktop Grid View only) */}
-        {filters.viewMode === 'grid' && (
-          <div className="hidden lg:flex items-center gap-1 border border-gray-300 rounded-lg p-1">
-            {[2, 3, 4].map((cols) => (
-              <button
-                key={cols}
-                onClick={() => onFilterChange({ gridCols: cols as 2 | 3 | 4 })}
-                className={`px-3 py-2 text-sm font-medium rounded transition ${
-                  filters.gridCols === cols
-                    ? 'bg-maroon text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {cols}
-              </button>
-            ))}
           </div>
-        )}
-
-        {/* Results Count */}
-        <div className="text-sm font-medium text-gray-600 whitespace-nowrap">
-          {totalProducts} {totalProducts === 1 ? 'product' : 'products'}
         </div>
 
-        {/* Mobile Filter Button */}
         <button
           onClick={onMobileFilterToggle}
-          className="lg:hidden flex items-center gap-2 px-4 py-2.5 bg-maroon text-white rounded-lg hover:bg-deep-maroon transition font-medium"
+          className="flex items-center justify-center gap-2 p-3 text-xs font-medium uppercase tracking-widest text-gray-900"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <span>Filter</span>
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
-          Filters
         </button>
       </div>
     </div>

@@ -18,7 +18,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const defaultColor: ColorVariant = { color: 'Default', colorCode: '#E5E7EB', inStock: true, images: [] };
   const [selectedColor, setSelectedColor] = useState<ColorVariant>(product.colors[0] || defaultColor);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null); // NEW: Size selection
   const hasColors = product.colors && product.colors.length > 0;
+
+  // Compute available sizes for selected color
+  const availableSizes = selectedColor?.variants?.filter(v => v.active && v.size) || [];
+  const hasSizes = availableSizes.length > 0;
 
   // Pincode check state
   const [pincode, setPincode] = useState('');
@@ -27,9 +32,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   // Accordion states
   const [openAccordion, setOpenAccordion] = useState<string | null>('details');
 
-  // Reset image index when color changes
+  // Reset image index and size when color changes
   useEffect(() => {
     setSelectedImageIndex(0);
+    setSelectedSize(null); // Reset size when color changes
   }, [selectedColor?.id]);
 
   // Use categoryName for display, fallback to category if not available
@@ -129,12 +135,31 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const handleAddToCart = async () => {
     if (!selectedColor?.inStock || isAddingToCart) return;
 
+    // Validate size selection if product has sizes
+    if (hasSizes && !selectedSize) {
+      alert('Please select a size');
+      return;
+    }
+
     setIsAddingToCart(true);
 
     try {
+      // Find the specific variant ID if size is selected
+      let productVariantId: string | undefined;
+      if (hasSizes && selectedSize) {
+        const variant = selectedColor.variants?.find(v => v.size === selectedSize);
+        productVariantId = variant?.id;
+      } else if (selectedColor.variants && selectedColor.variants.length > 0) {
+        // For products without sizes, use the single variant (size = null)
+        const variant = selectedColor.variants.find(v => !v.size);
+        productVariantId = variant?.id;
+      }
+
       await addToCart({
         productId: product.id,
         productColorId: selectedColor?.id,
+        productVariantId: productVariantId,
+        size: selectedSize || undefined,
         quantity: quantity,
       });
     } catch (error) {
@@ -342,14 +367,30 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               )}
 
               {/* Size Selector */}
-              <div>
-                <div className="text-sm font-semibold text-gray-900 mb-3">SIZE</div>
-                <div className="flex gap-2">
-                  <button className="px-6 py-2 border-2 border-gray-900 text-gray-900 text-sm font-medium hover:bg-gray-50 transition-colors">
-                    OneSize
-                  </button>
+              {hasSizes && (
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 mb-3">SIZE</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {availableSizes.map((variant) => (
+                      <button
+                        key={variant.id}
+                        onClick={() => setSelectedSize(variant.size)}
+                        disabled={variant.stockQuantity === 0}
+                        className={`px-6 py-2 border-2 text-sm font-medium transition-colors ${
+                          selectedSize === variant.size
+                            ? 'border-gray-900 bg-gray-900 text-white'
+                            : variant.stockQuantity === 0
+                            ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                            : 'border-gray-300 text-gray-900 hover:border-gray-900'
+                        }`}
+                      >
+                        {variant.size}
+                        {variant.stockQuantity === 0 && ' (Out of Stock)'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Color Selector with Image Thumbnails */}
               {hasColors && product.colors.length > 1 && (

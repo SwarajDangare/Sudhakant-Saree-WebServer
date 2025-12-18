@@ -1,4 +1,4 @@
-import { db, products, categories, productColors, colorImages } from '@/db';
+import { db, products, categories, productColors, colorImages, productVariants } from '@/db';
 import { eq, asc } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import ProductDetailClient from '@/components/ProductDetailClient';
@@ -59,7 +59,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     .from(productColors)
     .where(eq(productColors.productId, product.id));
 
-  // Fetch images for each color
+  // Fetch images and variants for each color
   const colorsWithImages = await Promise.all(
     colors.map(async (color) => {
       const images = await db
@@ -68,7 +68,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
         .where(eq(colorImages.productColorId, color.id))
         .orderBy(asc(colorImages.displayOrder));
 
-      console.log(`Color ${color.color} has ${images.length} images`);
+      const variants = await db
+        .select()
+        .from(productVariants)
+        .where(eq(productVariants.productColorId, color.id));
+
+      console.log(`Color ${color.color} has ${images.length} images and ${variants.length} variants`);
 
       return {
         id: color.id,
@@ -82,6 +87,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           altText: img.altText || color.color,
           displayOrder: img.displayOrder,
         })),
+        variants: variants, // Include variants
       };
     })
   );

@@ -22,7 +22,7 @@ export default function FeaturedCollections({ collections }: FeaturedCollections
   }
   return (
     <section className="bg-white py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 md:px-8">
         {/* Section Header */}
         <SectionHeading
           subtitle="Curated for You"

@@ -93,11 +93,28 @@ export default function ModernProductsClient({
 
     try {
       // Delete all selected products
-      await Promise.all(
-        selectedProducts.map(productId =>
-          fetch(`/api/products/${productId}`, { method: 'DELETE' })
-        )
+      // Delete all selected products
+      const results = await Promise.all(
+        selectedProducts.map(async (productId) => {
+          const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' });
+          if (!res.ok) {
+            const data = await res.json();
+            return { id: productId, success: false, error: data.error || 'Failed to delete' };
+          }
+          return { id: productId, success: true };
+        })
       );
+
+      const failures = results.filter(r => !r.success);
+      
+      if (failures.length > 0) {
+        // If all failed with the same error (common for single selects), show it
+        if (failures.length === 1) {
+            alert(failures[0].error);
+        } else {
+             alert(`Failed to delete ${failures.length} products. first error: ${failures[0].error}`);
+        }
+      }
 
       // Refresh the page to show updated list
       router.refresh();
@@ -119,14 +136,15 @@ export default function ModernProductsClient({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete product');
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete product');
       }
 
       // Refresh the page to show updated list
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting product:', error);
-      alert('Failed to delete product. Please try again.');
+      alert(error.message || 'Failed to delete product. Please try again.');
     }
   };
 

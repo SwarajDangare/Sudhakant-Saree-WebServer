@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import ProductFilters from './components/ProductFilters';
 import ProductToolbar from './components/ProductToolbar';
@@ -60,10 +61,11 @@ interface Filters {
   blousePieceIncluded: boolean | null;
   inStockOnly: boolean;
   onSale: boolean;
+  discountRange: string | null;
   search: string;
   sort: string;
   viewMode: 'grid' | 'list';
-  gridCols: 2 | 3 | 4;
+  gridCols: 2 | 3 | 4 | 6;
 }
 
 interface ShopClientProps {
@@ -94,10 +96,11 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     blousePieceIncluded: searchParams.get('blousePiece') === 'true' ? true : searchParams.get('blousePiece') === 'false' ? false : null,
     inStockOnly: searchParams.get('inStock') === 'true',
     onSale: searchParams.get('onSale') === 'true',
+    discountRange: searchParams.get('discount') || null,
     search: searchParams.get('search') || '',
     sort: searchParams.get('sort') || 'featured',
     viewMode: (searchParams.get('view') as 'grid' | 'list') || 'grid',
-    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4) || 3,
+    gridCols: (Number(searchParams.get('cols')) as 2 | 3 | 4 | 6) || 4,
   });
 
   // Update URL when filters change
@@ -116,10 +119,11 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     if (filters.blousePieceIncluded !== null) params.set('blousePiece', filters.blousePieceIncluded.toString());
     if (filters.inStockOnly) params.set('inStock', 'true');
     if (filters.onSale) params.set('onSale', 'true');
+    if (filters.discountRange) params.set('discount', filters.discountRange);
     if (filters.search) params.set('search', filters.search);
     if (filters.sort !== 'featured') params.set('sort', filters.sort);
     if (filters.viewMode !== 'grid') params.set('view', filters.viewMode);
-    if (filters.gridCols !== 3) params.set('cols', filters.gridCols.toString());
+    if (filters.gridCols !== 6) params.set('cols', filters.gridCols.toString());
 
     const queryString = params.toString();
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
@@ -200,6 +204,26 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
       result = result.filter(p => p.discountType !== 'NONE');
     }
 
+    // Discount range filter
+    if (filters.discountRange) {
+      const discountRange = filters.discountRange;
+      result = result.filter(p => {
+        if (p.discountType === 'NONE') return false;
+
+        const price = Number(p.price);
+        let discountPercentage = 0;
+
+        if (p.discountType === 'PERCENTAGE') {
+          discountPercentage = Number(p.discountValue);
+        } else if (p.discountType === 'FIXED') {
+          discountPercentage = (Number(p.discountValue) / price) * 100;
+        }
+
+        const [min, max] = discountRange.split('-').map(Number);
+        return discountPercentage >= min && discountPercentage <= max;
+      });
+    }
+
     // Sorting
     switch (filters.sort) {
       case 'price-asc':
@@ -261,10 +285,11 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
       blousePieceIncluded: null,
       inStockOnly: false,
       onSale: false,
+      discountRange: null,
       search: '',
       sort: 'featured',
       viewMode: 'grid',
-      gridCols: 3,
+      gridCols: 6,
     });
   };
 
@@ -328,6 +353,9 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
       case 'onSale':
         setFilters(prev => ({ ...prev, onSale: false }));
         break;
+      case 'discountRange':
+        setFilters(prev => ({ ...prev, discountRange: null }));
+        break;
       case 'search':
         setFilters(prev => ({ ...prev, search: '' }));
         break;
@@ -335,23 +363,19 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
   };
 
   return (
-    <div className="min-h-screen bg-silk-white">
-      {/* Page Header */}
-      <section className="bg-gradient-to-br from-maroon via-indian-red to-saffron text-white pattern-bg py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Shop All Sarees
-            </h1>
-            <p className="text-xl text-silk-white max-w-2xl mx-auto">
-              Browse our complete collection of handcrafted sarees
-            </p>
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-white">
+      {/* Breadcrumbs / Minimal Top Header - optional, can be dynamic based on category */}
+      {/* Breadcrumbs / Minimal Top Header - optional, can be dynamic based on category */}
+      <div className="pt-24 md:pt-28 pb-4 px-6 md:px-8 border-b border-gray-100 mb-0">
+        <nav className="flex text-xs text-gray-500 uppercase tracking-widest font-medium">
+          <Link href="/" className="hover:text-gray-900 cursor-pointer">Home</Link>
+          <span className="mx-2">/</span>
+          <span className="text-gray-900">Shop</span>
+        </nav>
+      </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full">
         {/* Toolbar */}
         <ProductToolbar
           totalProducts={filteredProducts.length}
@@ -360,7 +384,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
           onMobileFilterToggle={() => setIsMobileFilterOpen(true)}
         />
 
-        {/* Active Filters */}
+        {/* Active Filters Bar - Only show if filters active */}
         <ActiveFilters
           filters={filters}
           filterOptions={filterOptions}
@@ -368,19 +392,22 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
           onClearAll={handleClearFilters}
         />
 
-        <div className="flex gap-8">
-          {/* Desktop Filters Sidebar */}
-          <aside className="hidden lg:block w-80 flex-shrink-0">
-            <ProductFilters
-              filters={filters}
-              filterOptions={filterOptions}
-              onFilterChange={handleFilterChange}
-              onClearFilters={handleClearFilters}
-            />
-          </aside>
+        <div className="flex relative">
+          {/* Desktop Filter Sidebar - Hidden by default in new design, strictly using Drawer/Overlay style or conditional visibility?? 
+               ByShree actually has a "Filter" button that opens a Drawer even on desktop in some views, OR a sidebar. 
+               The user asked to "clone" the layout. The screenshot shows "FILTER" button on the right. 
+               This implies a DRAWER or toggle-able sidebar. 
+               I will match that behavior: Hide sidebar by default, rely on the drawer I already have logic for (or make desktop drawer).
+               
+               For now, I will keep the sidebar logic BUT only show it if a state triggers, OR just use the Mobile Drawer for all sizes if that's the desired "Filter" button behavior. 
+               
+               Let's stick to the reference: The Screenshot has a "Filter" button. This usually implies a Click-to-Open interaction (Drawer).
+           */}
 
-          {/* Product Grid */}
-          <main className="flex-1 min-w-0">
+          {/* Using Mobile Drawer for Desktop too for the "Filter" button experience */}
+
+          {/* Main Product Grid */}
+          <main className="flex-1 min-w-0 px-2 md:px-6 py-6">
             <ProductGrid
               products={paginatedProducts}
               totalProducts={filteredProducts.length}
@@ -394,50 +421,52 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
         </div>
       </div>
 
-      {/* Mobile Filter Drawer */}
-      {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
+      {/* Filter Drawer - Universal for Mobile & Desktop */}
+      <div className={`fixed inset-0 z-50 transform transition-transform duration-300 ease-in-out ${isMobileFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        {/* Backdrop - Only visible when open */}
+        {isMobileFilterOpen && (
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 transition-opacity"
             onClick={() => setIsMobileFilterOpen(false)}
           />
+        )}
 
-          {/* Drawer */}
-          <div className="absolute inset-y-0 left-0 w-full max-w-sm bg-white shadow-xl overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-4 py-4 flex items-center justify-between z-10">
-              <h2 className="text-xl font-bold text-maroon">Filters</h2>
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+        {/* Drawer Content */}
+        <div className="absolute inset-y-0 right-0 w-full max-w-sm bg-white shadow-2xl flex flex-col h-full transform transition-transform delay-75 duration-300">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-900">Filters</h2>
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="p-2 -mr-2 text-gray-400 hover:text-gray-900 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-            <div className="p-4">
-              <ProductFilters
-                filters={filters}
-                filterOptions={filterOptions}
-                onFilterChange={handleFilterChange}
-                onClearFilters={handleClearFilters}
-              />
-            </div>
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <ProductFilters
+              filters={filters}
+              filterOptions={filterOptions}
+              onFilterChange={handleFilterChange}
+              onClearFilters={handleClearFilters}
+            />
+          </div>
 
-            {/* Apply Button */}
-            <div className="sticky bottom-0 bg-white border-t p-4">
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full btn-primary"
-              >
-                Show {filteredProducts.length} Products
-              </button>
-            </div>
+          {/* Footer Actions */}
+          <div className="p-6 border-t border-gray-100 bg-gray-50">
+            <button
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="w-full bg-[#8B1538] text-white font-bold uppercase tracking-widest text-xs py-4 hover:bg-[#6e112d] transition-colors"
+            >
+              View {filteredProducts.length} Products
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

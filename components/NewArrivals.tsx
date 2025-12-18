@@ -50,7 +50,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
 
   return (
     <section className="bg-cream py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 md:px-8">
         {/* Section Header */}
         <SectionHeading
           subtitle="Just Arrived"

@@ -24,6 +24,7 @@ interface Filters {
   blousePieceIncluded: boolean | null;
   inStockOnly: boolean;
   onSale: boolean;
+  discountRange: string | null;
   search: string;
 }
 
@@ -143,6 +144,14 @@ export default function ActiveFilters({
     activeFilters.push({
       type: 'onSale',
       label: 'On Sale',
+    });
+  }
+
+  // Discount Range
+  if (filters.discountRange) {
+    activeFilters.push({
+      type: 'discountRange',
+      label: `${filters.discountRange}% OFF`,
     });
   }
 

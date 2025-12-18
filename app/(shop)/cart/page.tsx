@@ -94,6 +94,11 @@ export default function CartPage() {
                       </span>
                     </p>
                   )}
+                  {item.size && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      Size: <span className="font-medium">{item.size}</span>
+                    </p>
+                  )}
                   <p className="text-lg font-semibold text-maroon mt-2">
                     ₹{parseFloat(item.product?.price || '0').toLocaleString('en-IN')}
                   </p>

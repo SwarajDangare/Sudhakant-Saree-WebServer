@@ -1,8 +1,8 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { db, products, categories, sections, productColors, productImages } from '@/db';
-import { eq, desc, like, or, and, gte, lte, sql } from 'drizzle-orm';
+import { db, products, categories, sections, productColors, colorImages } from '@/db';
+import { eq, desc, like, or, and, gte, lte, sql, asc } from 'drizzle-orm';
 import ModernProductsClient from '@/components/admin/ModernProductsClient';
 import { getServerPermissions } from '@/lib/server-permissions';
 
@@ -111,12 +111,25 @@ export default async function ProductsPage({
   // Fetch product images and colors for each product
   const productsWithDetails = await Promise.all(
     filteredProducts.map(async (product) => {
-      const images = await db
+      // Get first color for this product
+      const [firstColor] = await db
         .select()
-        .from(productImages)
-        .where(eq(productImages.productId, product.id))
-        .orderBy(productImages.displayOrder)
+        .from(productColors)
+        .where(eq(productColors.productId, product.id))
+        .orderBy(asc(productColors.createdAt))
         .limit(1);
+
+      // Get first image from first color
+      let primaryImage = null;
+      if (firstColor) {
+        const [firstImage] = await db
+          .select()
+          .from(colorImages)
+          .where(eq(colorImages.productColorId, firstColor.id))
+          .orderBy(asc(colorImages.displayOrder))
+          .limit(1);
+        primaryImage = firstImage || null;
+      }
 
       const colors = await db
         .select()
@@ -126,7 +139,7 @@ export default async function ProductsPage({
 
       return {
         ...product,
-        primaryImage: images[0] || null,
+        primaryImage: primaryImage,
         colorCount: colors.length,
         colors: colors,
       };
