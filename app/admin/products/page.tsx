@@ -96,11 +96,16 @@ export default async function ProductsPage({
         name: categories.name,
         sectionId: categories.sectionId,
       },
+      section: {
+        id: sections.id,
+        name: sections.name,
+      },
     })
     .from(products)
     .leftJoin(categories, eq(products.categoryId, categories.id))
+    .leftJoin(sections, eq(categories.sectionId, sections.id))
     .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(desc(products.createdAt));
+    .orderBy(sections.name, categories.name, products.name);
 
   // Filter by section if specified
   let filteredProducts = allProducts;
@@ -139,9 +144,16 @@ export default async function ProductsPage({
 
       return {
         ...product,
-        primaryImage: primaryImage,
+        primaryImage: primaryImage ? {
+          url: primaryImage.url,
+          altText: primaryImage.altText,
+        } : null,
         colorCount: colors.length,
-        colors: colors,
+        colors: colors.map(c => ({
+          id: c.id,
+          color: c.color,
+          colorCode: c.colorCode,
+        })),
       };
     })
   );

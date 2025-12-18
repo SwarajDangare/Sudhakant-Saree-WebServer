@@ -7,6 +7,7 @@ import Link from 'next/link';
 import DeleteCategoryButton from '@/components/admin/DeleteCategoryButton';
 import CategoryFilters from '@/components/admin/CategoryFilters';
 import { getServerPermissions } from '@/lib/server-permissions';
+import { getSectionColorClass } from '@/lib/utils/color-utils';
 
 // Make this page dynamic - don't pre-render at build time
 export const dynamic = 'force-dynamic';
@@ -169,7 +170,7 @@ export default async function CategoriesPage({
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded border ${getSectionColorClass(category.section?.name || 'No Section')}`}>
                         {category.section?.name || 'No Section'}
                       </span>
                     </td>
