@@ -81,7 +81,7 @@ export default function HeaderClient({ sectionsWithCategories }: HeaderClientPro
                         {/* Desktop Navigation - Centered */}
                         <nav className="hidden lg:flex items-center gap-8">
                             <Link href="/shop" className={`text-xs font-bold uppercase tracking-widest ${textColorClass} hover:text-[#9d2235] transition-colors`}>
-                                New Arrivals
+                                Shop All
                             </Link>
 
                             {/* Section Dropdowns */}
