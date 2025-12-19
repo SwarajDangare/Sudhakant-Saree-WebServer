@@ -366,7 +366,7 @@ export default function ShopClient({ products, filterOptions }: ShopClientProps)
     <div className="min-h-screen bg-white">
       {/* Breadcrumbs / Minimal Top Header - optional, can be dynamic based on category */}
       {/* Breadcrumbs / Minimal Top Header - optional, can be dynamic based on category */}
-      <div className="pt-24 md:pt-28 pb-4 px-6 md:px-8 border-b border-gray-100 mb-0">
+      <div className="pt-5 md:pt-5 pb-4 px-6 md:px-8 border-b border-gray-100 mb-0">
         <nav className="flex text-xs text-gray-500 uppercase tracking-widest font-medium">
           <Link href="/" className="hover:text-gray-900 cursor-pointer">Home</Link>
           <span className="mx-2">/</span>

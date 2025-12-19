@@ -1,8 +1,7 @@
-import HeaderClient from '@/components/HeaderClient';
 import Footer from '@/components/Footer';
 import WhatsAppFloat from '@/components/WhatsAppFloat';
-import PromoBar from '@/components/PromoBar';
-import ScrollWrapper from '@/components/ScrollWrapper';
+import MainContentWrapper from '@/components/MainContentWrapper';
+import HeaderContainer from '@/components/HeaderContainer';
 import { Providers } from '@/components/Providers';
 import { db, sections, categories } from '@/db';
 import { eq, and } from 'drizzle-orm';
@@ -39,18 +38,13 @@ export default async function ShopLayout({
 
   return (
     <Providers>
-      {/* PromoBar and Header with fixed positioning to overlay on content */}
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <ScrollWrapper>
-          <PromoBar />
-          <HeaderClient sectionsWithCategories={sectionsWithCategories} />
-        </ScrollWrapper>
-      </div>
+      {/* Dynamic Header/Promo Bar Container */}
+      <HeaderContainer sectionsWithCategories={sectionsWithCategories} />
 
       {/* Main content - homepage has no top padding (hero starts from top), other pages have padding */}
-      <main className="min-h-screen">
+      <MainContentWrapper>
         {children}
-      </main>
+      </MainContentWrapper>
       <Footer />
       <WhatsAppFloat />
     </Providers>

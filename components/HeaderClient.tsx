@@ -72,10 +72,10 @@ export default function HeaderClient({ sectionsWithCategories }: HeaderClientPro
         <>
             <header className={`w-full transition-all duration-300 ${headerClass}`}>
                 <div className="w-full px-4 sm:px-6 md:px-8">
-                    <div className="flex justify-between items-center h-20">
+                    <div className="flex justify-between items-center h-16">
                         {/* Logo */}
                         <Link href="/" className="flex items-center space-x-2">
-                            <span className={`text-2xl font-bold tracking-wide ${logoColor} uppercase font-serif`}>
+                            <span className={`text-xl font-bold tracking-wide ${logoColor} uppercase font-serif`}>
                                 Sudhakant Sarees
                             </span>
                         </Link>
@@ -88,7 +88,7 @@ export default function HeaderClient({ sectionsWithCategories }: HeaderClientPro
 
                             {/* Section Dropdowns */}
                             {sectionsWithCategories.map((section) => (
-                                <div key={section.id} className="relative group h-20 flex items-center">
+                                <div key={section.id} className="relative group h-16 flex items-center">
                                     <Link
                                         href={`/categories/${section.slug}`}
                                         className={`text-xs font-bold uppercase tracking-widest ${textColorClass} hover:text-[#9d2235] transition-colors flex items-center`}
